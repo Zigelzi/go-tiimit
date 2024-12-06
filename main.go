@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"example.com/go-tiimit/db"
 	"example.com/go-tiimit/team"
 )
 
 func main() {
+	db.Init()
 	selectAction()
 }
 
