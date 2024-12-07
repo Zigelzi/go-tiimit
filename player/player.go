@@ -2,22 +2,21 @@ package player
 
 import (
 	"fmt"
-	"math/rand/v2"
 )
 
 type Player struct {
-	Id           int64
+	MyClubId     int64
 	Name         string
 	runPower     float64
 	ballHandling float64
 }
 
-func New(id int64, name string) Player {
+func New(id int64, name string, runPower float64, ballHandling float64) Player {
 	return Player{
-		Id:           id,
+		MyClubId:     id,
 		Name:         name,
-		runPower:     float64(rand.Int64N(9) + 1),
-		ballHandling: float64(rand.Int64N(9) + 1),
+		runPower:     runPower,
+		ballHandling: ballHandling,
 	}
 }
 
@@ -28,5 +27,5 @@ func (player Player) GetScore() float64 {
 }
 
 func (player Player) PrintDetails() {
-	fmt.Printf("[%d] %s score: %.1f\n", player.Id, player.Name, player.GetScore())
+	fmt.Printf("[%d] %s score: %.1f\n", player.MyClubId, player.Name, player.GetScore())
 }

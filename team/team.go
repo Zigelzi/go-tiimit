@@ -46,16 +46,16 @@ func (team *Team) PrintPlayers() {
 
 func markAttendance() ([]player.Player, error) {
 	team, err := loadTeamFromFile()
+	if err != nil {
+		fmt.Println(err)
+		return nil, errors.New("failed to load players from a file")
+	}
 
 	fmt.Println("Mark which players are attending to create the teams.")
 	fmt.Println("1 - Attends")
 	fmt.Println("2 - Doesn't attend")
 
 	var attendingPlayers []player.Player
-	if err != nil {
-		fmt.Println(err)
-		return nil, errors.New("failed to load players from a file")
-	}
 
 	for i, player := range team.players {
 		var selection string
@@ -71,7 +71,7 @@ func markAttendance() ([]player.Player, error) {
 }
 
 func loadTeamFromFile() (*Team, error) {
-	fileName := "Kuntofutis_Pelaajat.xlsx"
+	fileName := "202412_Kuntofutis_Pelaajat.xlsx"
 	file, err := excelize.OpenFile(fileName)
 	if err != nil {
 		return nil, err
@@ -86,11 +86,24 @@ func loadTeamFromFile() (*Team, error) {
 	var newTeam Team
 
 	for _, playerRow := range playerRows {
-		playerId, err := strconv.Atoi(playerRow[3])
+		myClubId, err := strconv.Atoi(playerRow[0])
 		if err != nil {
+			fmt.Println("Unable to parse MyClub ID.")
 			return nil, err
 		}
-		player := player.New(int64(playerId), playerRow[1])
+
+		runPower, err := strconv.ParseFloat(playerRow[3], 64)
+		if err != nil {
+			fmt.Println("Unable to parse run power.")
+			return nil, err
+		}
+
+		ballHandling, err := strconv.ParseFloat(playerRow[4], 64)
+		if err != nil {
+			fmt.Println("Unable to parse ball handling.")
+			return nil, err
+		}
+		player := player.New(int64(myClubId), playerRow[1], runPower, ballHandling)
 		newTeam.players = append(newTeam.players, player)
 	}
 
