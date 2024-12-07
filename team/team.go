@@ -3,6 +3,7 @@ package team
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"example.com/go-tiimit/player"
@@ -16,14 +17,17 @@ type Team struct {
 
 func CreatePracticeTeams() (team1 Team, team2 Team, err error) {
 	attendingPlayers, err := markAttendance()
-	team1.name = "Team 1"
-	team2.name = "Team 2"
 	if err != nil {
 		return Team{}, Team{}, err
 	}
+
+	team1.name = "Team 1"
+	team2.name = "Team 2"
 	if len(attendingPlayers) == 0 {
 		return Team{}, Team{}, errors.New("no attending players to distribute")
 	}
+
+	sort.Sort(player.ByScore(attendingPlayers))
 
 	for i, player := range attendingPlayers {
 		if (i+1)&2 == 0 {
