@@ -31,8 +31,8 @@ func selectAction() {
 			break
 		}
 
-		team1.PrintPlayers()
-		team2.PrintPlayers()
+		team1.Details()
+		team2.Details()
 	case "9":
 		return
 	default:

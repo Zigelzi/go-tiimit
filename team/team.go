@@ -16,7 +16,7 @@ type Team struct {
 }
 
 func CreatePracticeTeams() (team1 Team, team2 Team, err error) {
-	attendingPlayers, err := markAttendance()
+	attendingPlayers, err := getAttendees()
 	if err != nil {
 		return Team{}, Team{}, err
 	}
@@ -40,15 +40,48 @@ func CreatePracticeTeams() (team1 Team, team2 Team, err error) {
 	return team1, team2, nil
 }
 
-func (team *Team) PrintPlayers() {
+func (team *Team) Details() {
 	fmt.Printf("%s players\n", team.name)
-	for _, player := range team.players {
-		player.PrintDetails()
+	for i, player := range team.players {
+		fmt.Printf("%d. %s\n", i+1, player.Name)
 	}
-	fmt.Printf("%s has %d players\n\n", team.name, len(team.players))
+	fmt.Printf("\n%s has %d players with total score of %.1f\n\n", team.name, len(team.players), team.score())
 }
 
-func markAttendance() ([]player.Player, error) {
+func (team *Team) score() float64 {
+	totalScore := 0.0
+	for _, player := range team.players {
+		totalScore += player.GetScore()
+	}
+	return totalScore
+}
+
+func getAttendees() ([]player.Player, error) {
+	var attendingPlayers []player.Player
+
+	fmt.Println("How do you want to mark the attending players?")
+	fmt.Println("1 - Mark attendance manually")
+	fmt.Println("2 - Load attendees from a file")
+
+	var attendanceInput string
+	fmt.Scanln(&attendanceInput)
+	switch attendanceInput {
+	case "1":
+		attendingPlayers, err := markAttendeesManually()
+		if err != nil {
+			fmt.Println("Failed to mark attendees manually")
+			return nil, err
+		}
+		return attendingPlayers, err
+	default:
+		fmt.Printf("No action for %s. Select action from the list\n\n", attendanceInput)
+		getAttendees()
+	}
+
+	return attendingPlayers, nil
+}
+
+func markAttendeesManually() ([]player.Player, error) {
 	team, err := loadTeamFromFile()
 	if err != nil {
 		fmt.Println(err)
@@ -70,7 +103,6 @@ func markAttendance() ([]player.Player, error) {
 			attendingPlayers = append(attendingPlayers, player)
 		}
 	}
-
 	return attendingPlayers, nil
 }
 
