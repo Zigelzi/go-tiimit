@@ -82,7 +82,7 @@ func getAttendees() ([]player.Player, error) {
 }
 
 func markAttendeesManually() ([]player.Player, error) {
-	team, err := loadTeamFromFile()
+	team, err := loadTeamFromFile("202412_Kuntofutis_Pelaajat.xlsx")
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("failed to load players from a file")
@@ -99,15 +99,19 @@ func markAttendeesManually() ([]player.Player, error) {
 
 		fmt.Printf("%s (%d/%d) \n", player.Name, i+1, len(team.players))
 		fmt.Scanln(&selection)
-		if selection == "1" {
+		switch selection {
+		case "1":
 			attendingPlayers = append(attendingPlayers, player)
+		case "2":
+			continue
+		default:
+			fmt.Printf("No action for %s. Select action from the list.\n\n", selection)
 		}
 	}
 	return attendingPlayers, nil
 }
 
-func loadTeamFromFile() (*Team, error) {
-	fileName := "202412_Kuntofutis_Pelaajat.xlsx"
+func loadTeamFromFile(fileName string) (*Team, error) {
 	file, err := excelize.OpenFile(fileName)
 	if err != nil {
 		return nil, err
