@@ -61,7 +61,7 @@ func getAttendees() ([]player.Player, error) {
 
 	fmt.Println("How do you want to mark the attending players?")
 	fmt.Println("1 - Mark attendance manually")
-	fmt.Println("2 - Load attendees from a file")
+	// fmt.Println("2 - Load attendees from a file")
 
 	var attendanceInput string
 	fmt.Scanln(&attendanceInput)
@@ -91,10 +91,14 @@ func markAttendeesManually() ([]player.Player, error) {
 	fmt.Println("Mark which players are attending to create the teams.")
 	fmt.Println("1 - Attends")
 	fmt.Println("2 - Doesn't attend")
+	fmt.Println("3 - Go to previous player")
 
 	var attendingPlayers []player.Player
 
-	for i, player := range team.players {
+	i := 0
+AttendanceLoop:
+	for {
+		player := team.players[i]
 		var selection string
 
 		fmt.Printf("%s (%d/%d) \n", player.Name, i+1, len(team.players))
@@ -102,8 +106,24 @@ func markAttendeesManually() ([]player.Player, error) {
 		switch selection {
 		case "1":
 			attendingPlayers = append(attendingPlayers, player)
+			if i+1 < len(team.players) {
+				i += 1
+			} else {
+				break AttendanceLoop
+			}
 		case "2":
-			continue
+			if i+1 < len(team.players) {
+				i += 1
+			} else {
+				break AttendanceLoop
+			}
+		case "3":
+			if i-1 >= 0 {
+				i -= 1
+			} else {
+				fmt.Println("Can't go back. No previous player exists")
+			}
+
 		default:
 			fmt.Printf("No action for %s. Select action from the list.\n\n", selection)
 		}
