@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strconv"
 
 	"example.com/go-tiimit/player"
-	"github.com/xuri/excelize/v2"
 )
 
 type Team struct {
@@ -82,7 +80,7 @@ func getAttendees() ([]player.Player, error) {
 }
 
 func markAttendeesManually() ([]player.Player, error) {
-	team, err := loadTeamFromFile("202412_Kuntofutis_Pelaajat.xlsx")
+	players, err := player.Load("202412_Kuntofutis_Pelaajat.xlsx")
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("failed to load players from a file")
@@ -98,21 +96,21 @@ func markAttendeesManually() ([]player.Player, error) {
 	i := 0
 AttendanceLoop:
 	for {
-		player := team.players[i]
+		player := players[i]
 		var selection string
 
-		fmt.Printf("%s (%d/%d) \n", player.Name, i+1, len(team.players))
+		fmt.Printf("%s (%d/%d) \n", player.Name, i+1, len(players))
 		fmt.Scanln(&selection)
 		switch selection {
 		case "1":
 			attendingPlayers = append(attendingPlayers, player)
-			if i+1 < len(team.players) {
+			if i+1 < len(players) {
 				i += 1
 			} else {
 				break AttendanceLoop
 			}
 		case "2":
-			if i+1 < len(team.players) {
+			if i+1 < len(players) {
 				i += 1
 			} else {
 				break AttendanceLoop
@@ -129,51 +127,4 @@ AttendanceLoop:
 		}
 	}
 	return attendingPlayers, nil
-}
-
-func loadTeamFromFile(fileName string) (*Team, error) {
-	file, err := excelize.OpenFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-	defer closeFile(file)
-
-	rows, err := file.GetRows("Tapahtuma")
-	if err != nil {
-		return nil, err
-	}
-	playerRows := rows[4:]
-	var newTeam Team
-
-	for _, playerRow := range playerRows {
-		myClubId, err := strconv.Atoi(playerRow[0])
-		if err != nil {
-			fmt.Println("Unable to parse MyClub ID.")
-			return nil, err
-		}
-
-		runPower, err := strconv.ParseFloat(playerRow[3], 64)
-		if err != nil {
-			fmt.Println("Unable to parse run power.")
-			return nil, err
-		}
-
-		ballHandling, err := strconv.ParseFloat(playerRow[4], 64)
-		if err != nil {
-			fmt.Println("Unable to parse ball handling.")
-			return nil, err
-		}
-		player := player.New(int64(myClubId), playerRow[1], runPower, ballHandling)
-		newTeam.players = append(newTeam.players, player)
-	}
-
-	fmt.Printf("Loaded %d players from file %s\n", len(newTeam.players), fileName)
-	return &newTeam, nil
-}
-
-func closeFile(openFile *excelize.File) {
-	if err := openFile.Close(); err != nil {
-		fmt.Println(err)
-		return
-	}
 }
