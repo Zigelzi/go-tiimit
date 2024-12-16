@@ -88,3 +88,19 @@ func (practice *Practice) Add(attendingPlayer player.Player) error {
 		return fmt.Errorf("player %s already exists", attendingPlayer.Name)
 	}
 }
+
+func (p *Practice) CreateTeams() error {
+	team1, team2, err := team.Distribute(p.Players)
+	if err != nil {
+		return err
+	}
+	p.Teams[0] = team1
+	p.Teams[1] = team2
+	return nil
+}
+
+func (p *Practice) PrintTeams() {
+	for _, team := range p.Teams {
+		team.Details()
+	}
+}

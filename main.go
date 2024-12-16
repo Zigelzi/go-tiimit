@@ -6,7 +6,6 @@ import (
 
 	"example.com/go-tiimit/db"
 	"example.com/go-tiimit/practice"
-	"example.com/go-tiimit/team"
 )
 
 func main() {
@@ -24,19 +23,15 @@ func selectAction() {
 	}
 	switch action {
 	case "1":
-
-		team1, team2, err := team.CreatePracticeTeams()
-
+		practice := practice.New()
+		practice.GetAttendees()
+		err := practice.CreateTeams()
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
+		practice.PrintTeams()
 
-		team1.Details()
-		team2.Details()
-	case "3":
-		practice := practice.New()
-		practice.GetAttendees()
 	case "9":
 		return
 	default:
