@@ -13,7 +13,7 @@ func (team *Team) Details() {
 func (team *Team) score() float64 {
 	totalScore := 0.0
 	for _, player := range team.players {
-		totalScore += player.GetScore()
+		totalScore += player.Score()
 	}
 	return totalScore
 }
