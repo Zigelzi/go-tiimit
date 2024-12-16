@@ -43,18 +43,25 @@ AttendanceLoop:
 		fmt.Scanln(&selection)
 		switch selection {
 		case "1":
-			p.Add(player)
+			err := p.Add(player)
+			if err != nil {
+				fmt.Println(err)
+			}
+
 			if i+1 < len(players) {
 				i += 1
 			} else {
 				break AttendanceLoop
 			}
+
 		case "2":
 			if i+1 < len(players) {
 				i += 1
 			} else {
+
 				break AttendanceLoop
 			}
+
 		case "3":
 			if i-1 >= 0 {
 				i -= 1
@@ -69,13 +76,15 @@ AttendanceLoop:
 	return nil
 }
 
-func (practice *Practice) Add(attendingPlayer player.Player) {
+func (practice *Practice) Add(attendingPlayer player.Player) error {
 	index := slices.IndexFunc(practice.Players, func(searchedPlayer player.Player) bool {
 		return attendingPlayer.MyClubId == searchedPlayer.MyClubId
 	})
 
 	if index == -1 {
 		practice.Players = append(practice.Players, attendingPlayer)
-		fmt.Println("Added player ", attendingPlayer.Name)
+		return nil
+	} else {
+		return fmt.Errorf("player %s already exists", attendingPlayer.Name)
 	}
 }
