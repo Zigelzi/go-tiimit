@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"example.com/go-tiimit/db"
+	"example.com/go-tiimit/practice"
 	"example.com/go-tiimit/team"
 )
 
@@ -33,6 +34,9 @@ func selectAction() {
 
 		team1.Details()
 		team2.Details()
+	case "3":
+		practice := practice.New()
+		practice.GetAttendees()
 	case "9":
 		return
 	default:
