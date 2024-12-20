@@ -1,4 +1,4 @@
-module example.com/go-tiimit
+module github.com/Zigelzi/go-tiimit
 
 go 1.23.2
 

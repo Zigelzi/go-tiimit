@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sort"
 
-	"example.com/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/player"
 )
 
 func Distribute(players []player.Player) (team1 Team, team2 Team, err error) {

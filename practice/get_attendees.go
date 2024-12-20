@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"example.com/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/player"
 )
 
 func (p *Practice) GetAttendees() error {

@@ -1,6 +1,6 @@
 package practice
 
-import "example.com/go-tiimit/team"
+import "github.com/Zigelzi/go-tiimit/team"
 
 func (p *Practice) CreateTeams() error {
 	team1, team2, err := team.Distribute(p.Players)

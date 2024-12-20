@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"example.com/go-tiimit/db"
-	"example.com/go-tiimit/practice"
+	"github.com/Zigelzi/go-tiimit/db"
+	"github.com/Zigelzi/go-tiimit/practice"
 )
 
 func main() {

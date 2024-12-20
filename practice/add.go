@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"example.com/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/player"
 )
 
 func (practice *Practice) Add(attendingPlayer player.Player) error {
