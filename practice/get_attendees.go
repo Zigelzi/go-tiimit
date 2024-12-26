@@ -32,6 +32,7 @@ AttendanceLoop:
 			err := p.Add(player)
 			if err != nil {
 				fmt.Println(err)
+				break
 			}
 
 			if i+1 < len(players) {
@@ -41,6 +42,11 @@ AttendanceLoop:
 			}
 
 		case "2":
+			err := p.Remove(player)
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
 			if i+1 < len(players) {
 				i += 1
 			} else {
@@ -58,6 +64,7 @@ AttendanceLoop:
 		default:
 			fmt.Printf("No action for %s. Select action from the list.\n\n", selection)
 		}
+
 	}
 	return nil
 }
