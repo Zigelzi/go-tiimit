@@ -37,9 +37,9 @@ AttendanceLoop:
 
 			if i+1 < len(players) {
 				i += 1
-			} else {
-				break AttendanceLoop
+				continue
 			}
+			break AttendanceLoop
 
 		case "2":
 			err := p.Remove(player)
@@ -49,10 +49,9 @@ AttendanceLoop:
 			}
 			if i+1 < len(players) {
 				i += 1
-			} else {
-
-				break AttendanceLoop
+				continue
 			}
+			break AttendanceLoop
 
 		case "3":
 			if i-1 >= 0 {
