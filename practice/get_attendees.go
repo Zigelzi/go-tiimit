@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/Zigelzi/go-tiimit/player"
+	"github.com/fatih/color"
 )
 
 func (p *Practice) GetAttendees() error {
 	players, err := player.Load("202412_Kuntofutis_Pelaajat.xlsx")
 	if err != nil {
-		fmt.Println(err)
 		return errors.New("failed to load players from a file")
 	}
 
@@ -25,15 +25,17 @@ AttendanceLoop:
 		player := players[i]
 		var selection string
 
-		fmt.Printf("%s (%d/%d) \n", player.Name, i+1, len(players))
+		fmt.Printf("\n%s (%d/%d) \n", player.Name, i+1, len(players))
 		fmt.Scanln(&selection)
 		switch selection {
 		case "1":
 			err := p.Add(player)
 			if err != nil {
-				fmt.Println(err)
+				color.Red(err.Error())
 				break
 			}
+
+			color.Green("Added player '%s' to attending players. Now %d players are attending", player.Name, len(p.Players))
 
 			if i+1 < len(players) {
 				i += 1
@@ -42,11 +44,15 @@ AttendanceLoop:
 			break AttendanceLoop
 
 		case "2":
-			err := p.Remove(player)
-			if err != nil {
-				fmt.Println(err)
-				break
+			isRemoved := p.Remove(player)
+
+			if isRemoved {
+				color.Yellow("Removed player '%s' from attending players. Now %d players are attending", player.Name, len(p.Players))
+			} else {
+				color.Yellow("Skipped player '%s'. Now %d players are attending", player.Name, len(p.Players))
+
 			}
+
 			if i+1 < len(players) {
 				i += 1
 				continue
@@ -57,11 +63,11 @@ AttendanceLoop:
 			if i-1 >= 0 {
 				i -= 1
 			} else {
-				fmt.Println("Can't go back. No previous player exists")
+				color.Red("Can't go back. No previous player exists")
 			}
 
 		default:
-			fmt.Printf("No action for %s. Select action from the list.\n\n", selection)
+			color.Red("No action for %s. Select action from the list.\n\n", selection)
 		}
 
 	}
