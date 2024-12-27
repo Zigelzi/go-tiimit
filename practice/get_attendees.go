@@ -1,7 +1,6 @@
 package practice
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Zigelzi/go-tiimit/player"
@@ -11,7 +10,7 @@ import (
 func (p *Practice) GetAttendees() error {
 	players, err := player.Load("202412_Kuntofutis_Pelaajat.xlsx")
 	if err != nil {
-		return errors.New("failed to load players from a file")
+		return fmt.Errorf("failed to load players from a file %s: %w", "202412_Kuntofutis_Pelaajat.xlsx", err)
 	}
 
 	fmt.Println("Mark which players are attending to create the teams.")
@@ -37,6 +36,7 @@ AttendanceLoop:
 
 			color.Green("Added player '%s' to attending players. Now %d players are attending", player.Name, len(p.Players))
 
+			// Move to next unassigned player if it exists. If it doesn't it means that user has assigned all players.
 			if i+1 < len(players) {
 				i += 1
 				continue
@@ -53,6 +53,7 @@ AttendanceLoop:
 
 			}
 
+			// Move to next unassigned player if it exists. If it doesn't it means that user has assigned all players.
 			if i+1 < len(players) {
 				i += 1
 				continue
