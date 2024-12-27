@@ -41,6 +41,11 @@ func Load(fileName string) ([]Player, error) {
 		}
 		player := New(int64(myClubId), playerRow[1], runPower, ballHandling)
 		players = append(players, player)
+
+		err = Insert(player)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	fmt.Printf("Loaded %d players from file %s\n", len(players), fileName)
