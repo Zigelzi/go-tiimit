@@ -20,6 +20,7 @@ func Init() {
 		panic("Could not connect do database")
 	}
 
+	// Verify that connection is opened successfully.
 	if err := DB.Ping(); err != nil {
 		fmt.Printf("Failed to connect to database: %v\n", err)
 	}

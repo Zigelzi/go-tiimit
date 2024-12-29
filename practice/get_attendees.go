@@ -8,9 +8,9 @@ import (
 )
 
 func (p *Practice) GetAttendees() error {
-	players, err := player.Load("202412_Kuntofutis_Pelaajat.xlsx")
+	players, err := player.GetAll()
 	if err != nil {
-		return fmt.Errorf("failed to load players from a file %s: %w", "202412_Kuntofutis_Pelaajat.xlsx", err)
+		return fmt.Errorf("failed to load players %w", err)
 	}
 
 	fmt.Println("Mark which players are attending to create the teams.")
