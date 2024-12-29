@@ -36,9 +36,8 @@ AttendanceLoop:
 
 		switch result {
 		case actions[0]:
-			isAdded := p.Add(player)
 
-			if isAdded {
+			if p.Add(player) {
 				color.Green("Added player '%s' to attending players. Now %d players are attending", player.Name, len(p.Players))
 			} else {
 				color.Yellow("Skipped '%s' as they're already attending. Now %d players are attending", player.Name, len(p.Players))
@@ -52,9 +51,8 @@ AttendanceLoop:
 			break AttendanceLoop
 
 		case actions[1]:
-			isRemoved := p.Remove(player)
 
-			if isRemoved {
+			if p.Remove(player) {
 				color.Yellow("Removed player '%s' from attending players. Now %d players are attending", player.Name, len(p.Players))
 			} else {
 				color.Yellow("Skipped player '%s'. Now %d players are attending", player.Name, len(p.Players))
