@@ -2,9 +2,11 @@ package practice
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Zigelzi/go-tiimit/player"
 	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
 )
 
 func (p *Practice) GetAttendees() error {
@@ -13,21 +15,27 @@ func (p *Practice) GetAttendees() error {
 		return fmt.Errorf("failed to load players %w", err)
 	}
 
-	fmt.Println("Mark which players are attending to create the teams.")
-	fmt.Println("1 - Attends")
-	fmt.Println("2 - Doesn't attend")
-	fmt.Println("3 - Go to previous player")
+	playerIndex := 0
+	actions := []string{"Attends", "Doesn't attend", "Go to previous player"}
+	prompt := promptui.Select{
+		Items:        actions,
+		HideSelected: true,
+	}
 
-	i := 0
+	printInstructions()
 AttendanceLoop:
 	for {
-		player := players[i]
-		var selection string
+		player := players[playerIndex]
+		prompt.Label = fmt.Sprintf("%s (%d/%d)", player.Name, playerIndex+1, len(players))
 
-		fmt.Printf("\n%s (%d/%d) \n", player.Name, i+1, len(players))
-		fmt.Scanln(&selection)
-		switch selection {
-		case "1":
+		_, result, err := prompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt failed %v\n", err)
+			break
+		}
+
+		switch result {
+		case actions[0]:
 			err := p.Add(player)
 			if err != nil {
 				color.Red(err.Error())
@@ -37,13 +45,13 @@ AttendanceLoop:
 			color.Green("Added player '%s' to attending players. Now %d players are attending", player.Name, len(p.Players))
 
 			// Move to next unassigned player if it exists. If it doesn't it means that user has assigned all players.
-			if i+1 < len(players) {
-				i += 1
+			if playerIndex+1 < len(players) {
+				playerIndex += 1
 				continue
 			}
 			break AttendanceLoop
 
-		case "2":
+		case actions[1]:
 			isRemoved := p.Remove(player)
 
 			if isRemoved {
@@ -54,23 +62,28 @@ AttendanceLoop:
 			}
 
 			// Move to next unassigned player if it exists. If it doesn't it means that user has assigned all players.
-			if i+1 < len(players) {
-				i += 1
+			if playerIndex+1 < len(players) {
+				playerIndex += 1
 				continue
 			}
 			break AttendanceLoop
 
-		case "3":
-			if i-1 >= 0 {
-				i -= 1
+		case actions[2]:
+			if playerIndex-1 >= 0 {
+				playerIndex -= 1
 			} else {
 				color.Red("Can't go back. No previous player exists")
 			}
-
-		default:
-			color.Red("No action for %s. Select action from the list.\n\n", selection)
 		}
 
 	}
 	return nil
+}
+
+func printInstructions() {
+	instruction := "Mark players attendance to the practice"
+
+	fmt.Println(strings.Repeat("=", len(instruction)))
+	fmt.Println(instruction)
+	fmt.Println(strings.Repeat("=", len(instruction)))
 }
