@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Zigelzi/go-tiimit/db"
+	"github.com/Zigelzi/go-tiimit/player"
 	"github.com/Zigelzi/go-tiimit/practice"
 	"github.com/manifoldco/promptui"
 )
@@ -20,7 +21,7 @@ func main() {
 }
 
 func selectAction() bool {
-	actions := []string{"Create teams for a practice", "Exit"}
+	actions := []string{"Create teams for a practice", "Import players to club", "Exit"}
 	prompt := promptui.Select{
 		Label: "What do you want to do",
 		Items: actions,
@@ -42,6 +43,11 @@ func selectAction() bool {
 		}
 		practice.PrintTeams()
 	case actions[1]:
+		err := player.ImportToClub("202412_Kuntofutis_Pelaajat.xlsx")
+		if err != nil {
+			fmt.Println(err)
+		}
+	case actions[len(actions)-1]:
 		return false
 	}
 	return true

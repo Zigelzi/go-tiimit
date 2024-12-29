@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Zigelzi/go-tiimit/db"
 	"github.com/xuri/excelize/v2"
 )
 
-func Load(fileName string) error {
+func ImportToClub(fileName string) error {
 	file, err := excelize.OpenFile(fileName)
 	if err != nil {
 		return err
@@ -20,7 +21,7 @@ func Load(fileName string) error {
 	}
 	// List of players in MyClub start on row 5. Rows before that are other details or empty.
 	playerRows := rows[4:]
-	var players []Player
+	var addedPlayers []Player
 
 	for i, playerRow := range playerRows {
 		name := playerRow[1]
@@ -42,15 +43,24 @@ func Load(fileName string) error {
 			return err
 		}
 		player := New(int64(myClubId), name, runPower, ballHandling)
-		players = append(players, player)
 
-		err = Insert(player)
+		isExisting, err := isExistingPlayer(player.MyClubId)
 		if err != nil {
+			fmt.Printf("failed to check existing player on row %d: %s\n", i, err)
 			return err
+		}
+
+		if !isExisting {
+			err := Insert(player)
+			if err != nil {
+				fmt.Printf("failed to insert player on row %d: %s\n", i, err)
+				continue
+			}
+			addedPlayers = append(addedPlayers, player)
 		}
 	}
 
-	fmt.Printf("Loaded %d players from file %s\n", len(players), fileName)
+	fmt.Printf("Loaded %d players from file %s\n", len(addedPlayers), fileName)
 	return nil
 }
 
@@ -59,4 +69,14 @@ func closeFile(openFile *excelize.File) {
 		fmt.Println(err)
 		return
 	}
+}
+
+func isExistingPlayer(myClubId int64) (isExisting bool, err error) {
+	query := "SELECT EXISTS (SELECT 1 FROM players WHERE myclub_id=?)"
+	err = db.DB.QueryRow(query, myClubId).Scan(&isExisting)
+	if err != nil {
+		return isExisting, err
+	}
+	return isExisting, nil
+
 }
