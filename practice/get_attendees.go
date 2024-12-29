@@ -36,13 +36,13 @@ AttendanceLoop:
 
 		switch result {
 		case actions[0]:
-			err := p.Add(player)
-			if err != nil {
-				color.Red(err.Error())
-				break
-			}
+			isAdded := p.Add(player)
 
-			color.Green("Added player '%s' to attending players. Now %d players are attending", player.Name, len(p.Players))
+			if isAdded {
+				color.Green("Added player '%s' to attending players. Now %d players are attending", player.Name, len(p.Players))
+			} else {
+				color.Yellow("Skipped '%s' as they're already attending. Now %d players are attending", player.Name, len(p.Players))
+			}
 
 			// Move to next unassigned player if it exists. If it doesn't it means that user has assigned all players.
 			if playerIndex+1 < len(players) {
