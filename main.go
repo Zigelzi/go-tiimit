@@ -1,30 +1,38 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Zigelzi/go-tiimit/db"
 	"github.com/Zigelzi/go-tiimit/practice"
+	"github.com/manifoldco/promptui"
 )
 
 func main() {
 	db.Init()
 	db.CreateTables()
 	defer db.DB.Close()
-	selectAction()
+	for {
+		if !selectAction() {
+			break
+		}
+	}
 }
 
-func selectAction() {
-	fmt.Println("What do you want to do?")
-	fmt.Println("1 - Create teams for a practice")
-	fmt.Println("9 - Exit")
-	action, err := getAction()
-	if err != nil {
-		fmt.Println(err)
+func selectAction() bool {
+	actions := []string{"Create teams for a practice", "Exit"}
+	prompt := promptui.Select{
+		Label: "What do you want to do",
+		Items: actions,
 	}
-	switch action {
-	case "1":
+	_, result, err := prompt.Run()
+	if err != nil {
+		fmt.Println("Unable to get input for selecting action")
+		return false
+	}
+
+	switch result {
+	case actions[0]:
 		practice := practice.New()
 		practice.GetAttendees()
 		err := practice.CreateTeams()
@@ -33,21 +41,8 @@ func selectAction() {
 			break
 		}
 		practice.PrintTeams()
-
-	case "9":
-		return
-	default:
-		fmt.Printf("No action for %s. Select action from the list.\n\n", action)
+	case actions[1]:
+		return false
 	}
-	selectAction()
-}
-
-func getAction() (action string, err error) {
-
-	fmt.Scanln(&action)
-	if action == "" {
-		return "", errors.New("no input value provided")
-	}
-
-	return action, nil
+	return true
 }
