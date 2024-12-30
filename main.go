@@ -21,7 +21,13 @@ func main() {
 }
 
 func selectAction() bool {
-	actions := []string{"Create teams for a practice", "Import players to club", "Exit"}
+	// TODO: Move creation method to it's own function.
+	actions := []string{
+		"Create teams for a practice manually",
+		"Create teams for a practice by importing MyClub attendees",
+		"Import players to club",
+		"Exit",
+	}
 	prompt := promptui.Select{
 		Label: "What do you want to do",
 		Items: actions,
@@ -35,7 +41,7 @@ func selectAction() bool {
 	switch result {
 	case actions[0]:
 		practice := practice.New()
-		practice.GetAttendees()
+		practice.MarkAttendees()
 		err := practice.CreateTeams()
 		if err != nil {
 			fmt.Println(err)
@@ -43,6 +49,15 @@ func selectAction() bool {
 		}
 		practice.PrintTeams()
 	case actions[1]:
+		practice := practice.New()
+		practice.ImportAttendees()
+		err := practice.CreateTeams()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		practice.PrintTeams()
+	case actions[2]:
 		err := player.ImportToClub("202412_Kuntofutis_Pelaajat.xlsx")
 		if err != nil {
 			fmt.Println(err)

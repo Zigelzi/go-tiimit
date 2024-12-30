@@ -9,7 +9,7 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-func (p *Practice) GetAttendees() error {
+func (p *Practice) MarkAttendees() error {
 	players, err := player.GetAll()
 	if err != nil {
 		return fmt.Errorf("failed to load players %w", err)
