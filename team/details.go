@@ -1,13 +1,20 @@
 package team
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func (team *Team) Details() {
+
+	teamDetails := fmt.Sprintf("%s has %d players with total score of %.1f", team.name, len(team.players), team.score())
+
 	fmt.Printf("%s players\n", team.name)
 	for i, player := range team.players {
 		fmt.Printf("%d. %s\n", i+1, player.Name)
 	}
-	fmt.Printf("\n%s has %d players with total score of %.1f\n\n", team.name, len(team.players), team.score())
+	fmt.Println(teamDetails)
+	fmt.Println(strings.Repeat("=", len(teamDetails)))
 }
 
 func (team *Team) score() float64 {
