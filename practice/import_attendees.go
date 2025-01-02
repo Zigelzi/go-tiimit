@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Zigelzi/go-tiimit/file"
 	"github.com/Zigelzi/go-tiimit/player"
 	"github.com/xuri/excelize/v2"
 )
@@ -16,6 +17,8 @@ const (
 	AttendanceUnknown
 )
 
+const attendanceDirectory = "attendance-files/"
+
 var attendanceName = map[string]AttendanceStatus{
 	"Osallistuu":   AttendanceIn,
 	"Ei osallistu": AttendanceOut,
@@ -23,8 +26,12 @@ var attendanceName = map[string]AttendanceStatus{
 }
 
 func (p *Practice) ImportAttendees() error {
-	fileName := "vjs-Kuntofutis-2024-12-09-VJS Kuntofutis.xlsx"
-	file, err := excelize.OpenFile(fileName)
+	fileName, err := file.Select(attendanceDirectory)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	file, err := excelize.OpenFile(attendanceDirectory + fileName)
 	if err != nil {
 		return fmt.Errorf("unable to open file to import attendees from a file %s: %w", fileName, err)
 	}
