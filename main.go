@@ -21,7 +21,7 @@ func main() {
 }
 
 func selectAction() bool {
-	// TODO: Move creation method to it's own function.
+	// TODO: Move selecting create/import action to it's own function.
 	actions := []string{
 		"Create teams for a practice manually",
 		"Create teams for a practice by importing MyClub attendees",
@@ -58,7 +58,7 @@ func selectAction() bool {
 		}
 		practice.PrintTeams()
 	case actions[2]:
-		err := player.ImportToClub("202412_Kuntofutis_Pelaajat.xlsx")
+		err := player.ImportToClub()
 		if err != nil {
 			fmt.Println(err)
 		}

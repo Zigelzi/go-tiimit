@@ -5,11 +5,19 @@ import (
 	"strconv"
 
 	"github.com/Zigelzi/go-tiimit/db"
+	"github.com/Zigelzi/go-tiimit/file"
 	"github.com/xuri/excelize/v2"
 )
 
-func ImportToClub(fileName string) error {
-	file, err := excelize.OpenFile(fileName)
+const playerDirectory = "player-files/"
+
+func ImportToClub() error {
+	fileName, err := file.Select(playerDirectory)
+
+	if err != nil {
+		return err
+	}
+	file, err := excelize.OpenFile(playerDirectory + fileName)
 	if err != nil {
 		return err
 	}
