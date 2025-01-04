@@ -6,7 +6,6 @@ import (
 
 	"github.com/Zigelzi/go-tiimit/file"
 	"github.com/Zigelzi/go-tiimit/player"
-	"github.com/xuri/excelize/v2"
 )
 
 type AttendanceStatus int
@@ -31,19 +30,12 @@ func (p *Practice) ImportAttendees() error {
 		fmt.Println(err)
 		return err
 	}
-	file, err := excelize.OpenFile(attendanceDirectory + fileName)
-	if err != nil {
-		return fmt.Errorf("unable to open file to import attendees from a file %s: %w", fileName, err)
-	}
-	defer closeFile(file)
 
-	rows, err := file.GetRows("Tapahtuma")
+	playerRows, err := file.ImportRows(attendanceDirectory + fileName)
 	if err != nil {
-		return fmt.Errorf("unable to read rows to import attendees from a file: %w", err)
+		return err
 	}
 
-	// List of players in MyClub start on row 5. Rows before that are other details or empty.
-	playerRows := rows[4:]
 	var addedPlayers []player.Player
 
 	for _, playerRow := range playerRows {
@@ -60,13 +52,6 @@ func (p *Practice) ImportAttendees() error {
 
 	fmt.Printf("Imported %d players from file %s\n", len(addedPlayers), fileName)
 	return nil
-}
-
-func closeFile(openFile *excelize.File) {
-	if err := openFile.Close(); err != nil {
-		fmt.Println(err)
-		return
-	}
 }
 
 func getPlayer(rowContent string) (player.Player, error) {

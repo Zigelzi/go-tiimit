@@ -6,7 +6,6 @@ import (
 
 	"github.com/Zigelzi/go-tiimit/db"
 	"github.com/Zigelzi/go-tiimit/file"
-	"github.com/xuri/excelize/v2"
 )
 
 const playerDirectory = "player-files/"
@@ -17,18 +16,12 @@ func ImportToClub() error {
 	if err != nil {
 		return err
 	}
-	file, err := excelize.OpenFile(playerDirectory + fileName)
-	if err != nil {
-		return err
-	}
-	defer closeFile(file)
 
-	rows, err := file.GetRows("Tapahtuma")
+	playerRows, err := file.ImportRows(playerDirectory + fileName)
 	if err != nil {
 		return err
 	}
-	// List of players in MyClub start on row 5. Rows before that are other details or empty.
-	playerRows := rows[4:]
+
 	var addedPlayers []Player
 
 	for i, playerRow := range playerRows {
@@ -70,13 +63,6 @@ func ImportToClub() error {
 
 	fmt.Printf("Loaded %d players from file %s\n", len(addedPlayers), fileName)
 	return nil
-}
-
-func closeFile(openFile *excelize.File) {
-	if err := openFile.Close(); err != nil {
-		fmt.Println(err)
-		return
-	}
 }
 
 func isExistingPlayer(myClubId int64) (isExisting bool, err error) {
