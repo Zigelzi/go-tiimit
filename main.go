@@ -41,21 +41,35 @@ func selectAction() bool {
 	switch result {
 	case actions[0]:
 		practice := practice.New()
-		practice.MarkAttendees()
-		err := practice.CreateTeams()
+
+		err := practice.MarkAttendees()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		err = practice.CreateTeams()
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
 		practice.PrintTeams()
+
 	case actions[1]:
 		practice := practice.New()
-		practice.ImportAttendees()
-		err := practice.CreateTeams()
+
+		err := practice.ImportAttendees()
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
+
+		err = practice.CreateTeams()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
 		practice.PrintTeams()
 	case actions[2]:
 		err := player.ImportToClub()
@@ -63,6 +77,7 @@ func selectAction() bool {
 			fmt.Println(err)
 		}
 	case actions[len(actions)-1]:
+		// Exit should be always last action
 		return false
 	}
 	return true

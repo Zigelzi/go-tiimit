@@ -50,7 +50,7 @@ func (p *Practice) ImportAttendees() error {
 		}
 	}
 
-	fmt.Printf("Imported %d players from file %s\n", len(addedPlayers), fileName)
+	fmt.Printf("Imported %d players to practice from a file %s\n\n", len(addedPlayers), fileName)
 	return nil
 }
 
