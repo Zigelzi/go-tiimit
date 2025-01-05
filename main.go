@@ -25,7 +25,7 @@ func selectAction() bool {
 	actions := []string{
 		"Create teams for a practice manually",
 		"Create teams for a practice by importing MyClub attendees",
-		"Import players to club",
+		"Manage players",
 		"Exit",
 	}
 	prompt := promptui.Select{
@@ -72,7 +72,7 @@ func selectAction() bool {
 
 		practice.PrintTeams()
 	case actions[2]:
-		err := player.ImportToClub()
+		err := player.Manage()
 		if err != nil {
 			fmt.Println(err)
 		}
