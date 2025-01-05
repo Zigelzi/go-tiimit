@@ -6,6 +6,7 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
+// Manage lets user select and execute player management actions.
 func Manage() error {
 	actions := []string{
 		"Import players to club",
@@ -29,7 +30,12 @@ func Manage() error {
 			fmt.Println(err)
 		}
 	case actions[1]:
-		fmt.Println("Player goalie status updated!")
+		chosenPlayer, err := choose("Select player to edit goalie status of")
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		fmt.Printf("You chose player: %s with id of %d", chosenPlayer.Name, chosenPlayer.id)
 	case actions[len(actions)-1]:
 		return nil
 	}
