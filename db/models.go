@@ -7,7 +7,8 @@ func CreateTables() {
 		name TEXT NOT NULL,
 		myclub_id INTEGER NOT NULL UNIQUE,
 		run_power REAL NOT NULL,
-		ball_handling REAL NOT NULL
+		ball_handling REAL NOT NULL,
+		is_goalie BOOLEAN NOT NULL DEFAULT FALSE
 	);
 	`
 

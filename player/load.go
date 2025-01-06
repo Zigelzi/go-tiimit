@@ -44,7 +44,7 @@ func ImportToClub() error {
 			fmt.Printf("Unable to parse ball handling on row %d.", i)
 			return err
 		}
-		player := New(int64(myClubId), name, runPower, ballHandling)
+		player := New(int64(myClubId), name, runPower, ballHandling, false)
 
 		isExisting, err := isExistingPlayer(player.MyClubId)
 		if err != nil {

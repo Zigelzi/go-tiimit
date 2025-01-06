@@ -35,7 +35,7 @@ func Manage() error {
 			fmt.Println(err)
 			return err
 		}
-		fmt.Printf("You chose player: %s with id of %d", chosenPlayer.Name, chosenPlayer.id)
+		fmt.Printf("You chose player: %s with id of %d\n", chosenPlayer.Name, chosenPlayer.id)
 	case actions[len(actions)-1]:
 		return nil
 	}
