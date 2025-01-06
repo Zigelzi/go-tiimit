@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Zigelzi/go-tiimit/db"
 	"github.com/Zigelzi/go-tiimit/file"
 )
 
@@ -46,7 +45,7 @@ func ImportToClub() error {
 		}
 		player := New(int64(myClubId), name, runPower, ballHandling, false)
 
-		isExisting, err := isExistingPlayer(player.MyClubId)
+		isExisting, err := IsExisting(player.MyClubId)
 		if err != nil {
 			fmt.Printf("failed to check existing player on row %d: %s\n", i, err)
 			return err
@@ -66,14 +65,4 @@ func ImportToClub() error {
 
 	fmt.Printf("Loaded %d players which of %d were imported to database from a file %s\n\n", len(loadedPlayers), len(importedPlayers), fileName)
 	return nil
-}
-
-func isExistingPlayer(myClubId int64) (isExisting bool, err error) {
-	query := "SELECT EXISTS (SELECT 1 FROM players WHERE myclub_id=?)"
-	err = db.DB.QueryRow(query, myClubId).Scan(&isExisting)
-	if err != nil {
-		return isExisting, err
-	}
-	return isExisting, nil
-
 }
