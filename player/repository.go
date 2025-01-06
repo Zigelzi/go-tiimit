@@ -19,7 +19,7 @@ func GetAll() (players []Player, err error) {
 		rowNumber++
 		err := rows.Scan(&player.id, &player.Name, &player.MyClubId, &player.runPower, &player.ballHandling)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan player on row: %d", rowNumber)
+			return nil, fmt.Errorf("failed to scan player on row %d: %w", rowNumber, err)
 		}
 		players = append(players, player)
 	}
@@ -27,7 +27,7 @@ func GetAll() (players []Player, err error) {
 }
 
 func Get(myClubId int64) (player Player, err error) {
-	err = db.DB.QueryRow("SELECT * FROM players WHERE myclub_id=?", myClubId).Scan(&player.id, &player.Name, &player.MyClubId, &player.runPower, &player.ballHandling)
+	err = db.DB.QueryRow("SELECT id, name, myclub_id, run_power, ball_handling, is_goalie FROM players WHERE myclub_id=?", myClubId).Scan(&player.id, &player.Name, &player.MyClubId, &player.runPower, &player.ballHandling, &player.IsGoalie)
 
 	if err != nil {
 		return Player{}, fmt.Errorf("unable to query player with MyClub ID %d: %w", myClubId, err)
@@ -48,7 +48,7 @@ func ToggleGoalieStatus(player Player) error {
 	`
 	_, err := db.DB.Exec(query, !player.IsGoalie, player.id)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to update goalies status of player %d: %w", player.id, err)
 	}
 	return nil
 }
