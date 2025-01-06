@@ -39,3 +39,16 @@ func Insert(player Player) error {
 	_, err := db.DB.Exec("INSERT INTO players (name, myclub_id, run_power, ball_handling) VALUES (?, ?, ?, ?)", player.Name, player.MyClubId, player.runPower, player.ballHandling)
 	return err
 }
+
+func ToggleGoalieStatus(player Player) error {
+	query := `
+	UPDATE players
+	SET is_goalie = ?
+	WHERE id=?
+	`
+	_, err := db.DB.Exec(query, !player.IsGoalie, player.id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

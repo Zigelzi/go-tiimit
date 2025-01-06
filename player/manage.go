@@ -32,10 +32,12 @@ func Manage() error {
 	case actions[1]:
 		chosenPlayer, err := choose("Select player to edit goalie status of")
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
-		fmt.Printf("You chose player: %s with id of %d\n", chosenPlayer.Name, chosenPlayer.id)
+		ToggleGoalieStatus(chosenPlayer)
+		if err != nil {
+			return err
+		}
 	case actions[len(actions)-1]:
 		return nil
 	}
