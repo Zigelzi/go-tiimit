@@ -34,7 +34,7 @@ func Manage() error {
 		if err != nil {
 			return err
 		}
-		ToggleGoalieStatus(chosenPlayer)
+		err = ToggleGoalieStatus(chosenPlayer)
 		if err != nil {
 			return err
 		}
