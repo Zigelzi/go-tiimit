@@ -7,7 +7,7 @@ import (
 )
 
 func GetAll() (players []Player, err error) {
-	rows, err := db.DB.Query("SELECT id, name, myclub_id, run_power, ball_handling FROM players")
+	rows, err := db.DB.Query("SELECT id, name, myclub_id, run_power, ball_handling, is_goalie FROM players")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all players with error: %w", err)
 	}
@@ -17,7 +17,7 @@ func GetAll() (players []Player, err error) {
 	for rows.Next() {
 		var player Player
 		rowNumber++
-		err := rows.Scan(&player.id, &player.Name, &player.MyClubId, &player.runPower, &player.ballHandling)
+		err := rows.Scan(&player.id, &player.Name, &player.MyClubId, &player.runPower, &player.ballHandling, &player.IsGoalie)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan player on row %d: %w", rowNumber, err)
 		}
