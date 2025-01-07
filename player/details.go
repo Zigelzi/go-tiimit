@@ -2,6 +2,11 @@ package player
 
 import "fmt"
 
-func (player Player) Details() {
-	fmt.Printf("[%d] %s score: %.1f\n", player.MyClubId, player.Name, player.Score())
+func (player Player) Details() (details string) {
+	if player.IsGoalie {
+		goalieSymbol := "[G]"
+		return fmt.Sprintf("%s %s", player.Name, goalieSymbol)
+	} else {
+		return player.Name
+	}
 }

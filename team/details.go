@@ -11,7 +11,7 @@ func (team *Team) Details() {
 
 	fmt.Printf("%s players\n", team.name)
 	for i, player := range team.players {
-		fmt.Printf("%d. %s\n", i+1, player.Name)
+		fmt.Printf("%d. %s\n", i+1, player.Details())
 	}
 	fmt.Println(teamDetails)
 	fmt.Println(strings.Repeat("=", len(teamDetails)))

@@ -14,9 +14,9 @@ func choose(label string) (Player, error) {
 		return Player{}, err
 	}
 	templates := &promptui.SelectTemplates{
-		Inactive: "  {{ .Name }}",
-		Active:   fmt.Sprintf("%s {{ .Name | underline }}", promptui.IconSelect),
-		Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Name | faint }}`, promptui.IconGood),
+		Inactive: "  {{ .Details }}",
+		Active:   fmt.Sprintf("%s {{ .Details | underline }}", promptui.IconSelect),
+		Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Details | faint }}`, promptui.IconGood),
 	}
 
 	prompt := promptui.Select{
