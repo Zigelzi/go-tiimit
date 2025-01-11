@@ -21,6 +21,21 @@ var detailsTests = []struct {
 		player:   player.Player{Name: "Matti Meikäläinen", IsGoalie: false},
 		expected: "Matti Meikäläinen",
 	},
+	{
+		name:     "Player goalie status is not known",
+		player:   player.Player{Name: "Matti Meikäläinen"},
+		expected: "Matti Meikäläinen",
+	},
+	{
+		name:     "Player name is empty and is not goalie",
+		player:   player.Player{Name: "", IsGoalie: false},
+		expected: "",
+	},
+	{
+		name:     "Player name is empty and is goalie",
+		player:   player.Player{Name: "", IsGoalie: true},
+		expected: " [G]",
+	},
 }
 
 func TestDetails(t *testing.T) {
