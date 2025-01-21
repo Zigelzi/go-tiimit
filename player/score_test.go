@@ -53,13 +53,13 @@ var tests = []struct {
 	},
 	{
 		name:         "Run power floating point precision",
-		actualPlayer: player.New(123, "Matti Meikäläinen", 1.123, 0, false),
-		expected:     1.348,
+		actualPlayer: player.New(123, "Matti Meikäläinen", 1.123123, 0, false),
+		expected:     1.35,
 	},
 	{
 		name:         "Ball handling floating point precision",
-		actualPlayer: player.New(123, "Matti Meikäläinen", 0, 1.123, false),
-		expected:     1.123,
+		actualPlayer: player.New(123, "Matti Meikäläinen", 0, 1.123123, false),
+		expected:     1.12,
 	},
 }
 
