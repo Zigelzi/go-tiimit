@@ -17,6 +17,16 @@ var tests = []struct {
 		expected:     22.0,
 	},
 	{
+		name:         "Run power weight is correct",
+		actualPlayer: player.New(123, "Matti Meikäläinen", 10, 0, false),
+		expected:     12.0,
+	},
+	{
+		name:         "Ball handling weight is correct",
+		actualPlayer: player.New(123, "Matti Meikäläinen", 0, 10, false),
+		expected:     10.0,
+	},
+	{
 		name:         "Player with zero attributes",
 		actualPlayer: player.New(123, "Matti Meikäläinen", 0, 0, false),
 		expected:     0.0,
@@ -41,6 +51,16 @@ var tests = []struct {
 		actualPlayer: player.New(123, "Matti Meikäläinen", -10, -10, false),
 		expected:     0,
 	},
+	{
+		name:         "Run power floating point precision",
+		actualPlayer: player.New(123, "Matti Meikäläinen", 1.123, 0, false),
+		expected:     1.348,
+	},
+	{
+		name:         "Ball handling floating point precision",
+		actualPlayer: player.New(123, "Matti Meikäläinen", 0, 1.123, false),
+		expected:     1.123,
+	},
 }
 
 func TestScore(t *testing.T) {
@@ -48,7 +68,7 @@ func TestScore(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			actual := testCase.actualPlayer.Score()
 			if actual != testCase.expected {
-				t.Errorf("Score() = %.2f: want %.2f", actual, testCase.expected)
+				t.Errorf("Score() = %.8f: want %.8f", actual, testCase.expected)
 			}
 		})
 	}
