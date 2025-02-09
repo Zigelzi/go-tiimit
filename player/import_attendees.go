@@ -1,11 +1,10 @@
-package practice
+package player
 
 import (
 	"fmt"
 	"strconv"
 
 	"github.com/Zigelzi/go-tiimit/file"
-	"github.com/Zigelzi/go-tiimit/player"
 )
 
 type AttendanceStatus int
@@ -24,45 +23,43 @@ var attendanceName = map[string]AttendanceStatus{
 	"Ei vastausta": AttendanceUnknown,
 }
 
-func (p *Practice) ImportAttendees() error {
+func ImportAttendees() (players []Player, err error) {
+	var importedPlayers []Player
 	fileName, err := file.Select(attendanceDirectory)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return importedPlayers, err
 	}
 
 	playerRows, err := file.ImportRows(attendanceDirectory + fileName)
 	if err != nil {
-		return err
+		return importedPlayers, err
 	}
-
-	var addedPlayers []player.Player
 
 	for _, playerRow := range playerRows {
 		status := attendanceName[playerRow[3]]
 		if status == AttendanceIn {
 			player, err := getPlayer(playerRow[0])
 			if err != nil {
-				return fmt.Errorf("unable to get player: %w", err)
+				return importedPlayers, fmt.Errorf("unable to get player: %w", err)
 			}
-			p.Add(player)
-			addedPlayers = append(addedPlayers, player)
+			importedPlayers = append(importedPlayers, player)
 		}
 	}
 
-	fmt.Printf("Imported %d players to practice from a file %s\n\n", len(addedPlayers), fileName)
-	return nil
+	fmt.Printf("Imported %d players to practice from a file %s\n\n", len(importedPlayers), fileName)
+	return importedPlayers, nil
 }
 
-func getPlayer(rowContent string) (player.Player, error) {
+func getPlayer(rowContent string) (Player, error) {
 	myClubId, err := strconv.Atoi(rowContent)
 	if err != nil {
-		return player.Player{}, fmt.Errorf("unable to parse MyClub ID %s: %w", rowContent, err)
+		return Player{}, fmt.Errorf("unable to parse MyClub ID %s: %w", rowContent, err)
 	}
 
-	newPlayer, err := player.Get(int64(myClubId))
+	newPlayer, err := Get(int64(myClubId))
 	if err != nil {
-		return player.Player{}, fmt.Errorf("unable to add attending player with MyClubID %s: %w", rowContent, err)
+		return Player{}, fmt.Errorf("unable to add attending player with MyClubID %s: %w", rowContent, err)
 	}
 	return newPlayer, nil
 }

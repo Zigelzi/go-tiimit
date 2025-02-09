@@ -6,6 +6,7 @@ import (
 	"github.com/Zigelzi/go-tiimit/db"
 	"github.com/Zigelzi/go-tiimit/player"
 	"github.com/Zigelzi/go-tiimit/practice"
+	"github.com/Zigelzi/go-tiimit/team"
 	"github.com/manifoldco/promptui"
 )
 
@@ -48,23 +49,36 @@ func selectAction() bool {
 			break
 		}
 
-		err = practice.CreateTeams()
+		team1, team2, err := team.Distribute(practice.Players)
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
+
+		err = practice.AddTeams(team1, team2)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
 		practice.PrintTeams()
 
 	case actions[1]:
 		practice := practice.New()
 
-		err := practice.ImportAttendees()
+		players, err := player.ImportAttendees()
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
 
-		err = practice.CreateTeams()
+		team1, team2, err := team.Distribute(players)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		err = practice.AddTeams(team1, team2)
 		if err != nil {
 			fmt.Println(err)
 			break
