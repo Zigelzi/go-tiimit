@@ -48,8 +48,8 @@ func selectAction() bool {
 			fmt.Println(err)
 			break
 		}
-
-		team1, team2, err := team.Distribute(practice.Players)
+		goalies, fieldPlayers := player.GetPreferences(practice.Players)
+		team1, team2, err := team.Distribute(goalies, fieldPlayers)
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -73,7 +73,8 @@ func selectAction() bool {
 		}
 
 		player.SortByScore(players)
-		team1, team2, err := team.Distribute(players)
+		goalies, fieldPlayers := player.GetPreferences(players)
+		team1, team2, err := team.Distribute(goalies, fieldPlayers)
 		if err != nil {
 			fmt.Println(err)
 			break

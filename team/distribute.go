@@ -6,31 +6,17 @@ import (
 	"github.com/Zigelzi/go-tiimit/player"
 )
 
-func Distribute(players []player.Player) (team1, team2 Team, err error) {
+func Distribute(goalies, fieldPlayers []player.Player) (team1, team2 Team, err error) {
 	team1 = New("Team 1")
 	team2 = New("Team 2")
-	if len(players) == 0 {
+	if len(goalies) == 0 && len(fieldPlayers) == 0 {
 		return Team{}, Team{}, errors.New("no attending players to distribute")
 	}
 
-	goalies, fieldPlayers := getGoalies(players)
 	distributePlayers(goalies, &team1, &team2)
 	distributePlayers(fieldPlayers, &team1, &team2)
 
 	return team1, team2, nil
-}
-
-func getGoalies(players []player.Player) (goalies, fieldPlayers []player.Player) {
-	// TODO: Move this to players?
-	for _, player := range players {
-		if player.IsGoalie {
-			goalies = append(goalies, player)
-		} else {
-			fieldPlayers = append(fieldPlayers, player)
-		}
-	}
-
-	return goalies, fieldPlayers
 }
 
 func distributePlayers(players []player.Player, team1, team2 *Team) {

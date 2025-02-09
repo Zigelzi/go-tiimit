@@ -1,0 +1,13 @@
+package player
+
+func GetPreferences(players []Player) (goalies, fieldPlayers []Player) {
+	for _, player := range players {
+		if player.IsGoalie {
+			goalies = append(goalies, player)
+		} else {
+			fieldPlayers = append(fieldPlayers, player)
+		}
+	}
+
+	return goalies, fieldPlayers
+}
