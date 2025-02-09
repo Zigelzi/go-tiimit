@@ -72,6 +72,7 @@ func selectAction() bool {
 			break
 		}
 
+		player.SortByScore(players)
 		team1, team2, err := team.Distribute(players)
 		if err != nil {
 			fmt.Println(err)

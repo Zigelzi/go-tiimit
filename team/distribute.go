@@ -2,7 +2,6 @@ package team
 
 import (
 	"errors"
-	"sort"
 
 	"github.com/Zigelzi/go-tiimit/player"
 )
@@ -14,7 +13,6 @@ func Distribute(players []player.Player) (team1, team2 Team, err error) {
 		return Team{}, Team{}, errors.New("no attending players to distribute")
 	}
 
-	sort.Sort(player.ByScore(players))
 	goalies, fieldPlayers := getGoalies(players)
 	distributePlayers(goalies, &team1, &team2)
 	distributePlayers(fieldPlayers, &team1, &team2)
