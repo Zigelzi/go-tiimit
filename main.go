@@ -66,14 +66,15 @@ func selectAction() bool {
 	case actions[1]:
 		practice := practice.New()
 
-		players, err := player.ImportAttendees()
+		confirmedPlayers, unknownPlayers, err := player.ImportAttendees()
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
 
-		player.SortByScore(players)
-		goalies, fieldPlayers := player.GetPreferences(players)
+		player.SortByScore(confirmedPlayers)
+		player.SortByScore(unknownPlayers)
+		goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
 		team1, team2, err := team.Distribute(goalies, fieldPlayers)
 		if err != nil {
 			fmt.Println(err)
@@ -87,6 +88,7 @@ func selectAction() bool {
 		}
 
 		practice.PrintTeams()
+		fmt.Println(unknownPlayers)
 	case actions[2]:
 		err := player.Manage()
 		if err != nil {
