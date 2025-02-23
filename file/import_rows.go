@@ -8,7 +8,7 @@ import (
 
 const startIndex = 4
 
-func ImportRows(path string) (playerRows [][]string, err error) {
+func ImportPlayerRows(path string) (playerRows [][]string, err error) {
 	file, err := excelize.OpenFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open file to import attendees from a file %s: %w", path, err)
@@ -19,11 +19,10 @@ func ImportRows(path string) (playerRows [][]string, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to read rows to import attendees from a file: %w", err)
 	}
-
 	// List of players in MyClub start on row 5 (index 4). Rows before that are other details or empty.
-	playerRows = rows[startIndex:]
+	rawPlayerRows := rows[startIndex:]
 
-	return playerRows, nil
+	return rawPlayerRows, nil
 }
 
 func closeFile(openFile *excelize.File) {

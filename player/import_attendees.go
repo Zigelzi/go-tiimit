@@ -26,17 +26,20 @@ var attendanceName = map[string]AttendanceStatus{
 func ImportAttendees() (confirmedPlayers, unknownPlayers []Player, err error) {
 	confirmedPlayers = []Player{}
 	unknownPlayers = []Player{}
+
+	// Import player rows
 	fileName, err := file.Select(attendanceDirectory)
 	if err != nil {
 		fmt.Println(err)
 		return confirmedPlayers, unknownPlayers, err
 	}
 
-	playerRows, err := file.ImportRows(attendanceDirectory + fileName)
+	playerRows, err := file.ImportPlayerRows(attendanceDirectory + fileName)
 	if err != nil {
 		return confirmedPlayers, unknownPlayers, err
 	}
 
+	// Get players who could attend
 	for _, playerRow := range playerRows {
 		status := attendanceName[playerRow[3]]
 		player, err := getPlayer(playerRow[0])

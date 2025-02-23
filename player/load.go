@@ -16,7 +16,7 @@ func ImportToClub() error {
 		return err
 	}
 
-	playerRows, err := file.ImportRows(playerDirectory + fileName)
+	playerRows, err := file.ImportPlayerRows(playerDirectory + fileName)
 	if err != nil {
 		return err
 	}
