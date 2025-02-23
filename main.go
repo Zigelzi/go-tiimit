@@ -88,7 +88,9 @@ func selectAction() bool {
 		}
 
 		practice.PrintTeams()
-		fmt.Println(unknownPlayers)
+		for _, unknownPlayer := range unknownPlayers {
+			fmt.Println(unknownPlayer.Details())
+		}
 	case actions[2]:
 		err := player.Manage()
 		if err != nil {
