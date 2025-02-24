@@ -13,8 +13,11 @@ func (team *Team) Details() {
 	for i, player := range team.players {
 		fmt.Printf("%d. %s\n", i+1, player.Details())
 	}
+	fmt.Println()
 	fmt.Println(teamDetails)
+	fmt.Println()
 	fmt.Println(strings.Repeat("=", len(teamDetails)))
+	fmt.Println()
 }
 
 func (team *Team) score() float64 {

@@ -54,7 +54,7 @@ func ImportAttendees() (confirmedPlayers, unknownPlayers []Player, err error) {
 		}
 	}
 
-	fmt.Printf("Imported %d players to practice from a file %s\n\n", len(confirmedPlayers), fileName)
+	fmt.Printf("Imported %d players to practice from a file %s\n\n", len(confirmedPlayers)+len(unknownPlayers), fileName)
 	return confirmedPlayers, unknownPlayers, nil
 }
 
