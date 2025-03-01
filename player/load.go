@@ -20,8 +20,8 @@ func ImportToClub() error {
 		return err
 	}
 
+	var addedPlayers []Player
 	var importedPlayers []Player
-	var loadedPlayers []Player
 
 	for i, clubPlayerRow := range playerRows {
 		player := New(int64(clubPlayerRow.PlayerRow.MyClubId), clubPlayerRow.PlayerRow.Name, clubPlayerRow.RunPower, clubPlayerRow.BallHandling, false)
@@ -38,12 +38,12 @@ func ImportToClub() error {
 				fmt.Printf("failed to insert player on row %d: %s\n", i, err)
 				continue
 			}
-			importedPlayers = append(importedPlayers, player)
+			addedPlayers = append(addedPlayers, player)
 		} else {
-			loadedPlayers = append(loadedPlayers, player)
+			importedPlayers = append(importedPlayers, player)
 		}
 	}
 
-	fmt.Printf("Loaded %d players which of %d were imported to database from a file %s\n\n", len(loadedPlayers), len(importedPlayers), fileName)
+	fmt.Printf("Imported %d players to club which of %d were added to database from a file %s\n\n", len(importedPlayers), len(addedPlayers), fileName)
 	return nil
 }
