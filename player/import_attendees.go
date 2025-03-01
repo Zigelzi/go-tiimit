@@ -34,15 +34,15 @@ func ImportAttendees() (confirmedPlayers, unknownPlayers []Player, err error) {
 		return confirmedPlayers, unknownPlayers, err
 	}
 
-	playerRows, err := file.ImportPlayerRows(attendanceDirectory + fileName)
+	attendancePlayerRows, err := file.ImportAttendancePlayerRows(attendanceDirectory + fileName)
 	if err != nil {
 		return confirmedPlayers, unknownPlayers, err
 	}
 
 	// Get players who could attend
-	for _, playerRow := range playerRows {
-		status := attendanceName[playerRow[3]]
-		player, err := getPlayer(playerRow[0])
+	for _, attendancePlayerRow := range attendancePlayerRows {
+		player, err := Get(int64(attendancePlayerRow.PlayerRow.MyClubId))
+		status := attendanceName[attendancePlayerRow.Attendance]
 		if err != nil {
 			return confirmedPlayers, unknownPlayers, fmt.Errorf("unable to get player: %w", err)
 		}

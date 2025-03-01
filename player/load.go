@@ -2,7 +2,6 @@ package player
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/Zigelzi/go-tiimit/file"
 )
@@ -16,7 +15,7 @@ func ImportToClub() error {
 		return err
 	}
 
-	playerRows, err := file.ImportPlayerRows(playerDirectory + fileName)
+	playerRows, err := file.ImportClubPlayerRows(playerDirectory + fileName)
 	if err != nil {
 		return err
 	}
@@ -24,26 +23,8 @@ func ImportToClub() error {
 	var importedPlayers []Player
 	var loadedPlayers []Player
 
-	for i, playerRow := range playerRows {
-		name := playerRow[1]
-		myClubId, err := strconv.Atoi(playerRow[0])
-		if err != nil {
-			fmt.Printf("Unable to parse MyClub ID on row %d.\n", i)
-			return err
-		}
-
-		runPower, err := strconv.ParseFloat(playerRow[3], 64)
-		if err != nil {
-			fmt.Printf("Unable to parse run power on row %d.", i)
-			return err
-		}
-
-		ballHandling, err := strconv.ParseFloat(playerRow[4], 64)
-		if err != nil {
-			fmt.Printf("Unable to parse ball handling on row %d.", i)
-			return err
-		}
-		player := New(int64(myClubId), name, runPower, ballHandling, false)
+	for i, clubPlayerRow := range playerRows {
+		player := New(int64(clubPlayerRow.PlayerRow.MyClubId), clubPlayerRow.PlayerRow.Name, clubPlayerRow.RunPower, clubPlayerRow.BallHandling, false)
 
 		isExisting, err := IsExisting(player.MyClubId)
 		if err != nil {
