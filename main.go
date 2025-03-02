@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Zigelzi/go-tiimit/db"
+	"github.com/Zigelzi/go-tiimit/file"
 	"github.com/Zigelzi/go-tiimit/player"
 	"github.com/Zigelzi/go-tiimit/practice"
 	"github.com/Zigelzi/go-tiimit/team"
@@ -26,6 +27,7 @@ func selectAction() bool {
 	actions := []string{
 		"Create teams for a practice manually",
 		"Create teams for a practice by importing MyClub attendees",
+		"Test new importing",
 		"Manage players",
 		"Exit",
 	}
@@ -92,6 +94,22 @@ func selectAction() bool {
 			fmt.Printf("%s\n\n", unknownPlayer.Details())
 		}
 	case actions[2]:
+		practice.New()
+
+		var attendanceDirectory = "attendance-files/"
+		fileName, err := file.Select(attendanceDirectory)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		attendancePlayerRows, _ := file.ImportAttendancePlayerRows(attendanceDirectory + fileName)
+		for _, row := range attendancePlayerRows {
+			player, _ := player.Get(int64(row.PlayerRow.MyClubId))
+			fmt.Println(player)
+		}
+
+	case actions[3]:
 		err := player.Manage()
 		if err != nil {
 			fmt.Println(err)

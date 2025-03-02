@@ -7,27 +7,12 @@ type AttendancePlayerRow struct {
 	Attendance string
 }
 
-type AttendanceStatus int
-
-const (
-	AttendanceIn AttendanceStatus = iota
-	AttendanceOut
-	AttendanceUnknown
-)
-
-var attendanceName = map[string]AttendanceStatus{
-	"Osallistuu":   AttendanceIn,
-	"Ei osallistu": AttendanceOut,
-	"Ei vastausta": AttendanceUnknown,
-}
-
 func newAttendancePlayerRow(myClubId, name, attendanceStatus string) (AttendancePlayerRow, error) {
 	playerRow, err := newPlayerRow(myClubId, name)
 	if err != nil {
 		return AttendancePlayerRow{}, fmt.Errorf("failed to create base player row: %w", err)
 	}
-	_, exists := attendanceName[attendanceStatus]
-	if !exists {
+	if !isValidStatus(attendanceStatus) {
 		return AttendancePlayerRow{}, fmt.Errorf("unknown attendance status %s: %w", attendanceStatus, err)
 	}
 	return AttendancePlayerRow{
@@ -35,4 +20,14 @@ func newAttendancePlayerRow(myClubId, name, attendanceStatus string) (Attendance
 			Attendance: attendanceStatus,
 		},
 		nil
+}
+
+func isValidStatus(attendanceStatus string) bool {
+	validStatuses := [3]string{"Osallistuu", "Ei osallistu", "Ei vastausta"}
+	for _, status := range validStatuses {
+		if status == attendanceStatus {
+			return true
+		}
+	}
+	return false
 }
