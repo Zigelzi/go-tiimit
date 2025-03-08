@@ -1,8 +1,12 @@
 package practice
 
 import (
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/Zigelzi/go-tiimit/player"
 )
 
 func TestAddPlayer(t *testing.T) {
@@ -69,4 +73,118 @@ func TestAddPlayer(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetPlayersByStatus(t *testing.T) {
+	var tests = []struct {
+		name            string
+		setupPractice   func() *Practice
+		status          AttendanceStatus
+		wantErr         bool
+		expectedErr     string
+		expectedPlayers []player.Player
+	}{
+		{
+			name: "Get attending players",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(1000, "Osallistuu")
+				p.AddPlayer(1001, "Osallistuu")
+				p.AddPlayer(1002, "Ei osallistu")
+				p.AddPlayer(1003, "Ei osallistu")
+				p.AddPlayer(1004, "Ei vastausta")
+				p.AddPlayer(1005, "Ei vastausta")
+				return &p
+			},
+			status:  AttendanceIn,
+			wantErr: false,
+			expectedPlayers: []player.Player{
+				{MyClubId: 1000, Name: "Matti Meikäläinen"},
+				{MyClubId: 1001, Name: "Teppo Teikäläinen"},
+			},
+		},
+		{
+			name: "Get unknown players",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(1000, "Osallistuu")
+				p.AddPlayer(1001, "Osallistuu")
+				p.AddPlayer(1002, "Ei osallistu")
+				p.AddPlayer(1003, "Ei osallistu")
+				p.AddPlayer(1004, "Ei vastausta")
+				p.AddPlayer(1005, "Ei vastausta")
+				return &p
+			},
+			status:  AttendanceUnknown,
+			wantErr: false,
+			expectedPlayers: []player.Player{
+				{MyClubId: 1004, Name: "Tero Taapu"},
+				{MyClubId: 1005, Name: "Lauri Laatu"},
+			},
+		},
+		{
+			name: "Get out players",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(1000, "Osallistuu")
+				p.AddPlayer(1001, "Osallistuu")
+				p.AddPlayer(1002, "Ei osallistu")
+				p.AddPlayer(1003, "Ei osallistu")
+				p.AddPlayer(1004, "Ei vastausta")
+				p.AddPlayer(1005, "Ei vastausta")
+				return &p
+			},
+			status:  AttendanceOut,
+			wantErr: false,
+			expectedPlayers: []player.Player{
+				{MyClubId: 1002, Name: "Seppo Seikäläinen"},
+				{MyClubId: 1003, Name: "Kati Kaapu"},
+			},
+		},
+	}
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			p := testCase.setupPractice()
+			players, err := p.GetPlayersByStatus(testCase.status, mockPlayerGetter)
+			if testCase.wantErr {
+				if err == nil {
+					t.Errorf("error is missing: got [nil] want [%s]", testCase.expectedErr)
+					return
+				}
+				if !strings.Contains(err.Error(), testCase.expectedErr) {
+					t.Errorf("error contents don't match: got [%s] want [%s]", err.Error(), testCase.expectedErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: got [%s] want [nil]", err)
+			}
+
+			if len(players) != len(testCase.expectedPlayers) {
+				t.Errorf("number of players in status [%s] doesn't match: got [%d] want [%d]", testCase.status, len(players), len(testCase.expectedPlayers))
+			}
+			if !reflect.DeepEqual(players, testCase.expectedPlayers) {
+				t.Errorf("players in status [%s] don't match", testCase.status)
+
+			}
+		})
+	}
+}
+
+func mockPlayerGetter(id int64) (player.Player, error) {
+	players := map[int64]player.Player{
+		1000: {MyClubId: 1000, Name: "Matti Meikäläinen"},
+		1001: {MyClubId: 1001, Name: "Teppo Teikäläinen"},
+		1002: {MyClubId: 1002, Name: "Seppo Seikäläinen"},
+		1003: {MyClubId: 1003, Name: "Kati Kaapu"},
+		1004: {MyClubId: 1004, Name: "Tero Taapu"},
+		1005: {MyClubId: 1005, Name: "Lauri Laatu"},
+	}
+
+	queriedPlayer, exists := players[id]
+	if !exists {
+		return player.Player{}, fmt.Errorf("unable to query player with MyClub ID")
+	}
+
+	return queriedPlayer, nil
 }

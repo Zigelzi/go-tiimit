@@ -112,6 +112,35 @@ func selectAction() bool {
 				continue
 			}
 		}
+		confirmedPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		unknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		player.SortByScore(confirmedPlayers)
+		player.SortByScore(unknownPlayers)
+		goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
+		team1, team2, err := team.Distribute(goalies, fieldPlayers)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		err = newPractice.AddTeams(team1, team2)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		newPractice.PrintTeams()
+		for _, unknownPlayer := range unknownPlayers {
+			fmt.Printf("%s\n\n", unknownPlayer.Details())
+		}
 
 	case actions[3]:
 		err := player.Manage()
