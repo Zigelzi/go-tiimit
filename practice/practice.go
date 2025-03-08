@@ -6,13 +6,13 @@ import (
 )
 
 type Practice struct {
-	id      int64
-	Players []player.Player
-	Teams   [2]team.Team
+	AttendingPlayers map[int]AttendanceStatus
+	Players          []player.Player
+	Teams            [2]team.Team
 }
 
 func New() Practice {
 	return Practice{
-		id: 1,
+		AttendingPlayers: make(map[int]AttendanceStatus),
 	}
 }

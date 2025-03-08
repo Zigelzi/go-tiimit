@@ -94,7 +94,7 @@ func selectAction() bool {
 			fmt.Printf("%s\n\n", unknownPlayer.Details())
 		}
 	case actions[2]:
-		practice.New()
+		newPractice := practice.New()
 
 		var attendanceDirectory = "attendance-files/"
 		fileName, err := file.Select(attendanceDirectory)
@@ -105,8 +105,12 @@ func selectAction() bool {
 
 		attendancePlayerRows, _ := file.ImportAttendancePlayerRows(attendanceDirectory + fileName)
 		for _, row := range attendancePlayerRows {
-			player, _ := player.Get(int64(row.PlayerRow.MyClubId))
-			fmt.Println(player)
+
+			err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 		}
 
 	case actions[3]:
