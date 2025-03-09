@@ -7,6 +7,7 @@ import (
 )
 
 func ImportAttendancePlayerRows(path string) (attendancePlayerRows []AttendancePlayerRow, err error) {
+	// List of players in MyClub start on row 5 (index 4). Rows before that are other details or empty.
 	const startIndex = 4
 
 	var columnType = map[string]int{
@@ -25,7 +26,6 @@ func ImportAttendancePlayerRows(path string) (attendancePlayerRows []AttendanceP
 	if err != nil {
 		return nil, fmt.Errorf("unable to read rows to import attendees from a file: %w", err)
 	}
-	// List of players in MyClub start on row 5 (index 4). Rows before that are other details or empty.
 	attendancePlayerRows = []AttendancePlayerRow{}
 	for _, row := range rows[startIndex:] {
 		attendancePlayerRow, err := newAttendancePlayerRow(row[columnType["myClubId"]], row[columnType["name"]], row[columnType["attendance"]])

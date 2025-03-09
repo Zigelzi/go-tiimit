@@ -105,7 +105,6 @@ func selectAction() bool {
 
 		attendancePlayerRows, _ := file.ImportAttendancePlayerRows(attendanceDirectory + fileName)
 		for _, row := range attendancePlayerRows {
-
 			err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
 			if err != nil {
 				fmt.Println(err)
@@ -115,22 +114,22 @@ func selectAction() bool {
 		confirmedPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
 		if err != nil {
 			fmt.Println(err)
-			break
 		}
 		unknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
 		if err != nil {
 			fmt.Println(err)
-			break
 		}
 
 		player.SortByScore(confirmedPlayers)
 		player.SortByScore(unknownPlayers)
 		goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
 		team1, team2, err := team.Distribute(goalies, fieldPlayers)
+
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
+
 		err = newPractice.AddTeams(team1, team2)
 		if err != nil {
 			fmt.Println(err)
