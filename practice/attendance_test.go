@@ -85,7 +85,7 @@ func TestGetPlayersByStatus(t *testing.T) {
 		expectedPlayers []player.Player
 	}{
 		{
-			name: "Get attending players",
+			name: "Return attending players from practice with players in all statuses",
 			setupPractice: func() *Practice {
 				p := New()
 				p.AddPlayer(1000, "Osallistuu")
@@ -104,7 +104,21 @@ func TestGetPlayersByStatus(t *testing.T) {
 			},
 		},
 		{
-			name: "Get unknown players",
+			name: "Return no players from practice without attending players",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(1002, "Ei osallistu")
+				p.AddPlayer(1003, "Ei osallistu")
+				p.AddPlayer(1004, "Ei vastausta")
+				p.AddPlayer(1005, "Ei vastausta")
+				return &p
+			},
+			status:          AttendanceIn,
+			wantErr:         false,
+			expectedPlayers: []player.Player{},
+		},
+		{
+			name: "Return unknown players from practice with players in all statuses",
 			setupPractice: func() *Practice {
 				p := New()
 				p.AddPlayer(1000, "Osallistuu")
@@ -123,7 +137,21 @@ func TestGetPlayersByStatus(t *testing.T) {
 			},
 		},
 		{
-			name: "Get out players",
+			name: "Return no players from practice without unknown players",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(1000, "Osallistuu")
+				p.AddPlayer(1001, "Osallistuu")
+				p.AddPlayer(1002, "Ei osallistu")
+				p.AddPlayer(1003, "Ei osallistu")
+				return &p
+			},
+			status:          AttendanceUnknown,
+			wantErr:         false,
+			expectedPlayers: []player.Player{},
+		},
+		{
+			name: "Return out players from practice with players in all statuses",
 			setupPractice: func() *Practice {
 				p := New()
 				p.AddPlayer(1000, "Osallistuu")
@@ -139,6 +167,49 @@ func TestGetPlayersByStatus(t *testing.T) {
 			expectedPlayers: []player.Player{
 				{MyClubId: 1002, Name: "Seppo Seikäläinen"},
 				{MyClubId: 1003, Name: "Kati Kaapu"},
+			},
+		},
+		{
+			name: "Return no players from practice without not attending players",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(1000, "Osallistuu")
+				p.AddPlayer(1001, "Osallistuu")
+				p.AddPlayer(1004, "Ei vastausta")
+				p.AddPlayer(1005, "Ei vastausta")
+				return &p
+			},
+			status:          AttendanceOut,
+			wantErr:         false,
+			expectedPlayers: []player.Player{},
+		},
+		{
+			name: "Return no players from practice without players",
+			setupPractice: func() *Practice {
+				p := New()
+
+				return &p
+			},
+			status:          AttendanceOut,
+			wantErr:         false,
+			expectedPlayers: []player.Player{},
+		},
+		{
+			name: "Return attending players from practice and errors with players in all statuses",
+			setupPractice: func() *Practice {
+				p := New()
+				p.AddPlayer(9999, "Osallistuu") // Unknown player in mock
+				p.AddPlayer(1001, "Osallistuu")
+				p.AddPlayer(1002, "Ei osallistu")
+				p.AddPlayer(1003, "Ei osallistu")
+				p.AddPlayer(1004, "Ei vastausta")
+				p.AddPlayer(1005, "Ei vastausta")
+				return &p
+			}, status: AttendanceIn,
+			wantErr:     true,
+			expectedErr: "unable to get player",
+			expectedPlayers: []player.Player{
+				{MyClubId: 1001, Name: "Teppo Teikäläinen"},
 			},
 		},
 	}

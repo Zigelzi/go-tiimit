@@ -26,7 +26,7 @@ func (p *Practice) GetPlayersByStatus(status AttendanceStatus, playerGetter func
 		}
 		player, err := playerGetter(int64(myClubId))
 		if err != nil {
-			errs = append(errs, fmt.Errorf("unable to get player (MyClub ID: %d) by status [%w]", myClubId, err))
+			errs = append(errs, fmt.Errorf("unable to get player (MyClub ID: %d) by status [%s]: [%w]", myClubId, status, err))
 		}
 		players = append(players, player)
 	}
