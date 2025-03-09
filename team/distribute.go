@@ -21,7 +21,7 @@ func Distribute(goalies, fieldPlayers []player.Player) (team1, team2 Team, err e
 
 func distributePlayers(players []player.Player, team1, team2 *Team) {
 	for i, distributedPlayer := range players {
-		if (i+1)&2 == 0 {
+		if (i+1)%2 == 0 {
 			team1.players = append(team1.players, distributedPlayer)
 		} else {
 			team2.players = append(team2.players, distributedPlayer)
