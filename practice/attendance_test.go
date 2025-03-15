@@ -236,7 +236,8 @@ func TestGetPlayersByStatus(t *testing.T) {
 			}
 			if !reflect.DeepEqual(players, testCase.expectedPlayers) {
 				t.Errorf("players in status [%s] don't match", testCase.status)
-
+				t.Errorf("got: %v", players)
+				t.Errorf("want: %v", testCase.expectedPlayers)
 			}
 		})
 	}
