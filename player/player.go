@@ -1,5 +1,7 @@
 package player
 
+import "fmt"
+
 type Player struct {
 	id           int64
 	MyClubId     int64
@@ -31,5 +33,14 @@ func New(myclub_id int64, name string, runPower float64, ballHandling float64, i
 		runPower:     runPower,
 		ballHandling: ballHandling,
 		IsGoalie:     isGoalie,
+	}
+}
+
+func (player Player) Details() (details string) {
+	if player.IsGoalie {
+		goalieSymbol := "[G]"
+		return fmt.Sprintf("%s %s", player.Name, goalieSymbol)
+	} else {
+		return player.Name
 	}
 }
