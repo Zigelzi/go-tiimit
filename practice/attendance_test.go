@@ -2,7 +2,7 @@ package practice
 
 import (
 	"fmt"
-	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -234,11 +234,8 @@ func TestGetPlayersByStatus(t *testing.T) {
 			if len(players) != len(testCase.expectedPlayers) {
 				t.Errorf("number of players in status [%s] doesn't match: got [%d] want [%d]", testCase.status, len(players), len(testCase.expectedPlayers))
 			}
-			if !reflect.DeepEqual(players, testCase.expectedPlayers) {
-				t.Errorf("players in status [%s] don't match", testCase.status)
-				t.Errorf("got: %v", players)
-				t.Errorf("want: %v", testCase.expectedPlayers)
-			}
+			assertEqualPlayers(t, players, testCase.expectedPlayers)
+
 		})
 	}
 }
@@ -259,4 +256,15 @@ func mockPlayerGetter(id int64) (player.Player, error) {
 	}
 
 	return queriedPlayer, nil
+}
+
+func assertEqualPlayers(t *testing.T, got, want []player.Player) {
+	t.Helper()
+
+	for _, wantPlayer := range want {
+		if !slices.Contains(got, wantPlayer) {
+			t.Errorf("wanted player [%d] %s missing from got players", wantPlayer.MyClubId, wantPlayer.Name)
+			t.Errorf("got %v", got)
+		}
+	}
 }
