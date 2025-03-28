@@ -16,6 +16,7 @@ func newPlayerRow(newMyClubId, name string) (PlayerRow, error) {
 		return PlayerRow{}, fmt.Errorf("unable to convert MyClubId to integer: %w", err)
 	}
 
+	// TODO: Move to service layer from model.
 	if name == "" {
 		return PlayerRow{}, fmt.Errorf("player name can't be empty")
 	}
