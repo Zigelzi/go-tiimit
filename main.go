@@ -27,7 +27,6 @@ func selectAction() bool {
 	actions := []string{
 		"Create teams for a practice manually",
 		"Create teams for a practice by importing MyClub attendees",
-		"Test new importing",
 		"Manage players",
 		"Exit",
 	}
@@ -66,34 +65,6 @@ func selectAction() bool {
 		practice.PrintTeams()
 
 	case actions[1]:
-		practice := practice.New()
-
-		confirmedPlayers, unknownPlayers, err := player.ImportAttendees()
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		player.SortByScore(confirmedPlayers)
-		player.SortByScore(unknownPlayers)
-		goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
-		team1, team2, err := team.Distribute(goalies, fieldPlayers)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		err = practice.AddTeams(team1, team2)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		practice.PrintTeams()
-		for _, unknownPlayer := range unknownPlayers {
-			fmt.Printf("%s\n\n", unknownPlayer.Details())
-		}
-	case actions[2]:
 		newPractice := practice.New()
 
 		var attendanceDirectory = "attendance-files/"
@@ -141,7 +112,7 @@ func selectAction() bool {
 			fmt.Printf("%s\n\n", unknownPlayer.Details())
 		}
 
-	case actions[3]:
+	case actions[2]:
 		err := player.Manage()
 		if err != nil {
 			fmt.Println(err)
