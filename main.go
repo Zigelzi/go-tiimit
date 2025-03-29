@@ -25,7 +25,6 @@ func main() {
 func selectAction() bool {
 	// TODO: Move selecting create/import action to it's own function.
 	actions := []string{
-		"Create teams for a practice manually",
 		"Create teams for a practice by importing MyClub attendees",
 		"Manage players",
 		"Exit",
@@ -42,29 +41,6 @@ func selectAction() bool {
 
 	switch result {
 	case actions[0]:
-		practice := practice.New()
-
-		err := practice.MarkAttendees()
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		goalies, fieldPlayers := player.GetPreferences(practice.Players)
-		team1, team2, err := team.Distribute(goalies, fieldPlayers)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		err = practice.AddTeams(team1, team2)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		practice.PrintTeams()
-
-	case actions[1]:
 		newPractice := practice.New()
 
 		var attendanceDirectory = "attendance-files/"
@@ -112,7 +88,7 @@ func selectAction() bool {
 			fmt.Printf("%s\n\n", unknownPlayer.Details())
 		}
 
-	case actions[2]:
+	case actions[1]:
 		err := player.Manage()
 		if err != nil {
 			fmt.Println(err)
