@@ -11,7 +11,7 @@ func (team *Team) Details() {
 
 	fmt.Printf("%s players\n", team.name)
 	for i, player := range team.players {
-		fmt.Printf("%d. %s\n", i+1, player.Details())
+		fmt.Printf("%d. %s [%.1f]\n", i+1, player.Details(), player.Score())
 	}
 	fmt.Println()
 	fmt.Println(teamDetails)

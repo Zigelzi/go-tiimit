@@ -84,8 +84,8 @@ func selectAction() bool {
 		}
 
 		newPractice.PrintTeams()
-		for _, unknownPlayer := range unknownPlayers {
-			fmt.Printf("%s\n\n", unknownPlayer.Details())
+		for i, unknownPlayer := range unknownPlayers {
+			fmt.Printf("%d. %s [%.1f]\n\n", i+1, unknownPlayer.Details(), unknownPlayer.Score())
 		}
 
 	case actions[1]:
