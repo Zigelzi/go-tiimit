@@ -30,7 +30,7 @@ func Select(path string) (string, error) {
 		fileNames = append(fileNames, fileName)
 	}
 
-	// Sort the file names based on the time
+	sortByNewestDate(fileNames)
 
 	result, err := choose(fileNames)
 	if err != nil {
