@@ -3,7 +3,13 @@ package file
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
+
+type FileName struct {
+	Path string
+	Date time.Time
+}
 
 type PlayerRow struct {
 	MyClubId int

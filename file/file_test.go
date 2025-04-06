@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewPlayerRow(t *testing.T) {
@@ -456,4 +457,176 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 
 		})
 	}
+}
+
+func TestParseDate(t *testing.T) {
+	type testCase struct {
+		name         string
+		fileName     string
+		expectedDate time.Time
+		expectedErr  string
+	}
+	t.Run("returns date type when file name contains a date", func(t *testing.T) {
+		testCases := []testCase{
+			{
+				"first day of the year",
+				"vjs-Kuntofutis-2025-01-01-VJS Kuntofutis.xlsx",
+				time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+				"",
+			},
+			{
+				"last day of the year",
+				"vjs-Kuntofutis-2025-12-31-VJS Kuntofutis.xlsx",
+				time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC),
+				"",
+			},
+			{
+				"leap year",
+				"vjs-Kuntofutis-2024-02-28-VJS Kuntofutis.xlsx",
+				time.Date(2024, 2, 28, 0, 0, 0, 0, time.UTC),
+				"",
+			},
+		}
+
+		for _, testCase := range testCases {
+			t.Run(testCase.name, func(t *testing.T) {
+				actualDate, err := parseDate(testCase.fileName)
+
+				if err != nil {
+					t.Errorf("unexpected error: got [%v] want [nil]", err)
+				}
+
+				if actualDate != testCase.expectedDate {
+					t.Errorf("parsed dates don't match: got [%v] want [%v]", actualDate, testCase.expectedDate)
+				}
+			})
+		}
+	})
+
+	t.Run("returns error when file name has invalid or missing date", func(t *testing.T) {
+		testCases := []testCase{
+			{
+				"missing date",
+				"vjs-Kuntofutis-VJS Kuntofutis.xlsx",
+				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
+				"failed to find date in vjs-Kuntofutis-VJS Kuntofutis.xlsx",
+			},
+			{
+				"date that doesn't exist",
+				"vjs-Kuntofutis-2025-01-33-VJS Kuntofutis.xlsx",
+				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
+				"failed to parse date from vjs-Kuntofutis-2025-01-33-VJS Kuntofutis.xlsx",
+			},
+			{
+				"date formatted in yyyymmdd",
+				"vjs-Kuntofutis-20250131-VJS Kuntofutis.xlsx",
+				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
+				"failed to find date in vjs-Kuntofutis-20250131-VJS Kuntofutis.xlsx",
+			},
+			{
+				"date formatted in yyyy/mm/dd",
+				"vjs-Kuntofutis-2025/01/31-VJS Kuntofutis.xlsx",
+				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
+				"failed to find date in vjs-Kuntofutis-2025/01/31-VJS Kuntofutis.xlsx",
+			},
+		}
+
+		for _, testCase := range testCases {
+			actualDate, err := parseDate(testCase.fileName)
+
+			if err == nil {
+				t.Errorf("missing error: got [nil] want [%v]", testCase.expectedErr)
+			}
+
+			if actualDate != testCase.expectedDate {
+				t.Errorf("parsed dates don't match: got [%v] want [%v]", actualDate, testCase.expectedDate)
+			}
+
+			if !strings.Contains(err.Error(), testCase.expectedErr) {
+				t.Errorf("errors don't match: got [%s] want [%s]", err, testCase.expectedErr)
+			}
+		}
+	})
+}
+
+func TestFindDate(t *testing.T) {
+	type testCase struct {
+		name        string
+		inputStr    string
+		expectedStr string
+		expectedErr string
+	}
+
+	t.Run("returns string matching yyyy-mm-dd format when text contains such", func(t *testing.T) {
+		testCases := []testCase{
+			{
+				"date in the beginning",
+				"2025-01-31-vjs-Kuntofutis-VJS Kuntofutis.xlsx",
+				"2025-01-31",
+				"",
+			},
+			{
+				"date in the end",
+				"vjs-Kuntofutis-VJS Kuntofutis-2025-01-31.xlsx",
+				"2025-01-31",
+				"",
+			},
+			{
+				"date in the middle",
+				"vjs-Kuntofutis-2025-01-31-VJS Kuntofutis.xlsx",
+				"2025-01-31",
+				"",
+			},
+		}
+
+		for _, testCase := range testCases {
+			actualStr, err := findDate(testCase.inputStr)
+
+			if err != nil {
+				t.Errorf("unexpected error: got [%v] want [nil]", err)
+			}
+
+			if actualStr != testCase.expectedStr {
+				t.Errorf("returned string doesn't match: got [%s] want [%s]", actualStr, testCase.expectedStr)
+			}
+		}
+	})
+
+	t.Run("returns error when string doesn't contain yyyy-mm-dd date", func(t *testing.T) {
+		testCases := []testCase{
+			{
+				"missing date",
+				"vjs-KuntofutisVJS Kuntofutis.xlsx",
+				"",
+				"vjs-KuntofutisVJS Kuntofutis.xlsx doesn't contain date with pattern yyyy-mm-dd",
+			},
+			{
+				"date in yyyy/mm/dd",
+				"vjs-Kuntofutis-2025/01/01-VJS Kuntofutis.xlsx",
+				"",
+				"vjs-Kuntofutis-2025/01/01-VJS Kuntofutis.xlsx doesn't contain date with pattern yyyy-mm-dd",
+			},
+			{
+				"date in dd-mm-yyyy",
+				"vjs-Kuntofutis-01-01-2025-VJS Kuntofutis.xlsx",
+				"",
+				"vjs-Kuntofutis-01-01-2025-VJS Kuntofutis.xlsx doesn't contain date with pattern yyyy-mm-dd",
+			},
+		}
+
+		for _, testCase := range testCases {
+			actualStr, err := findDate(testCase.inputStr)
+			if err == nil {
+				t.Errorf("missing error: got [nil] want [%s]", testCase.expectedErr)
+			}
+
+			if actualStr != testCase.expectedStr {
+				t.Errorf("returned string doesn't match: got [%s] want [%s]", actualStr, testCase.expectedStr)
+			}
+
+			if !strings.Contains(err.Error(), testCase.expectedErr) {
+				t.Errorf("error doesn't match: got [%s] want [%s]", err, testCase.expectedErr)
+			}
+		}
+	})
 }
