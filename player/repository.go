@@ -53,7 +53,7 @@ func ToggleGoalieStatus(player Player) error {
 	return nil
 }
 
-func IsExisting(myClubId int64) (isExisting bool, err error) {
+func exists(myClubId int64) (isExisting bool, err error) {
 	query := "SELECT EXISTS (SELECT 1 FROM players WHERE myclub_id=?)"
 	err = db.DB.QueryRow(query, myClubId).Scan(&isExisting)
 	if err != nil {

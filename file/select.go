@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -21,20 +20,16 @@ func Select(path string) (string, error) {
 	}
 
 	var fileNames []FileName
-	errs := []error{}
 	for _, path := range filePaths {
 		fileName := FileName{Path: filepath.Base(path)}
 		date, err := parseDate(path)
 		if err != nil {
-			errs = append(errs, err)
+			// Errors from parsing don't need to stop the whole function.
+			fmt.Println(err)
 			continue
 		}
 		fileName.Date = date
 		fileNames = append(fileNames, fileName)
-	}
-
-	if len(errs) > 0 {
-		return "", errors.Join(errs...)
 	}
 
 	if len(fileNames) == 0 {
