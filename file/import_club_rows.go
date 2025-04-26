@@ -34,7 +34,8 @@ func ImportClubPlayerRows(path string) (clubPlayerRows []ClubPlayerRow, err erro
 	for i, row := range rows[startIndex:] {
 		// TODO: Ensure that there's enough columns and they're in correct order.
 		if len(row) != columnCount {
-			errs = append(errs, fmt.Errorf("row %d doesn't have the %d columns required to import the row", i, columnCount))
+			currentRowNumberInFile := i + 1 + startIndex
+			errs = append(errs, fmt.Errorf("row %d doesn't have the %d columns required to import the row", currentRowNumberInFile, columnCount))
 			continue
 		}
 		clubPlayerRow, err := newClubPlayerRow(row[columnType["myClubId"]], row[columnType["name"]], row[columnType["run power"]], row[columnType["ball handling"]])
