@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -20,14 +21,24 @@ func Select(path string) (string, error) {
 	}
 
 	var fileNames []FileName
+	errs := []error{}
 	for _, path := range filePaths {
 		fileName := FileName{Path: filepath.Base(path)}
 		date, err := parseDate(path)
 		if err != nil {
-			return "", err
+			errs = append(errs, err)
+			continue
 		}
 		fileName.Date = date
 		fileNames = append(fileNames, fileName)
+	}
+
+	if len(errs) > 0 {
+		return "", errors.Join(errs...)
+	}
+
+	if len(fileNames) == 0 {
+		return "", fmt.Errorf("no files with yyyy-mm-dd date format in directory %s, [%v]", path, filePaths)
 	}
 
 	sortByNewestDate(fileNames)
@@ -65,12 +76,12 @@ func choose(fileNames []FileName) (string, error) {
 func parseDate(fileName string) (time.Time, error) {
 	dateStr, err := findDate(fileName)
 	if err != nil {
-		return time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC), fmt.Errorf("failed to find date in %s: %w", fileName, err)
+		return time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC), fmt.Errorf("failed to find date: %w", err)
 	}
 
 	date, err := time.Parse(time.DateOnly, dateStr)
 	if err != nil {
-		return time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC), fmt.Errorf("failed to parse date from %s: %w", fileName, err)
+		return time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC), fmt.Errorf("failed to parse date: %w", err)
 	}
 	return date, err
 }

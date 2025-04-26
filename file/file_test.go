@@ -509,25 +509,25 @@ func TestParseDate(t *testing.T) {
 				"missing date",
 				"vjs-Kuntofutis-VJS Kuntofutis.xlsx",
 				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
-				"failed to find date in vjs-Kuntofutis-VJS Kuntofutis.xlsx",
+				"failed to find date",
 			},
 			{
 				"date that doesn't exist",
 				"vjs-Kuntofutis-2025-01-33-VJS Kuntofutis.xlsx",
 				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
-				"failed to parse date from vjs-Kuntofutis-2025-01-33-VJS Kuntofutis.xlsx",
+				"failed to parse date",
 			},
 			{
 				"date formatted in yyyymmdd",
 				"vjs-Kuntofutis-20250131-VJS Kuntofutis.xlsx",
 				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
-				"failed to find date in vjs-Kuntofutis-20250131-VJS Kuntofutis.xlsx",
+				"failed to find date",
 			},
 			{
 				"date formatted in yyyy/mm/dd",
 				"vjs-Kuntofutis-2025/01/31-VJS Kuntofutis.xlsx",
 				time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
-				"failed to find date in vjs-Kuntofutis-2025/01/31-VJS Kuntofutis.xlsx",
+				"failed to find date",
 			},
 		}
 
