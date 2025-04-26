@@ -220,15 +220,16 @@ func TestGetPlayersByStatus(t *testing.T) {
 			if testCase.wantErr {
 				if err == nil {
 					t.Errorf("error is missing: got [nil] want [%s]", testCase.expectedErr)
-					return
+					// return
 				}
 				if !strings.Contains(err.Error(), testCase.expectedErr) {
 					t.Errorf("error contents don't match: got [%s] want [%s]", err.Error(), testCase.expectedErr)
 				}
-				return
-			}
-			if err != nil {
-				t.Errorf("unexpected error: got [%s] want [nil]", err)
+				// return
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: got [%s] want [nil]", err)
+				}
 			}
 
 			if len(players) != len(testCase.expectedPlayers) {
