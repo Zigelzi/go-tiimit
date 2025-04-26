@@ -1,6 +1,7 @@
 package player
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Zigelzi/go-tiimit/file"
@@ -16,7 +17,12 @@ func ImportToClub() error {
 	}
 
 	playerRows, err := file.ImportClubPlayerRows(playerDirectory + fileName)
-	if err != nil {
+	var errColumnCount *file.ErrorIncorrectColumnCount
+
+	if errors.As(err, &errColumnCount) {
+		fmt.Println(errColumnCount.Msg)
+		fmt.Println(errColumnCount.ErrorList)
+	} else {
 		return err
 	}
 

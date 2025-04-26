@@ -7,6 +7,15 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+type ErrorIncorrectColumnCount struct {
+	ErrorList error
+	Msg       string
+}
+
+func (e *ErrorIncorrectColumnCount) Error() string {
+	return e.Msg
+}
+
 func ImportClubPlayerRows(path string) (clubPlayerRows []ClubPlayerRow, err error) {
 	// List of players in MyClub start on row 5 (index 4). Rows before that are other details or empty.
 	const startIndex = 4
@@ -30,12 +39,12 @@ func ImportClubPlayerRows(path string) (clubPlayerRows []ClubPlayerRow, err erro
 	}
 
 	clubPlayerRows = []ClubPlayerRow{}
-	errs := []error{}
+	columnErrs := []error{}
 	for i, row := range rows[startIndex:] {
 		// TODO: Ensure that there's enough columns and they're in correct order.
 		if len(row) != columnCount {
 			currentRowNumberInFile := i + 1 + startIndex
-			errs = append(errs, fmt.Errorf("row %d doesn't have the %d columns required to import the row", currentRowNumberInFile, columnCount))
+			columnErrs = append(columnErrs, fmt.Errorf("row %d doesn't have the %d columns required to import the row", currentRowNumberInFile, columnCount))
 			continue
 		}
 		clubPlayerRow, err := newClubPlayerRow(row[columnType["myClubId"]], row[columnType["name"]], row[columnType["run power"]], row[columnType["ball handling"]])
@@ -45,8 +54,12 @@ func ImportClubPlayerRows(path string) (clubPlayerRows []ClubPlayerRow, err erro
 		clubPlayerRows = append(clubPlayerRows, clubPlayerRow)
 	}
 
-	if len(errs) > 0 {
-		return clubPlayerRows, errors.Join(errs...)
+	if len(columnErrs) > 0 {
+		msg := fmt.Sprintf("%d rows don't contain the required %d columns", len(columnErrs), columnCount)
+		return clubPlayerRows, &ErrorIncorrectColumnCount{
+			ErrorList: errors.Join(columnErrs...),
+			Msg:       msg,
+		}
 	}
 	return clubPlayerRows, nil
 }
