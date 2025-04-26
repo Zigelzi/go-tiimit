@@ -45,9 +45,8 @@ func ImportToClub() error {
 				continue
 			}
 			addedPlayers = append(addedPlayers, player)
-		} else {
-			importedPlayers = append(importedPlayers, player)
 		}
+		importedPlayers = append(importedPlayers, player)
 	}
 
 	fmt.Printf("Imported %d players to club which of %d were added to database from a file %s\n\n", len(importedPlayers), len(addedPlayers), fileName)
