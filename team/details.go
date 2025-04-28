@@ -6,6 +6,7 @@ import (
 )
 
 func (team *Team) Details() {
+	const separatorCount = 20
 
 	teamDetails := fmt.Sprintf("%s has %d players with total score of %.1f", team.name, len(team.players), team.score())
 
@@ -16,7 +17,7 @@ func (team *Team) Details() {
 	fmt.Println()
 	fmt.Println(teamDetails)
 	fmt.Println()
-	fmt.Println(strings.Repeat("=", len(teamDetails)))
+	fmt.Println(strings.Repeat("=", separatorCount))
 	fmt.Println()
 }
 
