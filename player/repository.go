@@ -60,5 +60,18 @@ func exists(myClubId int64) (isExisting bool, err error) {
 		return isExisting, err
 	}
 	return isExisting, nil
+}
 
+func updateRunPower(myclubId int64, newRunPower float64) error {
+	query := `
+	UPDATE players
+	SET run_power=?
+	WHERE myclub_id=?
+	`
+	_, err := db.DB.Exec(query, newRunPower, myclubId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

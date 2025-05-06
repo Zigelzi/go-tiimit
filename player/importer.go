@@ -45,6 +45,14 @@ func ImportToClub() error {
 				continue
 			}
 			addedPlayers = append(addedPlayers, player)
+		} else {
+			// Update run power and ball handling for all existing players
+			// This probably should be done only when there's changes.
+			err := player.UpdateRunPower(player.runPower)
+			if err != nil {
+				fmt.Printf("failed to update player run power on row %d: %s\n", i, err)
+				continue
+			}
 		}
 		importedPlayers = append(importedPlayers, player)
 	}

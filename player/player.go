@@ -44,3 +44,18 @@ func (player Player) Details() (details string) {
 		return player.Name
 	}
 }
+
+func (player Player) UpdateRunPower(newRunPower float64) error {
+	if newRunPower < 0 {
+		newRunPower = 0
+	}
+	if newRunPower > 10 {
+		newRunPower = 10
+	}
+
+	err := updateRunPower(player.MyClubId, newRunPower)
+	if err != nil {
+		return fmt.Errorf("unable to update player ID [%d] run power to [%.2f]: %w", player.MyClubId, newRunPower, err)
+	}
+	return nil
+}
