@@ -31,8 +31,8 @@ func ImportToClub() error {
 
 	for i, clubPlayerRow := range playerRows {
 		player := New(int64(clubPlayerRow.PlayerRow.MyClubId), clubPlayerRow.PlayerRow.Name, clubPlayerRow.RunPower, clubPlayerRow.BallHandling, false)
-
 		isExisting, err := exists(player.MyClubId)
+
 		if err != nil {
 			fmt.Printf("failed to check existing player on row %d: %s\n", i, err)
 			return err

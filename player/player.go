@@ -53,9 +53,11 @@ func (player Player) UpdateRunPower(newRunPower float64) error {
 		newRunPower = 10
 	}
 
+	previousRunPower := player.runPower
 	err := updateRunPower(player.MyClubId, newRunPower)
 	if err != nil {
 		return fmt.Errorf("unable to update player ID [%d] run power to [%.2f]: %w", player.MyClubId, newRunPower, err)
 	}
+	fmt.Printf("Updated player [%d] %s run power from %.1f to %.1f\n", player.MyClubId, player.Name, previousRunPower, player.runPower)
 	return nil
 }
