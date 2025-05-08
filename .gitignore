@@ -29,5 +29,7 @@ go.work.sum
 
 # Windows zone identifiers
 *Zone.Identifier
-
 .vscode/
+
+# SQLite databases
+*.db
