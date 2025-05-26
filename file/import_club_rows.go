@@ -42,7 +42,6 @@ func ImportClubPlayerRows(path string) (clubPlayerRows []ClubPlayerRow, err erro
 	columnErrs := []error{}
 	for i, row := range rows[startIndex:] {
 		// TODO: Ensure that there's enough columns and they're in correct order.
-		fmt.Println(row)
 		if len(row) != columnCount {
 			currentRowNumberInFile := i + 1 + startIndex
 			columnErrs = append(columnErrs, fmt.Errorf("row %d has only %d/%d required columns to import the row", currentRowNumberInFile, len(row), columnCount))
