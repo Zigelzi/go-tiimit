@@ -2,16 +2,27 @@ package file
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/xuri/excelize/v2"
 )
 
-func ImportAttendancePlayerRows(path string) (attendancePlayerRows []AttendancePlayerRow, err error) {
-	file, err := excelize.OpenFile(path)
+func ImportAttendancePlayerRowsFromPath(path string) ([]AttendancePlayerRow, error) {
+	excelFile, err := excelize.OpenFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open file to import attendees from a file %s: %w", path, err)
+		return nil, fmt.Errorf("unable to open excel file from path %s: %w", path, err)
 	}
-	defer closeFile(file)
+	return ImportAttendancePlayerRows(excelFile)
+}
+func ImportAttendancePlayerRowsFromReader(reader io.Reader) ([]AttendancePlayerRow, error) {
+	excelFile, err := excelize.OpenReader(reader)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open excel file from reader: %w", err)
+	}
+	return ImportAttendancePlayerRows(excelFile)
+}
+
+func ImportAttendancePlayerRows(file *excelize.File) (attendancePlayerRows []AttendancePlayerRow, err error) {
 
 	rows, err := file.GetRows("Tapahtuma")
 	if err != nil {
@@ -22,6 +33,9 @@ func ImportAttendancePlayerRows(path string) (attendancePlayerRows []AttendanceP
 	const startIndex = 4
 	// TODO: Add validation to ensure correct columns exist and are in expected order.
 	attendancePlayerRows, err = parseAttendanceRows(rows[startIndex:])
+	if err != nil {
+		return []AttendancePlayerRow{}, fmt.Errorf("unable to parse attendance rows: %w", err)
+	}
 	return attendancePlayerRows, nil
 }
 

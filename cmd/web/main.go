@@ -1,0 +1,56 @@
+package main
+
+import (
+	"embed"
+	"io/fs"
+	"log"
+	"net/http"
+
+	"github.com/Zigelzi/go-tiimit/internal/db"
+)
+
+//go:embed static
+var staticFiles embed.FS
+
+func main() {
+	newDb, err := db.InitDB()
+	if err != nil {
+		log.Fatalf("initializing database failed: %v", err)
+		return
+	}
+	cfg := webConfig{
+		db:      db.New(newDb),
+		address: ":8080",
+		env:     "development",
+	}
+
+	mux := http.NewServeMux()
+
+	staticFs, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		log.Fatalf("failed to initialize the static files")
+		return
+	}
+
+	fileserver := http.FileServer(http.FS(staticFs))
+	mux.Handle("/static/", disableCacheInDevMode(http.StripPrefix("/static/", fileserver), cfg.env))
+
+	mux.HandleFunc("/", cfg.handleIndexPage)
+	mux.HandleFunc("POST /api/attendees", cfg.handleSubmitAttendanceList)
+	server := http.Server{
+		Handler: mux,
+		Addr:    cfg.address,
+	}
+	log.Printf("Starting server on address %s", cfg.address)
+	server.ListenAndServe()
+}
+
+func disableCacheInDevMode(next http.Handler, env string) http.Handler {
+	if env != "development" {
+		return next
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		next.ServeHTTP(w, r)
+	})
+}

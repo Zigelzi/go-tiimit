@@ -3,17 +3,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/db"
-	"github.com/Zigelzi/go-tiimit/file"
-	"github.com/Zigelzi/go-tiimit/player"
-	"github.com/Zigelzi/go-tiimit/practice"
-	"github.com/Zigelzi/go-tiimit/team"
+	"github.com/Zigelzi/go-tiimit/internal/db"
+	"github.com/Zigelzi/go-tiimit/internal/file"
+	"github.com/Zigelzi/go-tiimit/internal/player"
+	"github.com/Zigelzi/go-tiimit/internal/practice"
+	"github.com/Zigelzi/go-tiimit/internal/team"
 	"github.com/manifoldco/promptui"
 )
 
 func main() {
 	db.Init()
-	db.CreateTables()
 	defer db.DB.Close()
 	for {
 		if !selectAction() {
@@ -50,7 +49,7 @@ func selectAction() bool {
 			break
 		}
 
-		attendancePlayerRows, _ := file.ImportAttendancePlayerRows(attendanceDirectory + fileName)
+		attendancePlayerRows, _ := file.ImportAttendancePlayerRowsFromPath(attendanceDirectory + fileName)
 		for _, row := range attendancePlayerRows {
 			err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
 			if err != nil {
@@ -58,13 +57,24 @@ func selectAction() bool {
 				continue
 			}
 		}
-		confirmedPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
+
+		dbConfirmedPlayers, _, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
 		if err != nil {
 			fmt.Println(err)
 		}
-		unknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
+		confirmedPlayers := []player.Player{}
+		for _, dbConfirmedPlayer := range dbConfirmedPlayers {
+			confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyClubId, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
+		}
+
+		dbUnknownPlayers, _, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
 		if err != nil {
 			fmt.Println(err)
+		}
+
+		unknownPlayers := []player.Player{}
+		for _, dbUnknownPlayer := range dbUnknownPlayers {
+			unknownPlayers = append(unknownPlayers, player.New(dbUnknownPlayer.MyClubId, dbUnknownPlayer.Name, dbUnknownPlayer.RunPower, dbUnknownPlayer.BallHandling, dbUnknownPlayer.IsGoalie))
 		}
 
 		player.SortByScore(confirmedPlayers)

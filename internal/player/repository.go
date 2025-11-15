@@ -3,7 +3,7 @@ package player
 import (
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/db"
+	"github.com/Zigelzi/go-tiimit/internal/db"
 )
 
 func GetAll() (players []Player, err error) {
@@ -26,11 +26,11 @@ func GetAll() (players []Player, err error) {
 	return players, nil
 }
 
-func Get(myClubId int64) (player Player, err error) {
-	err = db.DB.QueryRow("SELECT id, name, myclub_id, run_power, ball_handling, is_goalie FROM players WHERE myclub_id=?", myClubId).Scan(&player.id, &player.Name, &player.MyClubId, &player.runPower, &player.ballHandling, &player.IsGoalie)
+func Get(myClubId int64) (player db.Player, err error) {
+	err = db.DB.QueryRow("SELECT id, name, myclub_id, run_power, ball_handling, is_goalie FROM players WHERE myclub_id=?", myClubId).Scan(&player.Id, &player.Name, &player.MyClubId, &player.RunPower, &player.BallHandling, &player.IsGoalie)
 
 	if err != nil {
-		return Player{}, fmt.Errorf("unable to query player with MyClub ID %d: %w", myClubId, err)
+		return db.Player{}, fmt.Errorf("unable to query player with MyClub ID %d: %w", myClubId, err)
 	}
 	return player, err
 }

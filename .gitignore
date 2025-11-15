@@ -33,3 +33,10 @@ go.work.sum
 
 # SQLite databases
 *.db
+
+# Generated code and assets
+/cmd/web/static/tailwind.css
+*_templ.go
+/tmp/
+/node_modules/
+./web

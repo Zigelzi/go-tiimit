@@ -1,7 +1,7 @@
 package practice
 
 import (
-	"github.com/Zigelzi/go-tiimit/team"
+	"github.com/Zigelzi/go-tiimit/internal/team"
 )
 
 func (p *Practice) AddTeams(team1, team2 team.Team) error {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Zigelzi/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
 func TestDistribute(t *testing.T) {
@@ -68,11 +68,11 @@ func TestDistribute(t *testing.T) {
 				if actualErr != nil {
 					t.Errorf("unexpected error: got [%v] want [nil]", actualErr)
 				}
-				if len(actualTeam1.players) != testCase.expectedTeam1Length {
-					t.Errorf("number of players in %s don't match: got [%d] want [%d]", actualTeam1.name, len(actualTeam1.players), testCase.expectedTeam1Length)
+				if len(actualTeam1.Players) != testCase.expectedTeam1Length {
+					t.Errorf("number of players in %s don't match: got [%d] want [%d]", actualTeam1.Name, len(actualTeam1.Players), testCase.expectedTeam1Length)
 				}
-				if len(actualTeam2.players) != testCase.expectedTeam2Length {
-					t.Errorf("number of players in %s don't match: got [%d] want [%d]", actualTeam2.name, len(actualTeam2.players), testCase.expectedTeam2Length)
+				if len(actualTeam2.Players) != testCase.expectedTeam2Length {
+					t.Errorf("number of players in %s don't match: got [%d] want [%d]", actualTeam2.Name, len(actualTeam2.Players), testCase.expectedTeam2Length)
 				}
 			})
 		}
@@ -103,8 +103,8 @@ func TestDistribute(t *testing.T) {
 			wantErr:     false,
 			expectedErr: "",
 			expectedTeam1: Team{
-				name: "Team 1",
-				players: []player.Player{
+				Name: "Team 1",
+				Players: []player.Player{
 					{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
 					{MyClubId: 1003, Name: "Saija Siirappi", IsGoalie: true},
 					{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
@@ -112,8 +112,8 @@ func TestDistribute(t *testing.T) {
 				},
 			},
 			expectedTeam2: Team{
-				name: "Team 2",
-				players: []player.Player{
+				Name: "Team 2",
+				Players: []player.Player{
 					{MyClubId: 1000, Name: "Matti Meikäläinen", IsGoalie: true},
 					{MyClubId: 1002, Name: "Kaija Karppi", IsGoalie: true},
 					{MyClubId: 1004, Name: "Lauri Laavu", IsGoalie: false},
@@ -140,19 +140,19 @@ func TestDistribute(t *testing.T) {
 				t.Errorf("unexpected error: got [%s] want [nil]", err)
 			}
 
-			if len(team1.players) != len(testCase.expectedTeam1.players) {
-				t.Errorf("%s number of players don't match: got [%d] want [%d]", team1.name, len(team1.players), len(testCase.expectedTeam1.players))
+			if len(team1.Players) != len(testCase.expectedTeam1.Players) {
+				t.Errorf("%s number of players don't match: got [%d] want [%d]", team1.Name, len(team1.Players), len(testCase.expectedTeam1.Players))
 			}
 
-			if len(team2.players) != len(testCase.expectedTeam2.players) {
-				t.Errorf("%s number of players don't match: got [%d] want [%d]", team2.name, len(team2.players), len(testCase.expectedTeam2.players))
+			if len(team2.Players) != len(testCase.expectedTeam2.Players) {
+				t.Errorf("%s number of players don't match: got [%d] want [%d]", team2.Name, len(team2.Players), len(testCase.expectedTeam2.Players))
 			}
 
-			if !reflect.DeepEqual(team1.players, testCase.expectedTeam1.players) {
-				t.Errorf("%s players don't match: got [%v] want [%v]", team1.name, team1.players, testCase.expectedTeam1.players)
+			if !reflect.DeepEqual(team1.Players, testCase.expectedTeam1.Players) {
+				t.Errorf("%s players don't match: got [%v] want [%v]", team1.Name, team1.Players, testCase.expectedTeam1.Players)
 			}
-			if !reflect.DeepEqual(team2.players, testCase.expectedTeam2.players) {
-				t.Errorf("%s players don't match: got [%v] want [%v]", team2.name, team2.players, testCase.expectedTeam2.players)
+			if !reflect.DeepEqual(team2.Players, testCase.expectedTeam2.Players) {
+				t.Errorf("%s players don't match: got [%v] want [%v]", team2.Name, team2.Players, testCase.expectedTeam2.Players)
 			}
 		})
 	}

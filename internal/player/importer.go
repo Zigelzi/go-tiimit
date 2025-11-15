@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/file"
+	"github.com/Zigelzi/go-tiimit/internal/file"
 )
 
 const playerDirectory = "player-files/"

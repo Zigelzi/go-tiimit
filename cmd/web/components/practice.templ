@@ -1,0 +1,19 @@
+package components
+
+templ PraticePage() {
+	@Base("Tiimit - Set up practice") {
+		<div>
+			<h2 class="pb-4 text-lg font-bold">Set up practice</h2>
+			<form
+				hx-post="/api/attendees"
+				hx-target="#results"
+				hx-encoding="multipart/form-data"
+			>
+				<label for="attendance-list" class="mb-2 block">Select attendance file <span class="text-sm ">(.xlsx)</span></label>
+				<input class="block py-4 max-w-full file:bg-blue-400 file:rounded-md file:px-4 file:py-2 file:block file:mb-4" type="file" name="attendace-list" id="attendace-list" accept=".xlsx"/>
+				<button type="submit" class="px-4 py-2 bg-blue-400 rounded-md">Send </button>
+			</form>
+			<div id="results"></div>
+		</div>
+	}
+}

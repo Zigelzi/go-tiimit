@@ -3,7 +3,7 @@ package team
 import (
 	"errors"
 
-	"github.com/Zigelzi/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
 func Distribute(goalies, fieldPlayers []player.Player) (team1, team2 Team, err error) {
@@ -21,7 +21,7 @@ func Distribute(goalies, fieldPlayers []player.Player) (team1, team2 Team, err e
 
 func distributePlayers(players []player.Player, team1, team2 *Team) {
 	startFromOdd := true
-	if len(team1.players) != len(team2.players) && !isEven(len(players)) {
+	if len(team1.Players) != len(team2.Players) && !isEven(len(players)) {
 		// Need to switch order of distribution when number of players in teams isn't even and number of distributed players is odd.
 		// This is to ensure teams are distributed evenly.
 		startFromOdd = false
@@ -29,16 +29,16 @@ func distributePlayers(players []player.Player, team1, team2 *Team) {
 	for i, distributedPlayer := range players {
 		if startFromOdd {
 			if isEven(i + 1) {
-				team1.players = append(team1.players, distributedPlayer)
+				team1.Players = append(team1.Players, distributedPlayer)
 			} else {
-				team2.players = append(team2.players, distributedPlayer)
+				team2.Players = append(team2.Players, distributedPlayer)
 			}
 
 		} else {
 			if isEven(i) {
-				team1.players = append(team1.players, distributedPlayer)
+				team1.Players = append(team1.Players, distributedPlayer)
 			} else {
-				team2.players = append(team2.players, distributedPlayer)
+				team2.Players = append(team2.Players, distributedPlayer)
 			}
 		}
 	}
