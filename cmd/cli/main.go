@@ -50,7 +50,7 @@ func selectAction() bool {
 			break
 		}
 
-		attendancePlayerRows, _ := file.ImportAttendancePlayerRows(attendanceDirectory + fileName)
+		attendancePlayerRows, _ := file.ImportAttendancePlayerRowsFromPath(attendanceDirectory + fileName)
 		for _, row := range attendancePlayerRows {
 			err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
 			if err != nil {
