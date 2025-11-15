@@ -3,7 +3,7 @@ package team
 import (
 	"errors"
 
-	"github.com/Zigelzi/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
 func Distribute(goalies, fieldPlayers []player.Player) (team1, team2 Team, err error) {

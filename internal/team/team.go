@@ -1,6 +1,6 @@
 package team
 
-import "github.com/Zigelzi/go-tiimit/player"
+import "github.com/Zigelzi/go-tiimit/internal/player"
 
 type Team struct {
 	name    string

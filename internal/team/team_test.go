@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Zigelzi/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
 func TestDistribute(t *testing.T) {

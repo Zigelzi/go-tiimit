@@ -1,8 +1,8 @@
 package practice
 
 import (
-	"github.com/Zigelzi/go-tiimit/player"
-	"github.com/Zigelzi/go-tiimit/team"
+	"github.com/Zigelzi/go-tiimit/internal/player"
+	"github.com/Zigelzi/go-tiimit/internal/team"
 )
 
 type Practice struct {

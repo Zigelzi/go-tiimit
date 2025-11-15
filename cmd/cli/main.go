@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/db"
-	"github.com/Zigelzi/go-tiimit/file"
-	"github.com/Zigelzi/go-tiimit/player"
-	"github.com/Zigelzi/go-tiimit/practice"
-	"github.com/Zigelzi/go-tiimit/team"
+	"github.com/Zigelzi/go-tiimit/internal/db"
+	"github.com/Zigelzi/go-tiimit/internal/file"
+	"github.com/Zigelzi/go-tiimit/internal/player"
+	"github.com/Zigelzi/go-tiimit/internal/practice"
+	"github.com/Zigelzi/go-tiimit/internal/team"
 	"github.com/manifoldco/promptui"
 )
 

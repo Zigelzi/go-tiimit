@@ -3,7 +3,7 @@ package player
 import (
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/db"
+	"github.com/Zigelzi/go-tiimit/internal/db"
 )
 
 func GetAll() (players []Player, err error) {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/player"
+	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
 func (p *Practice) AddPlayer(myClubId int, status string) error {
