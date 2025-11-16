@@ -33,3 +33,6 @@ go.work.sum
 
 # SQLite databases
 *.db
+
+# Generated code and assets
+*_templ.go
