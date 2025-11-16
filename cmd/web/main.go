@@ -10,8 +10,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	fileserver := http.FileServer(http.Dir("cmd/web/app"))
-	mux.Handle("/", fileserver)
+	mux.HandleFunc("/", handleIndexPage)
 
 	mux.HandleFunc("POST /api/attendees", handleSubmitAttendanceList)
 	server := http.Server{

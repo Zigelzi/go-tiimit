@@ -5,8 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Zigelzi/go-tiimit/cmd/web/components"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 )
+
+func handleIndexPage(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(201)
+	component := components.Index()
+	component.Render(r.Context(), w)
+}
 
 func handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
 	formFile, header, err := r.FormFile("attendace-list")
