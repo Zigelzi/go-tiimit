@@ -2,9 +2,15 @@ package components
 
 templ Index() {
 	@Base("Tiimit - Index") {
-		<form action="/api/attendees" method="post" enctype="multipart/form-data">
-			<label for="submit-teams">Attending players<input type="file" name="attendace-list" id="attendace-list"/></label>
+		<form
+			hx-post="/api/attendees"
+			hx-target="#results"
+			enctype="multipart/form-data"
+		>
+			<label for="submit-teams">Attending players</label>
+			<input type="file" name="attendace-list" id="attendace-list"/>
 			<input type="submit" value="Submit"/>
 		</form>
+		<div id="results"></div>
 	}
 }

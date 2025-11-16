@@ -32,4 +32,7 @@ func handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
 	for _, row := range attendanceRows {
 		fmt.Println(row)
 	}
+
+	component := components.DistributedTeams()
+	component.Render(r.Context(), w)
 }
