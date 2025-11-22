@@ -3,12 +3,13 @@ package components
 import "github.com/Zigelzi/go-tiimit/internal/practice"
 
 templ DistributedTeams(practice practice.Practice) {
-	<ul>
-		for _, team := range practice.Teams {
-			<h2>{ team.Name }</h2>
-			for playerNumber, player := range team.Players {
-				<li>{ playerNumber+1 }. { player.Name }</li>
+	for _, team := range practice.Teams {
+		<h2>{ team.Name }</h2>
+		<ol>
+			for _, player := range team.Players {
+				<li>{ player.Name }</li>
 			}
-		}
-	</ul>
+		</ol>
+	}
+	<h2>Players who might attend</h2>
 }
