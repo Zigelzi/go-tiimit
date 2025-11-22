@@ -58,13 +58,24 @@ func selectAction() bool {
 				continue
 			}
 		}
-		confirmedPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
+
+		dbConfirmedPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
 		if err != nil {
 			fmt.Println(err)
 		}
-		unknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
+		confirmedPlayers := []player.Player{}
+		for _, dbConfirmedPlayer := range dbConfirmedPlayers {
+			confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyClubId, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
+		}
+
+		dbUnknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
 		if err != nil {
 			fmt.Println(err)
+		}
+
+		unknownPlayers := []player.Player{}
+		for _, dbUnknownPlayer := range dbUnknownPlayers {
+			unknownPlayers = append(unknownPlayers, player.New(dbUnknownPlayer.MyClubId, dbUnknownPlayer.Name, dbUnknownPlayer.RunPower, dbUnknownPlayer.BallHandling, dbUnknownPlayer.IsGoalie))
 		}
 
 		player.SortByScore(confirmedPlayers)

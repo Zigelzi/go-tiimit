@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Zigelzi/go-tiimit/internal/player"
+	"github.com/Zigelzi/go-tiimit/internal/db"
 )
 
 func (p *Practice) AddPlayer(myClubId int, status string) error {
@@ -16,8 +16,8 @@ func (p *Practice) AddPlayer(myClubId int, status string) error {
 	return nil
 }
 
-func (p *Practice) GetPlayersByStatus(status AttendanceStatus, playerGetter func(int64) (player.Player, error)) ([]player.Player, error) {
-	players := []player.Player{}
+func (p *Practice) GetPlayersByStatus(status AttendanceStatus, playerGetter func(int64) (db.Player, error)) ([]db.Player, error) {
+	players := []db.Player{}
 	var errs []error
 
 	for myClubId, playerStatus := range p.AttendingPlayers {

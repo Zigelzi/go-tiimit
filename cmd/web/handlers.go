@@ -12,12 +12,12 @@ import (
 	"github.com/Zigelzi/go-tiimit/internal/team"
 )
 
-func handleIndexPage(w http.ResponseWriter, r *http.Request) {
+func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
 	component := components.Index()
 	component.Render(r.Context(), w)
 }
 
-func handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
+func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
 	formFile, header, err := r.FormFile("attendace-list")
 	if err != nil {
 		log.Printf("Error parsing file from form: %v", err)
@@ -34,22 +34,46 @@ func handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("parsed %d rows from attendance excel\n", len(attendanceRows))
 
 	newPractice := practice.New()
+	for _, row := range attendanceRows {
+		err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+	}
+	dbConfirmedPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, cfg.db.Get)
+	if err != nil {
+		fmt.Println(err)
+	}
+	confirmedPlayers := []player.Player{}
+	for _, dbConfirmedPlayer := range dbConfirmedPlayers {
+		confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyClubId, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
+	}
 
-	team1 := team.Team{
-		Name: "Team 1",
-		Players: []player.Player{
-			player.New(1234, "Matti Meikäläinen", 5.0, 5.0, false),
-			player.New(2345, "Teppo Teikäläinen", 5.0, 5.0, false),
-		},
+	dbUnknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, cfg.db.Get)
+	if err != nil {
+		fmt.Println(err)
 	}
-	team2 := team.Team{
-		Name: "Team 1",
-		Players: []player.Player{
-			player.New(3456, "Heikki Heikäläinen", 5.0, 5.0, false),
-			player.New(4567, "Seppo Seikäläinen", 5.0, 5.0, false),
-		},
+
+	unknownPlayers := []player.Player{}
+	for _, dbUnknownPlayer := range dbUnknownPlayers {
+		unknownPlayers = append(unknownPlayers, player.New(dbUnknownPlayer.MyClubId, dbUnknownPlayer.Name, dbUnknownPlayer.RunPower, dbUnknownPlayer.BallHandling, dbUnknownPlayer.IsGoalie))
 	}
-	newPractice.AddTeams(team1, team2)
+
+	player.SortByScore(confirmedPlayers)
+	player.SortByScore(unknownPlayers)
+	goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
+	team1, team2, err := team.Distribute(goalies, fieldPlayers)
+
+	if err != nil {
+		fmt.Println(err)
+
+	}
+
+	err = newPractice.AddTeams(team1, team2)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	component := components.DistributedTeams(newPractice)
 	component.Render(r.Context(), w)
