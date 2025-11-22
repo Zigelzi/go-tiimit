@@ -3,12 +3,12 @@ package team
 import "github.com/Zigelzi/go-tiimit/internal/player"
 
 type Team struct {
-	name    string
-	players []player.Player
+	Name    string
+	Players []player.Player
 }
 
 func New(name string) Team {
 	return Team{
-		name: name,
+		Name: name,
 	}
 }

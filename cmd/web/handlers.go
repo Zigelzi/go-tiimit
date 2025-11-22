@@ -7,10 +7,12 @@ import (
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
 	"github.com/Zigelzi/go-tiimit/internal/file"
+	"github.com/Zigelzi/go-tiimit/internal/player"
+	"github.com/Zigelzi/go-tiimit/internal/practice"
+	"github.com/Zigelzi/go-tiimit/internal/team"
 )
 
 func handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(201)
 	component := components.Index()
 	component.Render(r.Context(), w)
 }
@@ -29,10 +31,26 @@ func handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
 		log.Printf("unable to parse the attendance rows in handler: %v", err)
 		return
 	}
-	for _, row := range attendanceRows {
-		fmt.Println(row)
-	}
+	fmt.Printf("parsed %d rows from attendance excel\n", len(attendanceRows))
 
-	component := components.DistributedTeams()
+	newPractice := practice.New()
+
+	team1 := team.Team{
+		Name: "Team 1",
+		Players: []player.Player{
+			player.New(1234, "Matti Meikäläinen", 5.0, 5.0, false),
+			player.New(2345, "Teppo Teikäläinen", 5.0, 5.0, false),
+		},
+	}
+	team2 := team.Team{
+		Name: "Team 1",
+		Players: []player.Player{
+			player.New(3456, "Heikki Heikäläinen", 5.0, 5.0, false),
+			player.New(4567, "Seppo Seikäläinen", 5.0, 5.0, false),
+		},
+	}
+	newPractice.AddTeams(team1, team2)
+
+	component := components.DistributedTeams(newPractice)
 	component.Render(r.Context(), w)
 }

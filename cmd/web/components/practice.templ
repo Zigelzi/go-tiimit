@@ -1,6 +1,14 @@
 package components
 
-templ DistributedTeams() {
-	<div>Team 1</div>
-	<div>Team 2</div>
+import "github.com/Zigelzi/go-tiimit/internal/practice"
+
+templ DistributedTeams(practice practice.Practice) {
+	<ul>
+		for _, team := range practice.Teams {
+			<h2>{ team.Name }</h2>
+			for playerNumber, player := range team.Players {
+				<li>{ playerNumber+1 }. { player.Name }</li>
+			}
+		}
+	</ul>
 }
