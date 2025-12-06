@@ -78,7 +78,6 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(unknownPlayers)
 
 	component := components.DistributedTeams(newPractice, possiblyAttendingPlayers, unknownPlayers)
 	component.Render(r.Context(), w)
