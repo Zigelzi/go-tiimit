@@ -13,7 +13,6 @@ import (
 )
 
 func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Test")
 	component := components.PraticePage()
 	component.Render(r.Context(), w)
 }
