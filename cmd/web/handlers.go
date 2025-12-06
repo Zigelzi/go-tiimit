@@ -1,23 +1,26 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
+	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
-	"github.com/Zigelzi/go-tiimit/internal/team"
 )
 
 func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	component := components.PraticePage()
+	component := components.CreatePracticePage()
 	component.Render(r.Context(), w)
 }
 
-func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
+func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Request) {
 	formFile, header, err := r.FormFile("attendace-list")
 	if err != nil {
 		log.Printf("Error parsing file from form: %v", err)
@@ -25,6 +28,7 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	}
 	defer formFile.Close()
 	fmt.Println(header.Filename)
+
 	attendanceRows, err := file.ImportAttendancePlayerRowsFromReader(formFile)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -33,53 +37,156 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	}
 	fmt.Printf("parsed %d rows from attendance excel\n", len(attendanceRows))
 
-	newPractice := practice.New()
-	for _, row := range attendanceRows {
-		err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
+	confirmedRows, err := file.GetAttendanceRowsByStatus(attendanceRows, file.AttendanceIn)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("unable to get the confirmed rows in handler: %v", err)
+		return
+	}
+
+	dbConfirmedPlayers := []db.Player{}
+	for _, row := range confirmedRows {
+		confirmedDbPlayer, err := cfg.queries.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			continue
 		}
+		dbConfirmedPlayers = append(dbConfirmedPlayers, confirmedDbPlayer)
 	}
-	dbConfirmedPlayers, unknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, cfg.db.Get)
-	if err != nil {
-		fmt.Println(err)
-	}
+
 	confirmedPlayers := []player.Player{}
 	for _, dbConfirmedPlayer := range dbConfirmedPlayers {
-		confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyClubId, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
+		confirmedPlayers = append(confirmedPlayers, player.FromDB(dbConfirmedPlayer))
 	}
 
-	dbPossiblyAttendingPlayers, unknownPossiblePlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, cfg.db.Get)
+	unknownRows, err := file.GetAttendanceRowsByStatus(attendanceRows, file.AttendanceUnknown)
 	if err != nil {
-		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("unable to get the possibly attending player rows in handler: %v", err)
+		return
 	}
 
-	possiblyAttendingPlayers := []player.Player{}
-	for _, dbPossiblyAttendingPlayer := range dbPossiblyAttendingPlayers {
-		possiblyAttendingPlayers = append(possiblyAttendingPlayers, player.New(dbPossiblyAttendingPlayer.MyClubId, dbPossiblyAttendingPlayer.Name, dbPossiblyAttendingPlayer.RunPower, dbPossiblyAttendingPlayer.BallHandling, dbPossiblyAttendingPlayer.IsGoalie))
+	dbUnknownPlayers := []db.Player{}
+	for _, row := range unknownRows {
+		unknownDbPlayer, err := cfg.queries.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		dbUnknownPlayers = append(dbUnknownPlayers, unknownDbPlayer)
 	}
 
-	for myClubId, attendanceStatus := range unknownPossiblePlayers {
-		unknownPlayers[myClubId] = attendanceStatus
+	unknownPlayers := []player.Player{}
+	for _, dbUnknownPlayer := range dbUnknownPlayers {
+		unknownPlayers = append(unknownPlayers, player.FromDB(dbUnknownPlayer))
 	}
 
 	player.SortByScore(confirmedPlayers)
-	player.SortByScore(possiblyAttendingPlayers)
+	player.SortByScore(unknownPlayers)
 	goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
-	team1, team2, err := team.Distribute(goalies, fieldPlayers)
+	team1, team2, err := practice.Distribute(fieldPlayers, goalies)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("unable to distribute the players in handler: %v", err)
+		return
+	}
+
+	practiceDate, err := file.ParseDate(header.Filename)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to parse date from the file name: %v", err)
+		return
+	}
+
+	newPractice := practice.Practice{
+		TeamOnePlayers: team1,
+		TeamTwoPlayers: team2,
+		UnknownPlayers: unknownPlayers,
+		Date:           practiceDate,
+	}
 
 	if err != nil {
 		fmt.Println(err)
-
 	}
 
-	err = newPractice.AddTeams(team1, team2)
+	// REPO START - Storing the data.
+	tx, err := cfg.db.Begin()
 	if err != nil {
-		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to begin a transaction: %v", err)
+		return
 	}
-	fmt.Println(unknownPlayers)
+	defer tx.Rollback()
 
-	component := components.DistributedTeams(newPractice, possiblyAttendingPlayers, unknownPlayers)
+	queryTx := cfg.queries.WithTx(tx)
+	dbPracticeId, err := queryTx.CreatePractice(r.Context(), newPractice.Date)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to create the practice: %v", err)
+		return
+	}
+	for _, teamOnePlayer := range newPractice.TeamOnePlayers {
+		queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
+			PracticeID: dbPracticeId,
+			PlayerID:   teamOnePlayer.ID,
+			TeamNumber: 1,
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to add player [%d] %s to practice %d in team 1", teamOnePlayer.ID, teamOnePlayer.Name, dbPracticeId)
+			return
+		}
+	}
+
+	for _, teamTwoPlayer := range newPractice.TeamTwoPlayers {
+		queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
+			PracticeID: dbPracticeId,
+			PlayerID:   teamTwoPlayer.ID,
+			TeamNumber: 2,
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to add player [%d] %s to practice %d in team 2", teamTwoPlayer.ID, teamTwoPlayer.Name, dbPracticeId)
+			return
+		}
+	}
+	tx.Commit()
+	// REPO END
+	w.Header().Add("HX-Redirect", fmt.Sprintf("/practice/%d", dbPracticeId))
+}
+
+func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) {
+	practiceId, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unable to parse practice id from path: %v", err)
+		return
+	}
+	dbPracticeRows, err := cfg.queries.GetPracticeWithPlayers(r.Context(), int64(practiceId))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to get practice from database: %v", err)
+		return
+	}
+	currentPractice, err := practice.FromDB(dbPracticeRows)
+	if err != nil {
+		if errors.Is(err, practice.ErrNoPracticeRows) {
+			w.WriteHeader(http.StatusNotFound)
+			log.Printf("user tried to view practice with ID [%d] which doesn't exist", practiceId)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to convert the practice players: %v", err)
+		return
+	}
+	player.SortByScore(currentPractice.TeamOnePlayers)
+	player.SortByScore(currentPractice.TeamTwoPlayers)
+	component := components.PracticePage(currentPractice)
 	component.Render(r.Context(), w)
 }

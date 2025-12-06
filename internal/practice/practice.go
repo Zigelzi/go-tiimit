@@ -1,18 +1,49 @@
 package practice
 
 import (
+	"errors"
+	"time"
+
+	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/player"
-	"github.com/Zigelzi/go-tiimit/internal/team"
 )
 
+var ErrNoPracticeRows = errors.New("no practice rows")
+
 type Practice struct {
-	AttendingPlayers map[int]AttendanceStatus
-	Players          []player.Player
-	Teams            [2]team.Team
+	ID             int64
+	TeamOnePlayers []player.Player
+	TeamTwoPlayers []player.Player
+	UnknownPlayers []player.Player
+	Date           time.Time
 }
 
-func New() Practice {
-	return Practice{
-		AttendingPlayers: make(map[int]AttendanceStatus),
+func FromDB(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice, error) {
+	if len(dbPracticeRows) == 0 {
+		return Practice{}, ErrNoPracticeRows
 	}
+
+	teamOnePlayers := []player.Player{}
+	teamTwoPlayers := []player.Player{}
+	for _, row := range dbPracticeRows {
+		currentPlayer := player.New(
+			row.MyclubID.Int64,
+			row.Name.String,
+			row.RunPower.Float64,
+			row.BallHandling.Float64,
+			row.IsGoalie.Bool,
+		)
+		if row.TeamNumber == 1 {
+			teamOnePlayers = append(teamOnePlayers, currentPlayer)
+		} else if row.TeamNumber == 2 {
+			teamTwoPlayers = append(teamTwoPlayers, currentPlayer)
+		}
+	}
+	newPractice := Practice{
+		ID:             dbPracticeRows[0].PracticeID.Int64,
+		Date:           dbPracticeRows[0].Date.Time,
+		TeamOnePlayers: teamOnePlayers,
+		TeamTwoPlayers: teamTwoPlayers,
+	}
+	return newPractice, nil
 }

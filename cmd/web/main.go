@@ -19,7 +19,8 @@ func main() {
 		return
 	}
 	cfg := webConfig{
-		db:      db.New(newDb),
+		queries: db.New(newDb),
+		db:      newDb,
 		address: ":8080",
 		env:     "development",
 	}
@@ -36,7 +37,11 @@ func main() {
 	mux.Handle("/static/", disableCacheInDevMode(http.StripPrefix("/static/", fileserver), cfg.env))
 
 	mux.HandleFunc("/", cfg.handleIndexPage)
-	mux.HandleFunc("POST /api/attendees", cfg.handleSubmitAttendanceList)
+
+	// Practices
+	mux.HandleFunc("GET /practice/{id}", cfg.handleViewPractice)
+	mux.HandleFunc("POST /practice", cfg.handleCreatePractice)
+
 	server := http.Server{
 		Handler: mux,
 		Addr:    cfg.address,

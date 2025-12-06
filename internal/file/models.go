@@ -12,12 +12,12 @@ type FileName struct {
 }
 
 type PlayerRow struct {
-	MyClubId int
+	MyclubID int
 	Name     string
 }
 
-func newPlayerRow(newMyClubId, name string) (PlayerRow, error) {
-	myClubId, err := strconv.Atoi(newMyClubId)
+func newPlayerRow(newMyclubID, name string) (PlayerRow, error) {
+	myclubID, err := strconv.Atoi(newMyclubID)
 	if err != nil {
 		return PlayerRow{}, fmt.Errorf("unable to convert MyClubId to integer: %w", err)
 	}
@@ -28,7 +28,7 @@ func newPlayerRow(newMyClubId, name string) (PlayerRow, error) {
 	}
 
 	return PlayerRow{
-			MyClubId: myClubId,
+			MyclubID: myclubID,
 			Name:     name,
 		},
 		nil
@@ -40,8 +40,8 @@ type ClubPlayerRow struct {
 	RunPower     float64
 }
 
-func newClubPlayerRow(myClubId, name, runPower, ballHandling string) (ClubPlayerRow, error) {
-	playerRow, err := newPlayerRow(myClubId, name)
+func newClubPlayerRow(myclubID, name, runPower, ballHandling string) (ClubPlayerRow, error) {
+	playerRow, err := newPlayerRow(myclubID, name)
 	if err != nil {
 		return ClubPlayerRow{}, fmt.Errorf("failed to create base player row: %w", err)
 	}
@@ -78,30 +78,22 @@ func newClubPlayerRow(myClubId, name, runPower, ballHandling string) (ClubPlayer
 
 type AttendancePlayerRow struct {
 	PlayerRow  PlayerRow
-	Attendance string
+	Attendance AttendanceStatus
 }
 
-func newAttendancePlayerRow(myClubId, name, attendanceStatus string) (AttendancePlayerRow, error) {
-	playerRow, err := newPlayerRow(myClubId, name)
+func newAttendancePlayerRow(myclubID, name, attendanceStatus string) (AttendancePlayerRow, error) {
+	playerRow, err := newPlayerRow(myclubID, name)
 	if err != nil {
 		return AttendancePlayerRow{}, fmt.Errorf("failed to create base player row: %w", err)
 	}
-	if !isValidStatus(attendanceStatus) {
-		return AttendancePlayerRow{}, fmt.Errorf("unknown attendance status %s: %w", attendanceStatus, err)
+
+	parsedAttendance := determineStatus(attendanceStatus)
+	if parsedAttendance == AttendanceInvalid {
+		return AttendancePlayerRow{}, fmt.Errorf("invalid attendance status %s: %w", attendanceStatus, err)
 	}
 	return AttendancePlayerRow{
 			PlayerRow:  playerRow,
-			Attendance: attendanceStatus,
+			Attendance: parsedAttendance,
 		},
 		nil
-}
-
-func isValidStatus(attendanceStatus string) bool {
-	validStatuses := [3]string{"Osallistuu", "Ei osallistu", "Ei vastausta"}
-	for _, status := range validStatuses {
-		if status == attendanceStatus {
-			return true
-		}
-	}
-	return false
 }

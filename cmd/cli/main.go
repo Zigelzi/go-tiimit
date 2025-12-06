@@ -1,27 +1,38 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
-	"github.com/Zigelzi/go-tiimit/internal/team"
 	"github.com/manifoldco/promptui"
 )
 
 func main() {
-	db.Init()
-	defer db.DB.Close()
+	newDb, err := db.InitDB()
+	if err != nil {
+		log.Fatalf("initializing database failed: %v", err)
+		return
+	}
+	defer newDb.Close()
+
+	cfg := cliConfig{
+		queries: db.New(newDb),
+		db:      newDb,
+	}
 	for {
-		if !selectAction() {
+		if !selectAction(cfg) {
 			break
 		}
 	}
 }
 
-func selectAction() bool {
+func selectAction(cfg cliConfig) bool {
 	// TODO: Move selecting create/import action to it's own function.
 	actions := []string{
 		"Create teams for a practice by importing MyClub attendees",
@@ -40,7 +51,6 @@ func selectAction() bool {
 
 	switch result {
 	case actions[0]:
-		newPractice := practice.New()
 
 		var attendanceDirectory = "attendance-files/"
 		fileName, err := file.Select(attendanceDirectory)
@@ -50,47 +60,61 @@ func selectAction() bool {
 		}
 
 		attendancePlayerRows, _ := file.ImportAttendancePlayerRowsFromPath(attendanceDirectory + fileName)
-		for _, row := range attendancePlayerRows {
-			err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
+		confirmedRows, err := file.GetAttendanceRowsByStatus(attendancePlayerRows, file.AttendanceIn)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		dbConfirmedPlayers := []db.Player{}
+		for _, row := range confirmedRows {
+			confirmedDbPlayer, err := cfg.queries.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-		}
-
-		dbConfirmedPlayers, _, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, player.Get)
-		if err != nil {
-			fmt.Println(err)
+			dbConfirmedPlayers = append(dbConfirmedPlayers, confirmedDbPlayer)
 		}
 		confirmedPlayers := []player.Player{}
 		for _, dbConfirmedPlayer := range dbConfirmedPlayers {
-			confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyClubId, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
+			confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyclubID, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
 		}
 
-		dbUnknownPlayers, _, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, player.Get)
+		unknownRows, err := file.GetAttendanceRowsByStatus(attendancePlayerRows, file.AttendanceUnknown)
 		if err != nil {
 			fmt.Println(err)
+			break
+		}
+
+		dbUnknownPlayers := []db.Player{}
+		for _, row := range unknownRows {
+			unknownDbPlayer, err := cfg.queries.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			dbUnknownPlayers = append(dbUnknownPlayers, unknownDbPlayer)
 		}
 
 		unknownPlayers := []player.Player{}
 		for _, dbUnknownPlayer := range dbUnknownPlayers {
-			unknownPlayers = append(unknownPlayers, player.New(dbUnknownPlayer.MyClubId, dbUnknownPlayer.Name, dbUnknownPlayer.RunPower, dbUnknownPlayer.BallHandling, dbUnknownPlayer.IsGoalie))
+			unknownPlayers = append(unknownPlayers, player.New(dbUnknownPlayer.MyclubID, dbUnknownPlayer.Name, dbUnknownPlayer.RunPower, dbUnknownPlayer.BallHandling, dbUnknownPlayer.IsGoalie))
 		}
 
 		player.SortByScore(confirmedPlayers)
 		player.SortByScore(unknownPlayers)
 		goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
-		team1, team2, err := team.Distribute(goalies, fieldPlayers)
+		team1, team2, err := practice.Distribute(fieldPlayers, goalies)
 
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
 
-		err = newPractice.AddTeams(team1, team2)
-		if err != nil {
-			fmt.Println(err)
-			break
+		newPractice := practice.Practice{
+			TeamOnePlayers: team1,
+			TeamTwoPlayers: team2,
+			Date:           time.Now(),
 		}
 
 		newPractice.PrintTeams()
@@ -99,7 +123,7 @@ func selectAction() bool {
 		}
 
 	case actions[1]:
-		err := player.Manage()
+		err := player.Manage(cfg.queries)
 		if err != nil {
 			fmt.Println(err)
 		}

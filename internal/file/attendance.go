@@ -1,4 +1,4 @@
-package practice
+package file
 
 type AttendanceStatus int
 
@@ -32,4 +32,14 @@ func determineStatus(status string) AttendanceStatus {
 		return AttendanceInvalid
 	}
 	return result
+}
+
+func GetAttendanceRowsByStatus(rows []AttendancePlayerRow, desired AttendanceStatus) ([]AttendancePlayerRow, error) {
+	filteredRows := []AttendancePlayerRow{}
+	for _, row := range rows {
+		if row.Attendance == desired {
+			filteredRows = append(filteredRows, row)
+		}
+	}
+	return filteredRows, nil
 }

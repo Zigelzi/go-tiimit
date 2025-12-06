@@ -3,8 +3,6 @@ package file
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
-	"time"
 
 	"github.com/manifoldco/promptui"
 )
@@ -22,7 +20,7 @@ func Select(path string) (string, error) {
 	var fileNames []FileName
 	for _, path := range filePaths {
 		fileName := FileName{Path: filepath.Base(path)}
-		date, err := parseDate(path)
+		date, err := ParseDate(path)
 		if err != nil {
 			// Errors from parsing don't need to stop the whole function.
 			fmt.Println(err)
@@ -66,30 +64,4 @@ func choose(fileNames []FileName) (string, error) {
 	}
 
 	return fileNames[i].Path, nil
-}
-
-func parseDate(fileName string) (time.Time, error) {
-	dateStr, err := findDate(fileName)
-	if err != nil {
-		return time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC), fmt.Errorf("failed to find date: %w", err)
-	}
-
-	date, err := time.Parse(time.DateOnly, dateStr)
-	if err != nil {
-		return time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC), fmt.Errorf("failed to parse date: %w", err)
-	}
-	return date, err
-}
-
-func findDate(str string) (string, error) {
-	const datePattern = `\d{4}-\d{2}-\d{2}` // yyyy-mm-dd
-	r, err := regexp.Compile(datePattern)
-	if err != nil {
-		return "", fmt.Errorf("failed to compile regex: %w", err)
-	}
-	dateStr := r.FindString(str)
-	if dateStr == "" {
-		return "", fmt.Errorf("%s doesn't contain date with pattern yyyy-mm-dd", str)
-	}
-	return dateStr, nil
 }

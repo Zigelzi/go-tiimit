@@ -4,11 +4,10 @@ import (
 	"database/sql"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-type webConfig struct {
+type cliConfig struct {
 	queries *db.Queries
 	db      *sql.DB
-	address string
-	env     string
 }

@@ -3,7 +3,7 @@
 # Default url: http://localhost:7331
 dev/templ:
 	@echo "\n\nStarting templ watch"
-	templ generate -path ./cmd/web -watch -proxy="http://localhost:8080" --open-browser=false -v
+	templ generate -path ./cmd/web -watch -proxy="http://localhost:8080" --open-browser=false
 
 # run air to detect any go file changes to re-build and re-run the server.
 dev/server:

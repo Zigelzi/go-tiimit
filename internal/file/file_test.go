@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -22,7 +23,7 @@ func TestNewPlayerRow(t *testing.T) {
 			playerName: "Matti Meikäläinen",
 			wantErr:    false,
 			expectedRow: PlayerRow{
-				MyClubId: 123,
+				MyclubID: 123,
 				Name:     "Matti Meikäläinen",
 			},
 		},
@@ -90,7 +91,7 @@ func TestNewClubPlayerRow(t *testing.T) {
 			wantErr:      false,
 			expectedRow: ClubPlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				RunPower:     10.0,
@@ -106,7 +107,7 @@ func TestNewClubPlayerRow(t *testing.T) {
 			wantErr:      false,
 			expectedRow: ClubPlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				RunPower:     0.0,
@@ -122,7 +123,7 @@ func TestNewClubPlayerRow(t *testing.T) {
 			wantErr:      false,
 			expectedRow: ClubPlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				RunPower:     10.0,
@@ -225,54 +226,54 @@ func TestNewAttendancePlayerRow(t *testing.T) {
 		expectedRow      AttendancePlayerRow
 	}{
 		{
-			name:             "Valid information AttendanceIn",
+			name:             "creates attendance row for attending player",
 			myClubId:         "123",
 			playerName:       "Matti Meikäläinen",
 			attendanceStatus: "Osallistuu",
 			wantErr:          false,
 			expectedRow: AttendancePlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
-				Attendance: "Osallistuu",
+				Attendance: AttendanceIn,
 			},
 		},
 		{
-			name:             "Valid information AttendanceOut",
+			name:             "creates attendance row for unattending player",
 			myClubId:         "123",
 			playerName:       "Matti Meikäläinen",
 			attendanceStatus: "Ei osallistu",
 			wantErr:          false,
 			expectedRow: AttendancePlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
-				Attendance: "Ei osallistu",
+				Attendance: AttendanceOut,
 			},
 		},
 		{
-			name:             "Valid information AttendanceUnknown",
+			name:             "creates attendance row for player which attendance is not known",
 			myClubId:         "123",
 			playerName:       "Matti Meikäläinen",
 			attendanceStatus: "Ei vastausta",
 			wantErr:          false,
 			expectedRow: AttendancePlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
-				Attendance: "Ei vastausta",
+				Attendance: AttendanceUnknown,
 			},
 		},
 		{
-			name:             "Invalid information Unknown attendance status",
+			name:             "doesn't create attendance row when attendance status is invalid",
 			myClubId:         "123",
 			playerName:       "Matti Meikäläinen",
 			attendanceStatus: "Wutisdis",
 			wantErr:          true,
-			expectedError:    "unknown attendance status",
+			expectedError:    "invalid attendance status",
 			expectedRow:      AttendancePlayerRow{},
 		},
 	}
@@ -396,9 +397,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Osallistuu"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Osallistuu"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Osallistuu"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Osallistuu"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceIn},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceIn},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceIn},
 			},
 		},
 		{
@@ -409,9 +410,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Ei osallistu"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Ei osallistu"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei osallistu"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei osallistu"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceOut},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceOut},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceOut},
 			},
 		},
 		{
@@ -422,9 +423,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Ei vastausta"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Ei vastausta"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei vastausta"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei vastausta"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceUnknown},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceUnknown},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceUnknown},
 			},
 		},
 		{
@@ -435,9 +436,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Ei vastausta"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Osallistuu"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei osallistu"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei vastausta"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceIn},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceOut},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceUnknown},
 			},
 		},
 	}
@@ -490,7 +491,7 @@ func TestParseDate(t *testing.T) {
 
 		for _, testCase := range testCases {
 			t.Run(testCase.name, func(t *testing.T) {
-				actualDate, err := parseDate(testCase.fileName)
+				actualDate, err := ParseDate(testCase.fileName)
 
 				if err != nil {
 					t.Errorf("unexpected error: got [%v] want [nil]", err)
@@ -532,7 +533,7 @@ func TestParseDate(t *testing.T) {
 		}
 
 		for _, testCase := range testCases {
-			actualDate, err := parseDate(testCase.fileName)
+			actualDate, err := ParseDate(testCase.fileName)
 
 			if err == nil {
 				t.Errorf("missing error: got [nil] want [%v]", testCase.expectedErr)
@@ -629,4 +630,86 @@ func TestFindDate(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestPlayerAttendanceFiltering(t *testing.T) {
+	type testCase struct {
+		name                   string
+		attendancePlayerRows   []AttendancePlayerRow
+		attendanceStatus       AttendanceStatus
+		expectedAttendanceRows []AttendancePlayerRow
+		expectedErr            error
+	}
+
+	defaultAttendancePlayerRows := []AttendancePlayerRow{
+		{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceIn},
+		{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Kaija Kaarela"}, Attendance: AttendanceIn},
+		{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Teppo Teikäläinen"}, Attendance: AttendanceOut},
+		{PlayerRow: PlayerRow{MyclubID: 4444, Name: "Saija Sappi"}, Attendance: AttendanceOut},
+		{PlayerRow: PlayerRow{MyclubID: 5555, Name: "Aamos Kukko"}, Attendance: AttendanceUnknown},
+		{PlayerRow: PlayerRow{MyclubID: 6666, Name: "Kati Paarila"}, Attendance: AttendanceUnknown},
+	}
+
+	testCases := []testCase{
+		{
+			name:                 "retrieves players marked as attending",
+			attendancePlayerRows: defaultAttendancePlayerRows,
+			attendanceStatus:     AttendanceIn,
+			expectedAttendanceRows: []AttendancePlayerRow{
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceIn},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Kaija Kaarela"}, Attendance: AttendanceIn},
+			},
+			expectedErr: nil,
+		},
+		{
+			name:                 "retrieves players marked as not attending",
+			attendancePlayerRows: defaultAttendancePlayerRows,
+			attendanceStatus:     AttendanceOut,
+			expectedAttendanceRows: []AttendancePlayerRow{
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Teppo Teikäläinen"}, Attendance: AttendanceOut},
+				{PlayerRow: PlayerRow{MyclubID: 4444, Name: "Saija Sappi"}, Attendance: AttendanceOut},
+			},
+			expectedErr: nil,
+		},
+		{
+			name:                 "retrieves players who haven't responded",
+			attendancePlayerRows: defaultAttendancePlayerRows,
+			attendanceStatus:     AttendanceUnknown,
+			expectedAttendanceRows: []AttendancePlayerRow{
+				{PlayerRow: PlayerRow{MyclubID: 5555, Name: "Aamos Kukko"}, Attendance: AttendanceUnknown},
+				{PlayerRow: PlayerRow{MyclubID: 6666, Name: "Kati Paarila"}, Attendance: AttendanceUnknown},
+			},
+			expectedErr: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualAttendanceRows, err := GetAttendanceRowsByStatus(testCase.attendancePlayerRows, testCase.attendanceStatus)
+
+			if testCase.expectedErr != nil {
+				if err == nil {
+					t.Error("expected error, got [nil]")
+					return
+				}
+
+				if errors.Is(err, testCase.expectedErr) == false {
+					t.Errorf("errors don't match: got [%s] want [%s]", err, testCase.expectedErr)
+				}
+
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: got [%v] want [nil]", err)
+					return
+				}
+			}
+
+			if len(actualAttendanceRows) != len(testCase.expectedAttendanceRows) {
+				t.Errorf("number of returned attendance player rows don't match: got [%d] want [%d]", len(actualAttendanceRows), len(testCase.expectedAttendanceRows))
+			}
+			if reflect.DeepEqual(actualAttendanceRows, testCase.expectedAttendanceRows) == false {
+				t.Errorf("returned attendance player rows don't match: got [%v] want [%v]", actualAttendanceRows, testCase.expectedAttendanceRows)
+			}
+		})
+	}
 }

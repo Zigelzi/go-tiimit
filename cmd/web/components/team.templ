@@ -1,0 +1,26 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/internal/player"
+import "fmt"
+
+templ team(players []player.Player, teamNumber int) {
+	<div class="mb-8">
+		<h2 class="font-bold">Team { teamNumber }</h2>
+		for _, player := range players {
+			if len(players) > 0 {
+				<ol>
+					<li>
+						{ player.Name }
+						if player.IsGoalie {
+							<span>[{ fmt.Sprintf("%.1f", player.Score()) } / Goalie]</span>
+						} else {
+							<span>[{ fmt.Sprintf("%.1f", player.Score()) }]</span>
+						}
+					</li>
+				</ol>
+			} else {
+				<p>No players in team { teamNumber }</p>
+			}
+		}
+	</div>
+}
