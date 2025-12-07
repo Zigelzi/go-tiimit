@@ -1,6 +1,7 @@
 package practice
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -17,13 +18,13 @@ func (p *Practice) AddPlayer(myClubId int, status string) error {
 	return nil
 }
 
-func (p *Practice) GetPlayersByStatus(status AttendanceStatus, playerGetter func(int64) (db.Player, error)) (players []db.Player, unknownPlayerIds []int, allErrors error) {
+func (p *Practice) GetPlayersByStatus(ctx context.Context, status AttendanceStatus, playerGetter func(context.Context, int64) (db.Player, error)) (players []db.Player, unknownPlayerIds []int, allErrors error) {
 	currentErrors := []error{}
 	for myClubId, playerStatus := range p.AttendingPlayers {
 		if status != playerStatus {
 			continue
 		}
-		player, err := playerGetter(int64(myClubId))
+		player, err := playerGetter(ctx, int64(myClubId))
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				unknownPlayerIds = append(unknownPlayerIds, myClubId)

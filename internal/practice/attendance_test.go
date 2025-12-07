@@ -1,6 +1,7 @@
 package practice
 
 import (
+	"context"
 	"database/sql"
 	"slices"
 	"strings"
@@ -100,8 +101,8 @@ func TestGetPlayersByStatus(t *testing.T) {
 			status:  AttendanceIn,
 			wantErr: false,
 			expectedPlayers: []db.Player{
-				{MyClubId: 1000, Name: "Matti Meikäläinen"},
-				{MyClubId: 1001, Name: "Teppo Teikäläinen"},
+				{MyclubID: 1000, Name: "Matti Meikäläinen"},
+				{MyclubID: 1001, Name: "Teppo Teikäläinen"},
 			},
 		},
 		{
@@ -133,8 +134,8 @@ func TestGetPlayersByStatus(t *testing.T) {
 			status:  AttendanceUnknown,
 			wantErr: false,
 			expectedPlayers: []db.Player{
-				{MyClubId: 1004, Name: "Tero Taapu"},
-				{MyClubId: 1005, Name: "Lauri Laatu"},
+				{MyclubID: 1004, Name: "Tero Taapu"},
+				{MyclubID: 1005, Name: "Lauri Laatu"},
 			},
 		},
 		{
@@ -166,8 +167,8 @@ func TestGetPlayersByStatus(t *testing.T) {
 			status:  AttendanceOut,
 			wantErr: false,
 			expectedPlayers: []db.Player{
-				{MyClubId: 1002, Name: "Seppo Seikäläinen"},
-				{MyClubId: 1003, Name: "Kati Kaapu"},
+				{MyclubID: 1002, Name: "Seppo Seikäläinen"},
+				{MyclubID: 1003, Name: "Kati Kaapu"},
 			},
 		},
 		{
@@ -198,7 +199,7 @@ func TestGetPlayersByStatus(t *testing.T) {
 			}, status: AttendanceIn,
 			wantErr: false,
 			expectedPlayers: []db.Player{
-				{MyClubId: 1001, Name: "Teppo Teikäläinen"},
+				{MyclubID: 1001, Name: "Teppo Teikäläinen"},
 			},
 			expectedUnknownPlayerIds: []int{9999},
 		},
@@ -206,7 +207,7 @@ func TestGetPlayersByStatus(t *testing.T) {
 	for _, testCase := range tests {
 		t.Run(testCase.name, func(t *testing.T) {
 			p := testCase.setupPractice()
-			players, unknownPlayerIds, err := p.GetPlayersByStatus(testCase.status, mockPlayerGetter)
+			players, unknownPlayerIds, err := p.GetPlayersByStatus(context.Background(), testCase.status, mockPlayerGetter)
 			if testCase.wantErr {
 				if err == nil {
 					t.Errorf("error is missing: got [nil] want [%s]", testCase.expectedErr)
@@ -236,14 +237,14 @@ func TestGetPlayersByStatus(t *testing.T) {
 	}
 }
 
-func mockPlayerGetter(id int64) (db.Player, error) {
+func mockPlayerGetter(ctx context.Context, id int64) (db.Player, error) {
 	players := map[int64]db.Player{
-		1000: {MyClubId: 1000, Name: "Matti Meikäläinen"},
-		1001: {MyClubId: 1001, Name: "Teppo Teikäläinen"},
-		1002: {MyClubId: 1002, Name: "Seppo Seikäläinen"},
-		1003: {MyClubId: 1003, Name: "Kati Kaapu"},
-		1004: {MyClubId: 1004, Name: "Tero Taapu"},
-		1005: {MyClubId: 1005, Name: "Lauri Laatu"},
+		1000: {MyclubID: 1000, Name: "Matti Meikäläinen"},
+		1001: {MyclubID: 1001, Name: "Teppo Teikäläinen"},
+		1002: {MyclubID: 1002, Name: "Seppo Seikäläinen"},
+		1003: {MyclubID: 1003, Name: "Kati Kaapu"},
+		1004: {MyclubID: 1004, Name: "Tero Taapu"},
+		1005: {MyclubID: 1005, Name: "Lauri Laatu"},
 	}
 
 	queriedPlayer, exists := players[id]
@@ -259,7 +260,7 @@ func assertEqualPlayers(t *testing.T, got, want []db.Player) {
 
 	for _, wantPlayer := range want {
 		if !slices.Contains(got, wantPlayer) {
-			t.Errorf("wanted player [%d] %s missing from got players", wantPlayer.MyClubId, wantPlayer.Name)
+			t.Errorf("wanted player [%d] %s missing from got players", wantPlayer.MyclubID, wantPlayer.Name)
 			t.Errorf("got %v", got)
 		}
 	}
@@ -270,7 +271,7 @@ func assertEqualUnknownPlayerIds(t *testing.T, got, want []int) {
 
 	for _, wantMyClubId := range want {
 		if !slices.Contains(got, wantMyClubId) {
-			t.Errorf("unknown MyClubId not found: want [%d]", wantMyClubId)
+			t.Errorf("unknown MyclubID not found: want [%d]", wantMyClubId)
 			t.Errorf("got MyClubIds: %v", got)
 		}
 	}

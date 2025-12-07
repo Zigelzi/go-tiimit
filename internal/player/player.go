@@ -1,6 +1,11 @@
 package player
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+
+	"github.com/Zigelzi/go-tiimit/internal/db"
+)
 
 type Player struct {
 	id           int64
@@ -45,7 +50,7 @@ func (player Player) Details() (details string) {
 	}
 }
 
-func (player Player) UpdateRunPower(newRunPower float64) error {
+func (player Player) UpdateRunPower(dbQuery *db.Queries, newRunPower float64) error {
 	if newRunPower < 0 {
 		newRunPower = 0
 	}
@@ -54,7 +59,10 @@ func (player Player) UpdateRunPower(newRunPower float64) error {
 	}
 
 	previousRunPower := player.runPower
-	err := updateRunPower(player.MyClubId, newRunPower)
+	err := dbQuery.UpdatePlayerRunPower(context.Background(), db.UpdatePlayerRunPowerParams{
+		MyclubID: player.MyClubId,
+		RunPower: player.runPower,
+	})
 	if err != nil {
 		return fmt.Errorf("unable to update player ID [%d] run power to [%.2f]: %w", player.MyClubId, newRunPower, err)
 	}

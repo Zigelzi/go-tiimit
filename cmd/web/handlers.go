@@ -33,37 +33,18 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	}
 	fmt.Printf("parsed %d rows from attendance excel\n", len(attendanceRows))
 
-	newPractice := practice.New()
-	for _, row := range attendanceRows {
-		err := newPractice.AddPlayer(row.PlayerRow.MyClubId, row.Attendance)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-	}
-	dbConfirmedPlayers, unknownPlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceIn, cfg.db.Get)
-	if err != nil {
-		fmt.Println(err)
-	}
+	// Get the attending player MyClubIds from excel
+	// Distribute the attending players to two teams
+
+	// Get the possibly attending players MyClubId from excel
+	// Add the players possibly attending to the practice
+
+	// Store practice to DB
+	// Show the practice to user
+
 	confirmedPlayers := []player.Player{}
-	for _, dbConfirmedPlayer := range dbConfirmedPlayers {
-		confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyClubId, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
-	}
-
-	dbPossiblyAttendingPlayers, unknownPossiblePlayers, err := newPractice.GetPlayersByStatus(practice.AttendanceUnknown, cfg.db.Get)
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	possiblyAttendingPlayers := []player.Player{}
-	for _, dbPossiblyAttendingPlayer := range dbPossiblyAttendingPlayers {
-		possiblyAttendingPlayers = append(possiblyAttendingPlayers, player.New(dbPossiblyAttendingPlayer.MyClubId, dbPossiblyAttendingPlayer.Name, dbPossiblyAttendingPlayer.RunPower, dbPossiblyAttendingPlayer.BallHandling, dbPossiblyAttendingPlayer.IsGoalie))
-	}
-
-	for myClubId, attendanceStatus := range unknownPossiblePlayers {
-		unknownPlayers[myClubId] = attendanceStatus
-	}
-
+	unknownPlayers := []int{}
 	player.SortByScore(confirmedPlayers)
 	player.SortByScore(possiblyAttendingPlayers)
 	goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
@@ -71,9 +52,9 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 
 	if err != nil {
 		fmt.Println(err)
-
 	}
 
+	newPractice := practice.New()
 	err = newPractice.AddTeams(team1, team2)
 	if err != nil {
 		fmt.Println(err)

@@ -22,7 +22,7 @@ func TestNewPlayerRow(t *testing.T) {
 			playerName: "Matti Meikäläinen",
 			wantErr:    false,
 			expectedRow: PlayerRow{
-				MyClubId: 123,
+				MyclubID: 123,
 				Name:     "Matti Meikäläinen",
 			},
 		},
@@ -90,7 +90,7 @@ func TestNewClubPlayerRow(t *testing.T) {
 			wantErr:      false,
 			expectedRow: ClubPlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				RunPower:     10.0,
@@ -106,7 +106,7 @@ func TestNewClubPlayerRow(t *testing.T) {
 			wantErr:      false,
 			expectedRow: ClubPlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				RunPower:     0.0,
@@ -122,7 +122,7 @@ func TestNewClubPlayerRow(t *testing.T) {
 			wantErr:      false,
 			expectedRow: ClubPlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				RunPower:     10.0,
@@ -232,7 +232,7 @@ func TestNewAttendancePlayerRow(t *testing.T) {
 			wantErr:          false,
 			expectedRow: AttendancePlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				Attendance: "Osallistuu",
@@ -246,7 +246,7 @@ func TestNewAttendancePlayerRow(t *testing.T) {
 			wantErr:          false,
 			expectedRow: AttendancePlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				Attendance: "Ei osallistu",
@@ -260,7 +260,7 @@ func TestNewAttendancePlayerRow(t *testing.T) {
 			wantErr:          false,
 			expectedRow: AttendancePlayerRow{
 				PlayerRow: PlayerRow{
-					MyClubId: 123,
+					MyclubID: 123,
 					Name:     "Matti Meikäläinen",
 				},
 				Attendance: "Ei vastausta",
@@ -396,9 +396,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Osallistuu"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Osallistuu"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Osallistuu"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Osallistuu"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: "Osallistuu"},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Osallistuu"},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: "Osallistuu"},
 			},
 		},
 		{
@@ -409,9 +409,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Ei osallistu"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Ei osallistu"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei osallistu"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei osallistu"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: "Ei osallistu"},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei osallistu"},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei osallistu"},
 			},
 		},
 		{
@@ -422,9 +422,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Ei vastausta"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Ei vastausta"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei vastausta"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei vastausta"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: "Ei vastausta"},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei vastausta"},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei vastausta"},
 			},
 		},
 		{
@@ -435,9 +435,9 @@ func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
 				{"3333", "Kaija Kaarela", "Nainen", "Ei vastausta"},
 			},
 			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyClubId: 1111, Name: "Matti Meikäläinen"}, Attendance: "Osallistuu"},
-				{PlayerRow: PlayerRow{MyClubId: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei osallistu"},
-				{PlayerRow: PlayerRow{MyClubId: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei vastausta"},
+				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: "Osallistuu"},
+				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: "Ei osallistu"},
+				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: "Ei vastausta"},
 			},
 		},
 	}
