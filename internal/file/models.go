@@ -78,7 +78,7 @@ func newClubPlayerRow(myclubID, name, runPower, ballHandling string) (ClubPlayer
 
 type AttendancePlayerRow struct {
 	PlayerRow  PlayerRow
-	Attendance string
+	Attendance AttendanceStatus
 }
 
 func newAttendancePlayerRow(myclubID, name, attendanceStatus string) (AttendancePlayerRow, error) {
@@ -86,22 +86,14 @@ func newAttendancePlayerRow(myclubID, name, attendanceStatus string) (Attendance
 	if err != nil {
 		return AttendancePlayerRow{}, fmt.Errorf("failed to create base player row: %w", err)
 	}
-	if !isValidStatus(attendanceStatus) {
-		return AttendancePlayerRow{}, fmt.Errorf("unknown attendance status %s: %w", attendanceStatus, err)
+
+	parsedAttendance := determineStatus(attendanceStatus)
+	if parsedAttendance == AttendanceInvalid {
+		return AttendancePlayerRow{}, fmt.Errorf("invalid attendance status %s: %w", attendanceStatus, err)
 	}
 	return AttendancePlayerRow{
 			PlayerRow:  playerRow,
-			Attendance: attendanceStatus,
+			Attendance: parsedAttendance,
 		},
 		nil
-}
-
-func isValidStatus(attendanceStatus string) bool {
-	validStatuses := [3]string{"Osallistuu", "Ei osallistu", "Ei vastausta"}
-	for _, status := range validStatuses {
-		if status == attendanceStatus {
-			return true
-		}
-	}
-	return false
 }

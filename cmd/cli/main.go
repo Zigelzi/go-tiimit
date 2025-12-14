@@ -60,34 +60,40 @@ func selectAction(cfg cliConfig) bool {
 		}
 
 		attendancePlayerRows, _ := file.ImportAttendancePlayerRowsFromPath(attendanceDirectory + fileName)
-		for _, row := range attendancePlayerRows {
-			err := newPractice.AddPlayer(row.PlayerRow.MyclubID, row.Attendance)
+		confirmedRows, err := file.GetAttendanceRowsByStatus(attendancePlayerRows, file.AttendanceIn)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		dbConfirmedPlayers := []db.Player{}
+		for _, row := range confirmedRows {
+			confirmedDbPlayer, err := cfg.db.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-		}
-
-		dbConfirmedPlayers, _, err := newPractice.GetPlayersByStatus(
-			context.Background(),
-			practice.AttendanceIn,
-			cfg.db.GetPlayerByMyclubID,
-		)
-		if err != nil {
-			fmt.Println(err)
+			dbConfirmedPlayers = append(dbConfirmedPlayers, confirmedDbPlayer)
 		}
 		confirmedPlayers := []player.Player{}
 		for _, dbConfirmedPlayer := range dbConfirmedPlayers {
 			confirmedPlayers = append(confirmedPlayers, player.New(dbConfirmedPlayer.MyclubID, dbConfirmedPlayer.Name, dbConfirmedPlayer.RunPower, dbConfirmedPlayer.BallHandling, dbConfirmedPlayer.IsGoalie))
 		}
 
-		dbUnknownPlayers, _, err := newPractice.GetPlayersByStatus(
-			context.Background(),
-			practice.AttendanceIn,
-			cfg.db.GetPlayerByMyclubID,
-		)
+		unknownRows, err := file.GetAttendanceRowsByStatus(attendancePlayerRows, file.AttendanceUnknown)
 		if err != nil {
 			fmt.Println(err)
+			break
+		}
+
+		dbUnknownPlayers := []db.Player{}
+		for _, row := range unknownRows {
+			unknownDbPlayer, err := cfg.db.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			dbUnknownPlayers = append(dbUnknownPlayers, unknownDbPlayer)
 		}
 
 		unknownPlayers := []player.Player{}
