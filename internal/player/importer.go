@@ -19,13 +19,16 @@ func ImportToClub(dbQuery *db.Queries) error {
 	}
 
 	playerRows, err := file.ImportClubPlayerRows(playerDirectory + fileName)
-	var errColumnCount *file.ErrorIncorrectColumnCount
 
-	if errors.As(err, &errColumnCount) {
-		fmt.Println(errColumnCount.Msg)
-		fmt.Println(errColumnCount.ErrorList)
-	} else {
-		return err
+	if err != nil {
+		var errColumnCount *file.ErrorIncorrectColumnCount
+		if errors.As(err, &errColumnCount) {
+			fmt.Println(errColumnCount.Msg)
+			fmt.Println(errColumnCount.ErrorList)
+		} else {
+			return err
+		}
+
 	}
 
 	var addedPlayers []Player

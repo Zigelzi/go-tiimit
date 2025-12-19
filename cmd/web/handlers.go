@@ -54,7 +54,7 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 		fmt.Println(err)
 	}
 
-	newPractice := practice.New()
+	newPractice := practice.Practice{}
 	err = newPractice.AddTeams(team1, team2)
 	if err != nil {
 		fmt.Println(err)

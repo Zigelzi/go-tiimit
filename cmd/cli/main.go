@@ -50,7 +50,6 @@ func selectAction(cfg cliConfig) bool {
 
 	switch result {
 	case actions[0]:
-		newPractice := practice.New()
 
 		var attendanceDirectory = "attendance-files/"
 		fileName, err := file.Select(attendanceDirectory)
@@ -111,6 +110,7 @@ func selectAction(cfg cliConfig) bool {
 			break
 		}
 
+		newPractice := practice.Practice{}
 		err = newPractice.AddTeams(team1, team2)
 		if err != nil {
 			fmt.Println(err)
