@@ -38,16 +38,16 @@ func TestDistributingPlayers(t *testing.T) {
 			goalies:      goalies,
 			expectedErr:  nil,
 			expectedTeamOnePlayers: []player.Player{
-				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
-				{MyClubId: 1007, Name: "Kalevi Kuurula", IsGoalie: false},
-				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
-				{MyClubId: 1003, Name: "Saija Siirappi", IsGoalie: true},
-			},
-			expectedTeamTwoPlayers: []player.Player{
 				{MyClubId: 1004, Name: "Lauri Laavu", IsGoalie: false},
 				{MyClubId: 1006, Name: "Tarja Tyyry", IsGoalie: false},
 				{MyClubId: 1000, Name: "Matti Meikäläinen", IsGoalie: true},
 				{MyClubId: 1002, Name: "Kaija Karppi", IsGoalie: true},
+			},
+			expectedTeamTwoPlayers: []player.Player{
+				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
+				{MyClubId: 1007, Name: "Kalevi Kuurula", IsGoalie: false},
+				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
+				{MyClubId: 1003, Name: "Saija Siirappi", IsGoalie: true},
 			},
 		},
 		{
@@ -56,15 +56,15 @@ func TestDistributingPlayers(t *testing.T) {
 			goalies:      goalies[:3],
 			expectedErr:  nil,
 			expectedTeamOnePlayers: []player.Player{
-				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
-				{MyClubId: 1007, Name: "Kalevi Kuurula", IsGoalie: false},
-				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
-			},
-			expectedTeamTwoPlayers: []player.Player{
 				{MyClubId: 1004, Name: "Lauri Laavu", IsGoalie: false},
 				{MyClubId: 1006, Name: "Tarja Tyyry", IsGoalie: false},
 				{MyClubId: 1000, Name: "Matti Meikäläinen", IsGoalie: true},
 				{MyClubId: 1002, Name: "Kaija Karppi", IsGoalie: true},
+			},
+			expectedTeamTwoPlayers: []player.Player{
+				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
+				{MyClubId: 1007, Name: "Kalevi Kuurula", IsGoalie: false},
+				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
 			},
 		},
 		{
@@ -73,12 +73,12 @@ func TestDistributingPlayers(t *testing.T) {
 			goalies:      []player.Player{},
 			expectedErr:  nil,
 			expectedTeamOnePlayers: []player.Player{
-				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
-				{MyClubId: 1007, Name: "Kalevi Kuurula", IsGoalie: false},
-			},
-			expectedTeamTwoPlayers: []player.Player{
 				{MyClubId: 1004, Name: "Lauri Laavu", IsGoalie: false},
 				{MyClubId: 1006, Name: "Tarja Tyyry", IsGoalie: false},
+			},
+			expectedTeamTwoPlayers: []player.Player{
+				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
+				{MyClubId: 1007, Name: "Kalevi Kuurula", IsGoalie: false},
 			},
 		},
 		{
@@ -87,12 +87,12 @@ func TestDistributingPlayers(t *testing.T) {
 			goalies:      goalies,
 			expectedErr:  nil,
 			expectedTeamOnePlayers: []player.Player{
-				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
-				{MyClubId: 1003, Name: "Saija Siirappi", IsGoalie: true},
-			},
-			expectedTeamTwoPlayers: []player.Player{
 				{MyClubId: 1000, Name: "Matti Meikäläinen", IsGoalie: true},
 				{MyClubId: 1002, Name: "Kaija Karppi", IsGoalie: true},
+			},
+			expectedTeamTwoPlayers: []player.Player{
+				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
+				{MyClubId: 1003, Name: "Saija Siirappi", IsGoalie: true},
 			},
 		},
 		{
@@ -101,15 +101,23 @@ func TestDistributingPlayers(t *testing.T) {
 			goalies:      goalies[:3],
 			expectedErr:  nil,
 			expectedTeamOnePlayers: []player.Player{
-				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
-				{MyClubId: 1000, Name: "Matti Meikäläinen", IsGoalie: true},
-				{MyClubId: 1002, Name: "Kaija Karppi", IsGoalie: true},
-			},
-			expectedTeamTwoPlayers: []player.Player{
 				{MyClubId: 1004, Name: "Lauri Laavu", IsGoalie: false},
 				{MyClubId: 1006, Name: "Tarja Tyyry", IsGoalie: false},
 				{MyClubId: 1001, Name: "Teppo Teikäläinen", IsGoalie: true},
 			},
+			expectedTeamTwoPlayers: []player.Player{
+				{MyClubId: 1005, Name: "Marja Myyry", IsGoalie: false},
+				{MyClubId: 1000, Name: "Matti Meikäläinen", IsGoalie: true},
+				{MyClubId: 1002, Name: "Kaija Karppi", IsGoalie: true},
+			},
+		},
+		{
+			name:                   "errors when there's no players to distribute",
+			fieldPlayers:           []player.Player{},
+			goalies:                []player.Player{},
+			expectedErr:            ErrNoPlayers,
+			expectedTeamOnePlayers: []player.Player{},
+			expectedTeamTwoPlayers: []player.Player{},
 		},
 	}
 
