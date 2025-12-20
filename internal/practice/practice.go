@@ -1,9 +1,14 @@
 package practice
 
 import (
-	"github.com/Zigelzi/go-tiimit/internal/team"
+	"time"
+
+	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
 type Practice struct {
-	Teams [2]team.Team
+	TeamOnePlayers []player.Player
+	TeamTwoPlayers []player.Player
+	UnknownPlayers []player.Player
+	Date           time.Time
 }
