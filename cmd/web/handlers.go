@@ -43,7 +43,7 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 
 	dbConfirmedPlayers := []db.Player{}
 	for _, row := range confirmedRows {
-		confirmedDbPlayer, err := cfg.db.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
+		confirmedDbPlayer, err := cfg.queries.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
 		if err != nil {
 			log.Println(err)
 			continue
@@ -70,7 +70,7 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 
 	dbUnknownPlayers := []db.Player{}
 	for _, row := range unknownRows {
-		unknownDbPlayer, err := cfg.db.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
+		unknownDbPlayer, err := cfg.queries.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
 		if err != nil {
 			log.Println(err)
 			continue

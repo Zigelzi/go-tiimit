@@ -22,7 +22,8 @@ func main() {
 	defer newDb.Close()
 
 	cfg := cliConfig{
-		db: db.New(newDb),
+		queries: db.New(newDb),
+		db:      newDb,
 	}
 	for {
 		if !selectAction(cfg) {
@@ -67,7 +68,7 @@ func selectAction(cfg cliConfig) bool {
 
 		dbConfirmedPlayers := []db.Player{}
 		for _, row := range confirmedRows {
-			confirmedDbPlayer, err := cfg.db.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
+			confirmedDbPlayer, err := cfg.queries.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -87,7 +88,7 @@ func selectAction(cfg cliConfig) bool {
 
 		dbUnknownPlayers := []db.Player{}
 		for _, row := range unknownRows {
-			unknownDbPlayer, err := cfg.db.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
+			unknownDbPlayer, err := cfg.queries.GetPlayerByMyclubID(context.Background(), int64(row.PlayerRow.MyclubID))
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -122,7 +123,7 @@ func selectAction(cfg cliConfig) bool {
 		}
 
 	case actions[1]:
-		err := player.Manage(cfg.db)
+		err := player.Manage(cfg.queries)
 		if err != nil {
 			fmt.Println(err)
 		}

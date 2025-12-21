@@ -1,9 +1,14 @@
 package main
 
-import "github.com/Zigelzi/go-tiimit/internal/db"
+import (
+	"database/sql"
+
+	"github.com/Zigelzi/go-tiimit/internal/db"
+)
 
 type webConfig struct {
-	db      *db.Queries
+	queries *db.Queries
+	db      *sql.DB
 	address string
 	env     string
 }
