@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
-	"github.com/Zigelzi/go-tiimit/internal/team"
 	"github.com/manifoldco/promptui"
 )
 
@@ -103,18 +103,17 @@ func selectAction(cfg cliConfig) bool {
 		player.SortByScore(confirmedPlayers)
 		player.SortByScore(unknownPlayers)
 		goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
-		team1, team2, err := team.Distribute(goalies, fieldPlayers)
+		team1, team2, err := practice.Distribute(fieldPlayers, goalies)
 
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
 
-		newPractice := practice.Practice{}
-		err = newPractice.AddTeams(team1, team2)
-		if err != nil {
-			fmt.Println(err)
-			break
+		newPractice := practice.Practice{
+			TeamOnePlayers: team1,
+			TeamTwoPlayers: team2,
+			Date:           time.Now(),
 		}
 
 		newPractice.PrintTeams()
