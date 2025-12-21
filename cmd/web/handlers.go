@@ -34,15 +34,6 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	}
 	fmt.Printf("parsed %d rows from attendance excel\n", len(attendanceRows))
 
-	// Get the attending player MyClubIds from excel
-	// Distribute the attending players to two teams
-
-	// Get the possibly attending players MyClubId from excel
-	// Add the players possibly attending to the practice
-
-	// Store practice to DB
-	// Show the practice to user
-
 	confirmedRows, err := file.GetAttendanceRowsByStatus(attendanceRows, file.AttendanceIn)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
