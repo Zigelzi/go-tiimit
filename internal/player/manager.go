@@ -38,21 +38,14 @@ func Manage(dbQuery *db.Queries) error {
 		}
 		players := []Player{}
 		for _, dbPlayer := range dbPlayers {
-			players = append(players, Player{
-				id:           dbPlayer.ID,
-				MyClubId:     dbPlayer.MyclubID,
-				Name:         dbPlayer.Name,
-				runPower:     dbPlayer.RunPower,
-				ballHandling: dbPlayer.BallHandling,
-				IsGoalie:     dbPlayer.IsGoalie,
-			})
+			players = append(players, FromDB(dbPlayer))
 		}
 		chosenPlayer, err := choose("Select player to edit goalie status of", players)
 		if err != nil {
 			return err
 		}
 		err = dbQuery.ToggleGoalieStatus(context.Background(), db.ToggleGoalieStatusParams{
-			ID:       chosenPlayer.id,
+			ID:       chosenPlayer.ID,
 			IsGoalie: !chosenPlayer.IsGoalie,
 		})
 		if err != nil {

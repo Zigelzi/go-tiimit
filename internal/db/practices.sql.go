@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
@@ -27,12 +26,16 @@ func (q *Queries) AddPlayerToPractice(ctx context.Context, arg AddPlayerToPracti
 	return err
 }
 
-const createPractice = `-- name: CreatePractice :execresult
+const createPractice = `-- name: CreatePractice :execlastid
 INSERT INTO practices (date)
 VALUES (?)
 RETURNING id
 `
 
-func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createPractice, date)
+func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (int64, error) {
+	result, err := q.db.ExecContext(ctx, createPractice, date)
+	if err != nil {
+		return 0, err
+	}
+	return result.LastInsertId()
 }

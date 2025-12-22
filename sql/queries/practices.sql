@@ -1,4 +1,4 @@
--- name: CreatePractice :execresult
+-- name: CreatePractice :execlastid
 INSERT INTO practices (date)
 VALUES (?)
 RETURNING id;

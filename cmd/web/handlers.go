@@ -50,15 +50,10 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 		}
 		dbConfirmedPlayers = append(dbConfirmedPlayers, confirmedDbPlayer)
 	}
+
 	confirmedPlayers := []player.Player{}
 	for _, dbConfirmedPlayer := range dbConfirmedPlayers {
-		confirmedPlayers = append(confirmedPlayers, player.New(
-			dbConfirmedPlayer.MyclubID,
-			dbConfirmedPlayer.Name,
-			dbConfirmedPlayer.RunPower,
-			dbConfirmedPlayer.BallHandling,
-			dbConfirmedPlayer.IsGoalie,
-		))
+		confirmedPlayers = append(confirmedPlayers, player.FromDB(dbConfirmedPlayer))
 	}
 
 	unknownRows, err := file.GetAttendanceRowsByStatus(attendanceRows, file.AttendanceUnknown)
@@ -80,13 +75,7 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 
 	unknownPlayers := []player.Player{}
 	for _, dbUnknownPlayer := range dbUnknownPlayers {
-		unknownPlayers = append(unknownPlayers, player.New(
-			dbUnknownPlayer.MyclubID,
-			dbUnknownPlayer.Name,
-			dbUnknownPlayer.RunPower,
-			dbUnknownPlayer.BallHandling,
-			dbUnknownPlayer.IsGoalie,
-		))
+		unknownPlayers = append(unknownPlayers, player.FromDB(dbUnknownPlayer))
 	}
 
 	player.SortByScore(confirmedPlayers)
@@ -110,6 +99,50 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// REPO START - Storing the data.
+	tx, err := cfg.db.Begin()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to begin a transaction: %v", err)
+		return
+	}
+	defer tx.Rollback()
+
+	queryTx := cfg.queries.WithTx(tx)
+	dbPracticeId, err := queryTx.CreatePractice(r.Context(), time.Now().UTC())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to create the practice: %v", err)
+		return
+	}
+	for _, teamOnePlayer := range newPractice.TeamOnePlayers {
+		queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
+			PracticeID: dbPracticeId,
+			PlayerID:   teamOnePlayer.ID,
+			TeamNumber: 1,
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to add player [%d] %s to practice %d in team 1", teamOnePlayer.ID, teamOnePlayer.Name, dbPracticeId)
+			return
+		}
+	}
+
+	for _, teamTwoPlayer := range newPractice.TeamTwoPlayers {
+		queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
+			PracticeID: dbPracticeId,
+			PlayerID:   teamTwoPlayer.ID,
+			TeamNumber: 2,
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to add player [%d] %s to practice %d in team 2", teamTwoPlayer.ID, teamTwoPlayer.Name, dbPracticeId)
+			return
+		}
+	}
+	tx.Commit()
+	// REPO END
 
 	component := components.DistributedTeams(newPractice)
 	component.Render(r.Context(), w)

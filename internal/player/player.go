@@ -8,7 +8,7 @@ import (
 )
 
 type Player struct {
-	id           int64
+	ID           int64
 	MyClubId     int64
 	Name         string
 	runPower     float64
@@ -39,6 +39,18 @@ func New(myclub_id int64, name string, runPower float64, ballHandling float64, i
 		ballHandling: ballHandling,
 		IsGoalie:     isGoalie,
 	}
+}
+
+func FromDB(dbPlayer db.Player) Player {
+	newPlayer := New(
+		dbPlayer.MyclubID,
+		dbPlayer.Name,
+		dbPlayer.RunPower,
+		dbPlayer.BallHandling,
+		dbPlayer.IsGoalie)
+
+	newPlayer.ID = dbPlayer.ID
+	return newPlayer
 }
 
 func (player Player) Details() (details string) {
