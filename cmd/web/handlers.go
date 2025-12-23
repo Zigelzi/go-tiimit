@@ -146,9 +146,8 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 	tx.Commit()
 	// REPO END
+	w.Header().Add("HX-Redirect", fmt.Sprintf("/practice/%d", dbPracticeId))
 
-	component := components.DistributedTeams(newPractice)
-	component.Render(r.Context(), w)
 }
 
 func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) {
