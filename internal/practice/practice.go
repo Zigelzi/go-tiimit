@@ -7,6 +7,7 @@ import (
 )
 
 type Practice struct {
+	ID             int64
 	TeamOnePlayers []player.Player
 	TeamTwoPlayers []player.Player
 	UnknownPlayers []player.Player

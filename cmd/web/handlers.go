@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
@@ -14,11 +15,11 @@ import (
 )
 
 func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	component := components.PraticePage()
+	component := components.CreatePracticePage()
 	component.Render(r.Context(), w)
 }
 
-func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.Request) {
+func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Request) {
 	formFile, header, err := r.FormFile("attendace-list")
 	if err != nil {
 		log.Printf("Error parsing file from form: %v", err)
@@ -145,5 +146,14 @@ func (cfg *webConfig) handleSubmitAttendanceList(w http.ResponseWriter, r *http.
 	// REPO END
 
 	component := components.DistributedTeams(newPractice)
+	component.Render(r.Context(), w)
+}
+
+func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) {
+	practiceId, _ := strconv.Atoi(r.PathValue("id"))
+	practice := practice.Practice{
+		ID: int64(practiceId),
+	}
+	component := components.PracticePage(practice)
 	component.Render(r.Context(), w)
 }

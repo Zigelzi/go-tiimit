@@ -37,7 +37,11 @@ func main() {
 	mux.Handle("/static/", disableCacheInDevMode(http.StripPrefix("/static/", fileserver), cfg.env))
 
 	mux.HandleFunc("/", cfg.handleIndexPage)
-	mux.HandleFunc("POST /api/attendees", cfg.handleSubmitAttendanceList)
+
+	// Practices
+	mux.HandleFunc("GET /practice/{id}", cfg.handleViewPractice)
+	mux.HandleFunc("POST /practice", cfg.handleCreatePractice)
+
 	server := http.Server{
 		Handler: mux,
 		Addr:    cfg.address,
