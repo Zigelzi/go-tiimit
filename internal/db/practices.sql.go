@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -38,4 +39,63 @@ func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (int64, er
 		return 0, err
 	}
 	return result.LastInsertId()
+}
+
+const getPracticeWithPlayers = `-- name: GetPracticeWithPlayers :many
+SELECT 
+    pr.id as practice_id,
+    pr.date,
+    pp.team_number,
+    pl.myclub_id,
+    pl.name,
+    pl.run_power,
+    pl.ball_handling,
+    pl.is_goalie
+FROM practice_players pp
+LEFT JOIN practices pr ON pr.id=pp.practice_id
+LEFT JOIN players pl ON pl.id=pp.player_id
+WHERE pr.id=?
+`
+
+type GetPracticeWithPlayersRow struct {
+	PracticeID   sql.NullInt64
+	Date         sql.NullTime
+	TeamNumber   int64
+	MyclubID     sql.NullInt64
+	Name         sql.NullString
+	RunPower     sql.NullFloat64
+	BallHandling sql.NullFloat64
+	IsGoalie     sql.NullBool
+}
+
+func (q *Queries) GetPracticeWithPlayers(ctx context.Context, id int64) ([]GetPracticeWithPlayersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPracticeWithPlayers, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPracticeWithPlayersRow
+	for rows.Next() {
+		var i GetPracticeWithPlayersRow
+		if err := rows.Scan(
+			&i.PracticeID,
+			&i.Date,
+			&i.TeamNumber,
+			&i.MyclubID,
+			&i.Name,
+			&i.RunPower,
+			&i.BallHandling,
+			&i.IsGoalie,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

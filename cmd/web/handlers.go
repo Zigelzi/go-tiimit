@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -150,9 +152,28 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 }
 
 func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) {
-	practiceId, _ := strconv.Atoi(r.PathValue("id"))
-	practice := practice.Practice{
-		ID: int64(practiceId),
+	practiceId, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unable to parse practice id from path: %v", err)
+		return
+	}
+	dbPracticeRows, err := cfg.queries.GetPracticeWithPlayers(r.Context(), int64(practiceId))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to get practice from database: %v", err)
+		return
+	}
+	practice, err := practice.FromDB(dbPracticeRows)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to convert the practice players: %v", err)
+		return
 	}
 	component := components.PracticePage(practice)
 	component.Render(r.Context(), w)
