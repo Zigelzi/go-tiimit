@@ -15,7 +15,7 @@ type Practice struct {
 	TeamOnePlayers []player.Player
 	TeamTwoPlayers []player.Player
 	UnknownPlayers []player.Player
-	Date           time.Time
+	EventDate      time.Time
 }
 
 func FromDB(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice, error) {
@@ -41,7 +41,7 @@ func FromDB(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice, error) {
 	}
 	newPractice := Practice{
 		ID:             dbPracticeRows[0].PracticeID.Int64,
-		Date:           dbPracticeRows[0].Date.Time,
+		EventDate:      dbPracticeRows[0].Date.Time,
 		TeamOnePlayers: teamOnePlayers,
 		TeamTwoPlayers: teamTwoPlayers,
 	}

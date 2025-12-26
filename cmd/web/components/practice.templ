@@ -1,10 +1,12 @@
 package components
 
 import "github.com/Zigelzi/go-tiimit/internal/practice"
+import "time"
 
 templ PracticePage(currentPractice practice.Practice) {
 	@Base("Practices - Tiimit") {
 		<div class="mt-6">
+			<p>Practices on: { time.Now() }</p>
 			<div class="mb-8">
 				<h2 class="font-bold">Team 1</h2>
 				for _, player := range currentPractice.TeamOnePlayers {

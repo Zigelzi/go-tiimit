@@ -491,7 +491,7 @@ func TestParseDate(t *testing.T) {
 
 		for _, testCase := range testCases {
 			t.Run(testCase.name, func(t *testing.T) {
-				actualDate, err := parseDate(testCase.fileName)
+				actualDate, err := ParseDate(testCase.fileName)
 
 				if err != nil {
 					t.Errorf("unexpected error: got [%v] want [nil]", err)
@@ -533,7 +533,7 @@ func TestParseDate(t *testing.T) {
 		}
 
 		for _, testCase := range testCases {
-			actualDate, err := parseDate(testCase.fileName)
+			actualDate, err := ParseDate(testCase.fileName)
 
 			if err == nil {
 				t.Errorf("missing error: got [nil] want [%v]", testCase.expectedErr)

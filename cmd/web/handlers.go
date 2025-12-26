@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
 	"github.com/Zigelzi/go-tiimit/internal/db"
@@ -29,6 +28,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 	defer formFile.Close()
 	fmt.Println(header.Filename)
+
 	attendanceRows, err := file.ImportAttendancePlayerRowsFromReader(formFile)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -92,11 +92,18 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	practiceDate, err := file.ParseDate(header.Filename)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to parse date from the file name: %v", err)
+		return
+	}
+
 	newPractice := practice.Practice{
 		TeamOnePlayers: team1,
 		TeamTwoPlayers: team2,
 		UnknownPlayers: unknownPlayers,
-		Date:           time.Now(),
+		EventDate:      practiceDate,
 	}
 
 	if err != nil {
@@ -113,7 +120,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	defer tx.Rollback()
 
 	queryTx := cfg.queries.WithTx(tx)
-	dbPracticeId, err := queryTx.CreatePractice(r.Context(), time.Now().UTC())
+	dbPracticeId, err := queryTx.CreatePractice(r.Context(), newPractice.EventDate)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("failed to create the practice: %v", err)
@@ -147,7 +154,6 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	tx.Commit()
 	// REPO END
 	w.Header().Add("HX-Redirect", fmt.Sprintf("/practice/%d", dbPracticeId))
-
 }
 
 func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) {
