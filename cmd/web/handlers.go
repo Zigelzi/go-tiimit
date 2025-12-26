@@ -174,7 +174,7 @@ func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) 
 		log.Printf("failed to get practice from database: %v", err)
 		return
 	}
-	dbPractice, err := practice.FromDB(dbPracticeRows)
+	currentPractice, err := practice.FromDB(dbPracticeRows)
 	if err != nil {
 		if errors.Is(err, practice.ErrNoPracticeRows) {
 			w.WriteHeader(http.StatusNotFound)
@@ -185,6 +185,8 @@ func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) 
 		log.Printf("failed to convert the practice players: %v", err)
 		return
 	}
-	component := components.PracticePage(dbPractice)
+	player.SortByScore(currentPractice.TeamOnePlayers)
+	player.SortByScore(currentPractice.TeamTwoPlayers)
+	component := components.PracticePage(currentPractice)
 	component.Render(r.Context(), w)
 }
