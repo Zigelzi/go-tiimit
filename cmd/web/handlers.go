@@ -103,7 +103,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 		TeamOnePlayers: team1,
 		TeamTwoPlayers: team2,
 		UnknownPlayers: unknownPlayers,
-		EventDate:      practiceDate,
+		Date:           practiceDate,
 	}
 
 	if err != nil {
@@ -120,7 +120,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	defer tx.Rollback()
 
 	queryTx := cfg.queries.WithTx(tx)
-	dbPracticeId, err := queryTx.CreatePractice(r.Context(), newPractice.EventDate)
+	dbPracticeId, err := queryTx.CreatePractice(r.Context(), newPractice.Date)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("failed to create the practice: %v", err)
@@ -167,19 +167,24 @@ func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) 
 	dbPracticeRows, err := cfg.queries.GetPracticeWithPlayers(r.Context(), int64(practiceId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("failed to get practice from database: %v", err)
 		return
 	}
-	practice, err := practice.FromDB(dbPracticeRows)
+	dbPractice, err := practice.FromDB(dbPracticeRows)
 	if err != nil {
+		if errors.Is(err, practice.ErrNoPracticeRows) {
+			w.WriteHeader(http.StatusNotFound)
+			log.Printf("user tried to view practice with ID [%d] which doesn't exist", practiceId)
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("failed to convert the practice players: %v", err)
 		return
 	}
-	component := components.PracticePage(practice)
+	component := components.PracticePage(dbPractice)
 	component.Render(r.Context(), w)
 }

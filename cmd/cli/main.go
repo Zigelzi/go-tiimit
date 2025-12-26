@@ -114,7 +114,7 @@ func selectAction(cfg cliConfig) bool {
 		newPractice := practice.Practice{
 			TeamOnePlayers: team1,
 			TeamTwoPlayers: team2,
-			EventDate:      time.Now(),
+			Date:           time.Now(),
 		}
 
 		newPractice.PrintTeams()
