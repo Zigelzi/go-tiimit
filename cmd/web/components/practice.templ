@@ -8,30 +8,8 @@ templ PracticePage(currentPractice practice.Practice) {
 			<div class="mb-4">
 				<p>Practices on: { currentPractice.Date.Format("02.01.2006") }</p>
 			</div>
-			<div class="mb-8">
-				<h2 class="font-bold">Team 1</h2>
-				for _, player := range currentPractice.TeamOnePlayers {
-					if len(currentPractice.TeamOnePlayers) > 0 {
-						<ol>
-							<li>{ player.Name } [{ player.Score() }]</li>
-						</ol>
-					} else {
-						<p>No players in team 1</p>
-					}
-				}
-			</div>
-			<div>
-				<h2 class="font-bold">Team 2</h2>
-				for _, player := range currentPractice.TeamTwoPlayers {
-					if len(currentPractice.TeamTwoPlayers) > 0 {
-						<ol>
-							<li>{ player.Name } [{ player.Score() }]</li>
-						</ol>
-					} else {
-						<p>No players in team 1</p>
-					}
-				}
-			</div>
+			@team(currentPractice.TeamOnePlayers, 1)
+			@team(currentPractice.TeamTwoPlayers, 2)
 			<div class="my-6">
 				<h2 class="text-lg mb-2">Might attend</h2>
 				if len(currentPractice.UnknownPlayers) > 0 {
