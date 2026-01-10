@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
+	"github.com/Zigelzi/go-tiimit/internal/auth"
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
@@ -37,6 +41,7 @@ func selectAction(cfg cliConfig) bool {
 	actions := []string{
 		"Create teams for a practice by importing MyClub attendees",
 		"Manage players",
+		"Create new user",
 		"Exit",
 	}
 	prompt := promptui.Select{
@@ -127,6 +132,47 @@ func selectAction(cfg cliConfig) bool {
 		if err != nil {
 			fmt.Println(err)
 		}
+	case actions[2]:
+		// Handler
+		fmt.Println("Creating new user")
+		fmt.Println("-----------------")
+
+		fmt.Println("Write username of the new user:")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		username := cleanInput(scanner.Text())[0]
+
+		fmt.Println("Write password of the new user:")
+		scanner.Scan()
+		password := cleanInput(scanner.Text())[0]
+
+		trimmedPassword := strings.TrimSpace(password)
+		if trimmedPassword == "" {
+			fmt.Printf("password can't be empty\n")
+			return false
+		}
+
+		if auth.IsWeakPassword(trimmedPassword) {
+			fmt.Printf("password must be at least %d characters\n", auth.PasswordMinLength)
+			return false
+		}
+
+		hashedPassword, err := auth.HashPassword(trimmedPassword)
+		if err != nil {
+			fmt.Printf("failed to hash password: %w\n", err)
+			return false
+		}
+
+		newUser, err := cfg.queries.CreateUser(context.Background(), db.CreateUserParams{
+			Username:       username,
+			HashedPassword: hashedPassword,
+		})
+		if err != nil {
+			fmt.Printf("failed to create new user: %v\n", err)
+			return false
+		}
+
+		fmt.Printf("Created new user [%s] successfully!\n", newUser.Username)
 	case actions[len(actions)-1]:
 		// Exit should be always last action
 		return false

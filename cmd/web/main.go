@@ -39,11 +39,17 @@ func main() {
 	mux.HandleFunc("/", cfg.handleIndexPage)
 
 	// Practices
-	mux.HandleFunc("GET /practice/{id}", cfg.handleViewPractice)
-	mux.HandleFunc("POST /practice", cfg.handleCreatePractice)
+	mux.Handle("GET /practice/{id}", requireAuth(http.HandlerFunc(cfg.handleViewPractice)))
+	mux.Handle("POST /practice", requireAuth(http.HandlerFunc(cfg.handleCreatePractice)))
 
+	// Auth
+	mux.HandleFunc("GET /login", cfg.handleLoginPage)
+	mux.HandleFunc("POST /login", cfg.handleLoginUser)
+	mux.HandleFunc("POST /logout", cfg.handleLogout)
+
+	muxWithAuth := cfg.authMiddleware(mux)
 	server := http.Server{
-		Handler: mux,
+		Handler: muxWithAuth,
 		Addr:    cfg.address,
 	}
 	log.Printf("Starting server on address %s", cfg.address)

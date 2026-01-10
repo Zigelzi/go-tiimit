@@ -1,0 +1,23 @@
+package components
+
+templ LoginPage() {
+	@Base("Tiimit - Login") {
+		<div>
+			<h2 class="text-2xl">Log in <span class="text-sm">to Tiimit</span></h2>
+			<form class="flex flex-col gap-4 my-4" hx-post="/login" hx-target="#login-error">
+				<div>
+					<label class="block mb-2" for="username">Username</label>
+					<input class="w-full bg-white rounded-sm border px-2 py-2" type="text" name="username" id="username" placeholder="mattimeikalainen"/>
+				</div>
+				<div>
+					<label class="block mb-2" for="password">Password</label>
+					<input class="w-full bg-white rounded-sm border px-2 py-2" type="password" name="password" id="password"/>
+				</div>
+				<div id="login-error"></div>
+				<div>
+					<input class="px-4 py-2 bg-blue-400 rounded-md" type="submit" value="Log in"/>
+				</div>
+			</form>
+		</div>
+	}
+}
