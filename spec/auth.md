@@ -25,10 +25,10 @@ Validate credentials from DB.
 
 Create and return session on success.
 
-Return 403 on failure.
+Return 401 on failure.
 
 ### Viewing protected routes
 
 User with valid session can view practices.
 
-User without session gets 403 page.
+User without session gets 403 page. Link to login page.

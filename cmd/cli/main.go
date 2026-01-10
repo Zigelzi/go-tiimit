@@ -1,15 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
+	"github.com/Zigelzi/go-tiimit/internal/user"
 	"github.com/manifoldco/promptui"
 )
 
@@ -37,6 +40,7 @@ func selectAction(cfg cliConfig) bool {
 	actions := []string{
 		"Create teams for a practice by importing MyClub attendees",
 		"Manage players",
+		"Create new user",
 		"Exit",
 	}
 	prompt := promptui.Select{
@@ -127,6 +131,25 @@ func selectAction(cfg cliConfig) bool {
 		if err != nil {
 			fmt.Println(err)
 		}
+	case actions[2]:
+		fmt.Println("Creating new user")
+		fmt.Println("-----------------")
+		fmt.Println("Write username of the new user:")
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		username := cleanInput(scanner.Text())[0]
+
+		fmt.Println("Write password of the new user:")
+		scanner.Scan()
+		password := cleanInput(scanner.Text())[0]
+
+		newUser, err := user.Create(username, password)
+		if err != nil {
+			fmt.Printf("failed to create new user: %v", err)
+			return false
+		}
+
+		fmt.Printf("Created new user [%s] successfully!\n", newUser.Username)
 	case actions[len(actions)-1]:
 		// Exit should be always last action
 		return false
