@@ -5,12 +5,13 @@ import "fmt"
 
 templ team(players []player.Player, teamNumber int) {
 	<div class="mb-8">
-		<h2 class="font-bold">Team { teamNumber }</h2>
+		<h2 class="font-bold mb-2">Team { teamNumber }</h2>
 		for _, player := range players {
 			if len(players) > 0 {
 				<ol>
-					<li>
-						{ player.Name }
+					<li class="border-2 border-gray-300 mb-2">
+						<input type="checkbox" name="players" id={ player.MyClubId } value={ player.MyClubId }/>
+						<label class="py-2 px-1 inline-block" for={ player.MyClubId }>{ player.Name }</label>
 						if player.IsGoalie {
 							<span>[{ fmt.Sprintf("%.1f", player.Score()) } / Goalie]</span>
 						} else {
