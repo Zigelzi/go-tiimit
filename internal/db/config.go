@@ -4,14 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 const maxOpenConnections = 10
 const maxIdleConnections = 2
 
 func InitDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "./internal/db/tiimit.db")
+	db, err := sql.Open("sqlite", "./internal/db/tiimit.db")
 
 	if err != nil {
 		return nil, fmt.Errorf("could not connect do database: %w", err)
