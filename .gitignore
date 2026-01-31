@@ -40,3 +40,5 @@ go.work.sum
 /tmp/
 /node_modules/
 ./web
+
+/build/
