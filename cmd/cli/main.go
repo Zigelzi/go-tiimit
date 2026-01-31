@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/Zigelzi/go-tiimit/internal/auth"
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
-	"github.com/Zigelzi/go-tiimit/internal/user"
 	"github.com/manifoldco/promptui"
 )
 
@@ -132,8 +133,10 @@ func selectAction(cfg cliConfig) bool {
 			fmt.Println(err)
 		}
 	case actions[2]:
+		// Handler
 		fmt.Println("Creating new user")
 		fmt.Println("-----------------")
+
 		fmt.Println("Write username of the new user:")
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
@@ -143,9 +146,29 @@ func selectAction(cfg cliConfig) bool {
 		scanner.Scan()
 		password := cleanInput(scanner.Text())[0]
 
-		newUser, err := user.Create(username, password)
+		trimmedPassword := strings.TrimSpace(password)
+		if trimmedPassword == "" {
+			fmt.Printf("password can't be empty\n")
+			return false
+		}
+
+		if auth.IsWeakPassword(trimmedPassword) {
+			fmt.Printf("password must be at least %d characters\n", auth.PasswordMinLength)
+			return false
+		}
+
+		hashedPassword, err := auth.HashPassword(trimmedPassword)
 		if err != nil {
-			fmt.Printf("failed to create new user: %v", err)
+			fmt.Printf("failed to hash password: %w\n", err)
+			return false
+		}
+
+		newUser, err := cfg.queries.CreateUser(context.Background(), db.CreateUserParams{
+			Username:       username,
+			HashedPassword: hashedPassword,
+		})
+		if err != nil {
+			fmt.Printf("failed to create new user: %v\n", err)
 			return false
 		}
 
