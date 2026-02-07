@@ -190,3 +190,18 @@ func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) 
 	component := components.PracticePage(currentPractice)
 	component.Render(r.Context(), w)
 }
+
+func (cfg *webConfig) handleLoginPage(w http.ResponseWriter, r *http.Request) {
+	component := components.LoginPage()
+	component.Render(r.Context(), w)
+}
+
+func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
+	username := r.FormValue("username")
+	fmt.Println(username)
+
+	password := r.FormValue("password")
+	fmt.Println(password)
+
+	// TODO: Check for user and return session cookie.
+}

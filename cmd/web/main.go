@@ -42,6 +42,10 @@ func main() {
 	mux.HandleFunc("GET /practice/{id}", cfg.handleViewPractice)
 	mux.HandleFunc("POST /practice", cfg.handleCreatePractice)
 
+	// Auth
+	mux.HandleFunc("GET /login", cfg.handleLoginPage)
+	mux.HandleFunc("POST /login", cfg.handleLoginUser)
+
 	server := http.Server{
 		Handler: mux,
 		Addr:    cfg.address,
