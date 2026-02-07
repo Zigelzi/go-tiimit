@@ -35,3 +35,28 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	err := row.Scan(&i.ID, &i.Username)
 	return i, err
 }
+
+const isValidPassword = `-- name: IsValidPassword :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            users
+        WHERE
+            username = ?
+            AND hashed_password = ?
+    ) AS is_valid_password
+`
+
+type IsValidPasswordParams struct {
+	Username       string
+	HashedPassword string
+}
+
+func (q *Queries) IsValidPassword(ctx context.Context, arg IsValidPasswordParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, isValidPassword, arg.Username, arg.HashedPassword)
+	var is_valid_password int64
+	err := row.Scan(&is_valid_password)
+	return is_valid_password, err
+}

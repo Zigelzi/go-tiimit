@@ -6,3 +6,15 @@ VALUES
 RETURNING
     id,
     username;
+
+-- name: IsValidPassword :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            users
+        WHERE
+            username = ?
+            AND hashed_password = ?
+    ) AS is_valid_password;
