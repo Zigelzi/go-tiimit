@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
+	"github.com/Zigelzi/go-tiimit/internal/auth"
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
@@ -198,10 +199,19 @@ func (cfg *webConfig) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
-	fmt.Println(username)
+	dbUser, err := cfg.queries.GetUserByUsername(r.Context(), username)
+	if err != nil {
+		w.Write([]byte("<p class='text-red-500'>Incorrect username or password </p>"))
+		return
+	}
 
 	password := r.FormValue("password")
-	fmt.Println(password)
+	err = auth.CheckPassword(password, dbUser.HashedPassword)
+	if err != nil {
+		w.Write([]byte("<p class='text-red-500'>Incorrect username or password </p>"))
+		return
+	}
 
 	// TODO: Check for user and return session cookie.
+	w.Header().Add("HX-Redirect", "/")
 }

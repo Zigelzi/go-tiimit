@@ -19,3 +19,7 @@ func HashPassword(password string) (string, error) {
 func IsWeakPassword(password string) bool {
 	return len(password) < PasswordMinLength
 }
+
+func CheckPassword(password, hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
