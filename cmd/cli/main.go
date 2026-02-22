@@ -14,16 +14,27 @@ import (
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
+	"github.com/joho/godotenv"
 	"github.com/manifoldco/promptui"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("failed to load .env file: %v", err)
+	}
 	newDb, err := db.InitDB()
 	if err != nil {
 		log.Fatalf("initializing database failed: %v", err)
 		return
 	}
 	defer newDb.Close()
+
+	err = db.RunMigrations(newDb)
+	if err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+		return
+	}
 
 	cfg := cliConfig{
 		queries: db.New(newDb),

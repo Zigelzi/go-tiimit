@@ -7,17 +7,31 @@ import (
 	"net/http"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
+	"github.com/joho/godotenv"
 )
 
 //go:embed static
 var staticFiles embed.FS
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("failed to load .env file: %v", err)
+		return
+	}
 	newDb, err := db.InitDB()
 	if err != nil {
 		log.Fatalf("initializing database failed: %v", err)
 		return
 	}
+	defer newDb.Close()
+
+	err = db.RunMigrations(newDb)
+	if err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+		return
+	}
+
 	cfg := webConfig{
 		queries: db.New(newDb),
 		db:      newDb,
