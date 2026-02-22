@@ -13,7 +13,7 @@ dev/server:
 # run tailwindcss to generate the styles.css bundle in watch mode.
 dev/tailwind:
 	@echo "\n\nStarting Tailwind watcher"
-	npx --yes @tailwindcss/cli -i ./cmd/web/tailwind.css -o ./cmd/web/static/tailwind.css --minify --watch
+	bunx --yes @tailwindcss/cli -i ./cmd/web/tailwind.css -o ./cmd/web/static/tailwind.css --minify --watch
 
 
 # watch for any js or css change in the static/ folder, then reload the browser via templ proxy.
@@ -36,7 +36,7 @@ prod/build-arm64:
 	make prod/build-server-arm64
 	
 prod/tailwind:
-	npx tailwindcss -i ./cmd/web/tailwind.css -o ./cmd/web/static/tailwind.css --minify
+	bunx tailwindcss -i ./cmd/web/tailwind.css -o ./cmd/web/static/tailwind.css --minify
 
 prod/build-server-arm64:
 	templ generate
