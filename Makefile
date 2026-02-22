@@ -31,6 +31,10 @@ dev/sync_assets:
 dev: 
 	make -j4 dev/tailwind dev/server dev/templ dev/sync_assets
 
+prod/build-arm64:
+	make prod/tailwind
+	make prod/build-server-arm64
+	
 prod/tailwind:
 	npx tailwindcss -i ./cmd/web/tailwind.css -o ./cmd/web/static/tailwind.css --minify
 
@@ -38,7 +42,3 @@ prod/build-server-arm64:
 	templ generate
 	mkdir -p build
 	GOOS=linux GOARCH=arm64 go build -o ./build ./cmd/web
-
-prod/build-arm64:
-	make prod/tailwind
-	make prod/build-server-arm64
