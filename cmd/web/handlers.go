@@ -18,6 +18,11 @@ import (
 )
 
 func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
+	component := components.IndexPage()
+	component.Render(r.Context(), w)
+}
+
+func (cfg *webConfig) handleSetupPracticePage(w http.ResponseWriter, r *http.Request) {
 	component := components.CreatePracticePage()
 	component.Render(r.Context(), w)
 }

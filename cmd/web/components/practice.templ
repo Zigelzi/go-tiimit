@@ -3,7 +3,7 @@ package components
 import "github.com/Zigelzi/go-tiimit/internal/practice"
 
 templ PracticePage(currentPractice practice.Practice) {
-	@Base("Practices - Tiimit") {
+	@Base("Practices") {
 		<div class="mt-6">
 			<div class="mb-4">
 				<p>Practices on: { currentPractice.Date.Format("02.01.2006") }</p>

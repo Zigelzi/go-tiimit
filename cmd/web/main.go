@@ -52,6 +52,7 @@ func main() {
 	mux.HandleFunc("/", cfg.handleIndexPage)
 
 	// Practices
+	mux.Handle("GET /practice/set-up", requireAuth(http.HandlerFunc(cfg.handleSetupPracticePage)))
 	mux.Handle("GET /practice/{id}", requireAuth(http.HandlerFunc(cfg.handleViewPractice)))
 	mux.Handle("POST /practice", requireAuth(http.HandlerFunc(cfg.handleCreatePractice)))
 
