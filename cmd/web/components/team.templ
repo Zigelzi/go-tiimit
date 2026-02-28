@@ -5,18 +5,23 @@ import "fmt"
 
 templ team(players []player.Player, teamNumber int) {
 	<div class="mb-8">
-		<h2 class="font-bold mb-2">Team { teamNumber }</h2>
+		<div class="mb-4 flex justify-between">
+			<h2 class="font-bold text-lg">Team { teamNumber }</h2>
+			<p class="text-sm">{ len(players) } players</p>
+		</div>
 		for _, player := range players {
 			if len(players) > 0 {
 				<ol>
-					<li class="border-2 border-gray-300 mb-2">
+					<li class="mb-2 flex bg-white rounded-md px-2 hover:bg-slate-100 has-checked:bg-slate-600 has-checked:text-white">
 						<input type="checkbox" name="players" id={ player.MyClubId } value={ player.MyClubId }/>
-						<label class="py-2 px-1 inline-block" for={ player.MyClubId }>{ player.Name }</label>
-						if player.IsGoalie {
-							<span>[{ fmt.Sprintf("%.1f", player.Score()) } / Goalie]</span>
-						} else {
-							<span>[{ fmt.Sprintf("%.1f", player.Score()) }]</span>
-						}
+						<label class="grow py-4 ml-2" for={ player.MyClubId }>
+							{ player.Name }
+							if player.IsGoalie {
+								<span>[{ fmt.Sprintf("%.1f", player.Score()) } / Goalie]</span>
+							} else {
+								<span>[{ fmt.Sprintf("%.1f", player.Score()) }]</span>
+							}
+						</label>
 					</li>
 				</ol>
 			} else {

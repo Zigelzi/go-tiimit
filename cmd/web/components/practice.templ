@@ -4,9 +4,9 @@ import "github.com/Zigelzi/go-tiimit/internal/practice"
 
 templ PracticePage(currentPractice practice.Practice) {
 	@Base("Practices") {
-		<div class="mt-6">
-			<div class="mb-4">
-				<p>Practices on: { currentPractice.Date.Format("02.01.2006") }</p>
+		<div>
+			<div class="mb-4 text-sm">
+				<p>Practices on { currentPractice.Date.Weekday() } { currentPractice.Date.Format("02.01.2006") }</p>
 			</div>
 			@team(currentPractice.TeamOnePlayers, 1)
 			@team(currentPractice.TeamTwoPlayers, 2)
