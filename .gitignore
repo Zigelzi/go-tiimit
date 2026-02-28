@@ -43,3 +43,6 @@ go.work.sum
 
 # Build
 /build/
+
+# Docs (for now)
+/docs/

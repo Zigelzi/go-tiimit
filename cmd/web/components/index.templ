@@ -1,8 +1,10 @@
 package components
 
 import "github.com/Zigelzi/go-tiimit/internal/auth"
+import "github.com/Zigelzi/go-tiimit/internal/practice"
+import "strconv"
 
-templ IndexPage() {
+templ IndexPage(practices []practice.Practice) {
 	@Base("Home") {
 		<div class="min-h-[70vh] flex justify-center flex-col">
 			<h1 class="text-5xl mb-4">Tiumo</h1>
@@ -19,6 +21,21 @@ templ IndexPage() {
 					</p>
 				}
 			</div>
+			if user.IsLoggedIn {
+				<div>
+					<h2 class="text-2xl">Latest practices</h2>
+					if len(practices) == 0 {
+						<p>No practices yet!</p>
+						<p>Set up the first one to view them.</p>
+					} else {
+						<ul class="my-4">
+							for _, practice := range practices {
+								<li class="mb-2 last:mb-0"><a class="bg-white block px-2 py-4 rounded-md hover:bg-slate-100 transition" href={ "/practice/" + strconv.Itoa(int(practice.ID)) }>{ practice.Date.Weekday() } { practice.Date.Format("02.01.2006") }</a></li>
+							}
+						</ul>
+					}
+				</div>
+			}
 		</div>
 	}
 }

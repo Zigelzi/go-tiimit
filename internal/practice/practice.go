@@ -18,7 +18,14 @@ type Practice struct {
 	Date           time.Time
 }
 
-func FromDB(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice, error) {
+func FromDB(dbPractice db.Practice) Practice {
+	return Practice{
+		ID:   dbPractice.ID,
+		Date: dbPractice.Date,
+	}
+}
+
+func FromDBWithPlayers(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice, error) {
 	if len(dbPracticeRows) == 0 {
 		return Practice{}, ErrNoPracticeRows
 	}

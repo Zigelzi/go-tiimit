@@ -18,7 +18,15 @@ import (
 )
 
 func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	component := components.IndexPage()
+	dbPractices, err := cfg.queries.GetNewestPractices(r.Context(), 5)
+	if err != nil {
+		log.Printf("failed to get practices: %v", err)
+	}
+	practices := []practice.Practice{}
+	for _, dbPractice := range dbPractices {
+		practices = append(practices, practice.FromDB(dbPractice))
+	}
+	component := components.IndexPage(practices)
 	component.Render(r.Context(), w)
 }
 
@@ -182,7 +190,7 @@ func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) 
 		log.Printf("failed to get practice from database: %v", err)
 		return
 	}
-	currentPractice, err := practice.FromDB(dbPracticeRows)
+	currentPractice, err := practice.FromDBWithPlayers(dbPracticeRows)
 	if err != nil {
 		if errors.Is(err, practice.ErrNoPracticeRows) {
 			w.WriteHeader(http.StatusNotFound)

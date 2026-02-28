@@ -21,3 +21,8 @@ FROM practice_players pp
 LEFT JOIN practices pr ON pr.id=pp.practice_id
 LEFT JOIN players pl ON pl.id=pp.player_id
 WHERE pr.id=?;
+
+-- name: GetNewestPractices :many
+SELECT * FROM practices
+ORDER BY date DESC
+LIMIT ?;

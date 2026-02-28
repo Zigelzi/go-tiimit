@@ -41,6 +41,35 @@ func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (int64, er
 	return result.LastInsertId()
 }
 
+const getNewestPractices = `-- name: GetNewestPractices :many
+SELECT id, date FROM practices
+ORDER BY date DESC
+LIMIT ?
+`
+
+func (q *Queries) GetNewestPractices(ctx context.Context, limit int64) ([]Practice, error) {
+	rows, err := q.db.QueryContext(ctx, getNewestPractices, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Practice
+	for rows.Next() {
+		var i Practice
+		if err := rows.Scan(&i.ID, &i.Date); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPracticeWithPlayers = `-- name: GetPracticeWithPlayers :many
 SELECT 
     pr.id as practice_id,
