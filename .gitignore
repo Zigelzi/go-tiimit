@@ -41,8 +41,9 @@ go.work.sum
 /node_modules/
 ./web
 
-# Build
+# Build and deployment
 /build/
+.deploy.conf
 
 # Docs (for now)
 /docs/
