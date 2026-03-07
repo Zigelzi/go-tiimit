@@ -34,7 +34,7 @@ func main() {
 	cfg := webConfig{
 		queries: db.New(newDb),
 		db:      newDb,
-		address: ":8080",
+		address: "127.0.0.1:8080",
 		env:     "development",
 	}
 
