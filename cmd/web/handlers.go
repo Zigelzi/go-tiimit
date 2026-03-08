@@ -142,7 +142,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	for _, teamOnePlayer := range newPractice.TeamOnePlayers {
-		queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
+		err = queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
 			PracticeID: dbPracticeId,
 			PlayerID:   teamOnePlayer.ID,
 			TeamNumber: 1,
@@ -155,7 +155,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 
 	for _, teamTwoPlayer := range newPractice.TeamTwoPlayers {
-		queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
+		err = queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
 			PracticeID: dbPracticeId,
 			PlayerID:   teamTwoPlayer.ID,
 			TeamNumber: 2,
@@ -168,7 +168,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 	tx.Commit()
 	// REPO END
-	w.Header().Add("HX-Redirect", fmt.Sprintf("/practice/%d", dbPracticeId))
+	w.Header().Add("HX-Redirect", fmt.Sprintf("/practices/%d", dbPracticeId))
 }
 
 func (cfg webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request) {
