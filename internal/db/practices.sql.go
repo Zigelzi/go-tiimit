@@ -12,8 +12,10 @@ import (
 )
 
 const addPlayerToPractice = `-- name: AddPlayerToPractice :exec
-INSERT INTO practice_players (practice_id, player_id, team_number)
-VALUES (?,?,?)
+INSERT INTO
+    practice_players (practice_id, player_id, team_number)
+VALUES
+    (?, ?, ?)
 `
 
 type AddPlayerToPracticeParams struct {
@@ -28,9 +30,10 @@ func (q *Queries) AddPlayerToPractice(ctx context.Context, arg AddPlayerToPracti
 }
 
 const createPractice = `-- name: CreatePractice :execlastid
-INSERT INTO practices (date)
-VALUES (?)
-RETURNING id
+INSERT INTO
+    practices (date)
+VALUES
+    (?) RETURNING id
 `
 
 func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (int64, error) {
@@ -42,9 +45,14 @@ func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (int64, er
 }
 
 const getNewestPractices = `-- name: GetNewestPractices :many
-SELECT id, date FROM practices
-ORDER BY date DESC
-LIMIT ?
+SELECT
+    id, date
+FROM
+    practices
+ORDER BY
+    date DESC
+LIMIT
+    ?
 `
 
 func (q *Queries) GetNewestPractices(ctx context.Context, limit int64) ([]Practice, error) {
@@ -70,26 +78,54 @@ func (q *Queries) GetNewestPractices(ctx context.Context, limit int64) ([]Practi
 	return items, nil
 }
 
+const getPracticePlayer = `-- name: GetPracticePlayer :one
+SELECT
+    practice_id,
+    player_id,
+    team_number
+FROM
+    practice_players
+WHERE
+    practice_id = ?
+    AND player_id = ?
+`
+
+type GetPracticePlayerParams struct {
+	PracticeID int64
+	PlayerID   int64
+}
+
+func (q *Queries) GetPracticePlayer(ctx context.Context, arg GetPracticePlayerParams) (PracticePlayer, error) {
+	row := q.db.QueryRowContext(ctx, getPracticePlayer, arg.PracticeID, arg.PlayerID)
+	var i PracticePlayer
+	err := row.Scan(&i.PracticeID, &i.PlayerID, &i.TeamNumber)
+	return i, err
+}
+
 const getPracticeWithPlayers = `-- name: GetPracticeWithPlayers :many
-SELECT 
+SELECT
     pr.id as practice_id,
     pr.date,
     pp.team_number,
+    pl.id as player_id,
     pl.myclub_id,
     pl.name,
     pl.run_power,
     pl.ball_handling,
     pl.is_goalie
-FROM practice_players pp
-LEFT JOIN practices pr ON pr.id=pp.practice_id
-LEFT JOIN players pl ON pl.id=pp.player_id
-WHERE pr.id=?
+FROM
+    practice_players pp
+    LEFT JOIN practices pr ON pr.id = pp.practice_id
+    LEFT JOIN players pl ON pl.id = pp.player_id
+WHERE
+    pr.id = ?
 `
 
 type GetPracticeWithPlayersRow struct {
 	PracticeID   sql.NullInt64
 	Date         sql.NullTime
 	TeamNumber   int64
+	PlayerID     sql.NullInt64
 	MyclubID     sql.NullInt64
 	Name         sql.NullString
 	RunPower     sql.NullFloat64
@@ -110,6 +146,7 @@ func (q *Queries) GetPracticeWithPlayers(ctx context.Context, id int64) ([]GetPr
 			&i.PracticeID,
 			&i.Date,
 			&i.TeamNumber,
+			&i.PlayerID,
 			&i.MyclubID,
 			&i.Name,
 			&i.RunPower,
@@ -127,4 +164,24 @@ func (q *Queries) GetPracticeWithPlayers(ctx context.Context, id int64) ([]GetPr
 		return nil, err
 	}
 	return items, nil
+}
+
+const setPlayerTeam = `-- name: SetPlayerTeam :exec
+UPDATE practice_players
+SET
+    team_number = ?
+WHERE
+    practice_id = ?
+    AND player_id = ?
+`
+
+type SetPlayerTeamParams struct {
+	TeamNumber int64
+	PracticeID int64
+	PlayerID   int64
+}
+
+func (q *Queries) SetPlayerTeam(ctx context.Context, arg SetPlayerTeamParams) error {
+	_, err := q.db.ExecContext(ctx, setPlayerTeam, arg.TeamNumber, arg.PracticeID, arg.PlayerID)
+	return err
 }

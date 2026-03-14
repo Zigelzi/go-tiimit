@@ -40,6 +40,7 @@ func FromDBWithPlayers(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice,
 			row.BallHandling.Float64,
 			row.IsGoalie.Bool,
 		)
+		currentPlayer.ID = row.PlayerID.Int64
 		if row.TeamNumber == 1 {
 			teamOnePlayers = append(teamOnePlayers, currentPlayer)
 		} else if row.TeamNumber == 2 {

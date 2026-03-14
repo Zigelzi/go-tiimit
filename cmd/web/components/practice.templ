@@ -8,8 +8,8 @@ templ PracticePage(currentPractice practice.Practice) {
 			<div class="mb-4 text-sm">
 				<p>Practices on { currentPractice.Date.Weekday() } { currentPractice.Date.Format("02.01.2006") }</p>
 			</div>
-			@team(currentPractice.TeamOnePlayers, 1)
-			@team(currentPractice.TeamTwoPlayers, 2)
+			@team(currentPractice.TeamOnePlayers, currentPractice.ID, 1)
+			@team(currentPractice.TeamTwoPlayers, currentPractice.ID, 2)
 			<div class="my-6">
 				<h2 class="text-lg mb-2">Might attend</h2>
 				if len(currentPractice.UnknownPlayers) > 0 {

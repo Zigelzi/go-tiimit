@@ -15,3 +15,11 @@ func (player Player) Score() float64 {
 func roundToTwoDecimals(value float64) float64 {
 	return math.Round(value*100) / 100
 }
+
+func TotalScore(players []Player) float64 {
+	totalScore := 0.0
+	for _, player := range players {
+		totalScore += player.Score()
+	}
+	return roundToTwoDecimals(totalScore)
+}

@@ -1,28 +1,58 @@
 -- name: CreatePractice :execlastid
-INSERT INTO practices (date)
-VALUES (?)
-RETURNING id;
+INSERT INTO
+    practices (date)
+VALUES
+    (?) RETURNING id;
 
 -- name: AddPlayerToPractice :exec
-INSERT INTO practice_players (practice_id, player_id, team_number)
-VALUES (?,?,?);
+INSERT INTO
+    practice_players (practice_id, player_id, team_number)
+VALUES
+    (?, ?, ?);
 
 -- name: GetPracticeWithPlayers :many
-SELECT 
+SELECT
     pr.id as practice_id,
     pr.date,
     pp.team_number,
+    pl.id as player_id,
     pl.myclub_id,
     pl.name,
     pl.run_power,
     pl.ball_handling,
     pl.is_goalie
-FROM practice_players pp
-LEFT JOIN practices pr ON pr.id=pp.practice_id
-LEFT JOIN players pl ON pl.id=pp.player_id
-WHERE pr.id=?;
+FROM
+    practice_players pp
+    LEFT JOIN practices pr ON pr.id = pp.practice_id
+    LEFT JOIN players pl ON pl.id = pp.player_id
+WHERE
+    pr.id = ?;
 
 -- name: GetNewestPractices :many
-SELECT * FROM practices
-ORDER BY date DESC
-LIMIT ?;
+SELECT
+    *
+FROM
+    practices
+ORDER BY
+    date DESC
+LIMIT
+    ?;
+
+-- name: SetPlayerTeam :exec
+UPDATE practice_players
+SET
+    team_number = ?
+WHERE
+    practice_id = ?
+    AND player_id = ?;
+
+-- name: GetPracticePlayer :one
+SELECT
+    practice_id,
+    player_id,
+    team_number
+FROM
+    practice_players
+WHERE
+    practice_id = ?
+    AND player_id = ?;

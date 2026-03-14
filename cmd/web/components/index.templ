@@ -12,10 +12,10 @@ templ IndexPage(practices []practice.Practice) {
 			{{ user := auth.GetUserInfo(ctx) }}
 			<div class="my-8">
 				if user.IsLoggedIn {
-					<a class="px-4 py-2 bg-blue-400 rounded-md inline-block" href="/practices/new">Set up</a>
+					<a class="px-4 py-2 bg-blue-400 rounded-md inline-block hover:bg-blue-300" href="/practices/new">Set up</a>
 					<p>new practice.</p>
 				} else {
-					<a class="px-4 py-2 bg-blue-400 rounded-md inline-block" href="/login">Log in</a>
+					<a class="px-4 py-2 bg-blue-400 rounded-md inline-block hover:bg-blue-300" href="/login">Log in</a>
 					<p>
 						to set up and view practices.
 					</p>
