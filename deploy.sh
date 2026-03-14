@@ -9,7 +9,8 @@ else
     exit 1
 fi
 
-
+echo -e "BUILDING Tiumo"
+make prod/build-arm64
 echo -e "DEPLOYING Tiumo to ${PI_IP}"
 
 echo -e "COPYING the binary to Raspberry [${PI_USER}@${PI_IP}:${TMP_DIR}]"
