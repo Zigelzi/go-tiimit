@@ -15,6 +15,7 @@ SELECT
     pr.id as practice_id,
     pr.date,
     pp.team_number,
+    pp.has_vest,
     pl.id as player_id,
     pl.myclub_id,
     pl.name,
@@ -50,9 +51,18 @@ WHERE
 SELECT
     practice_id,
     player_id,
-    team_number
+    team_number,
+    has_vest
 FROM
     practice_players
 WHERE
     practice_id = ?
     AND player_id = ?;
+
+-- name: TogglePracticePlayerVest :exec
+UPDATE practice_players
+SET
+    has_vest = ?
+WHERE
+    practice_id = ?
+    AND player_id = ?

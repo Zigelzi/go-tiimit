@@ -7,11 +7,6 @@ import (
 	"github.com/Zigelzi/go-tiimit/internal/player"
 )
 
-func (p *Practice) PrintTeams() {
-	teamDetails(p.TeamOnePlayers, 1)
-	teamDetails(p.TeamTwoPlayers, 2)
-}
-
 func teamDetails(players []player.Player, teamNumber int) {
 	const separatorCount = 20
 	fmt.Printf("Team %d players\n", teamNumber)

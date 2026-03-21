@@ -1,27 +1,15 @@
 package components
 
-import "github.com/Zigelzi/go-tiimit/internal/practice"
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
-templ PracticePage(currentPractice practice.Practice) {
+templ PracticePage(practice view.Practice) {
 	@Base("Practices") {
 		<div>
 			<div class="mb-4 text-sm">
-				<p>Practices on { currentPractice.Date.Weekday() } { currentPractice.Date.Format("02.01.2006") }</p>
+				<p>Practices on { practice.Date.Weekday() } { practice.Date.Format("02.01.2006") }</p>
 			</div>
-			@team(currentPractice.TeamOnePlayers, currentPractice.ID, 1)
-			@team(currentPractice.TeamTwoPlayers, currentPractice.ID, 2)
-			<div class="my-6">
-				<h2 class="text-lg mb-2">Might attend</h2>
-				if len(currentPractice.UnknownPlayers) > 0 {
-					<ol>
-						for _, unknownPlayer := range currentPractice.UnknownPlayers {
-							<li>{ unknownPlayer.Name } </li>
-						}
-					</ol>
-				} else {
-					<p>All players attending!</p>
-				}
-			</div>
+			@team(practice.Teams[0])
+			@team(practice.Teams[1])
 		</div>
 	}
 }

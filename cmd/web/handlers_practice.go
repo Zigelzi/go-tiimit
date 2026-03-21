@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
+	"github.com/Zigelzi/go-tiimit/cmd/web/view"
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/Zigelzi/go-tiimit/internal/file"
 	"github.com/Zigelzi/go-tiimit/internal/player"
@@ -72,30 +73,35 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 		confirmedPlayers = append(confirmedPlayers, player.FromDB(dbConfirmedPlayer))
 	}
 
-	unknownRows, err := file.GetAttendanceRowsByStatus(attendanceRows, file.AttendanceUnknown)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("unable to get the possibly attending player rows in handler: %v", err)
-		return
-	}
+	/*
+		TODO: Add unknown players to practice and display them when viewing a practice.
+		Commented out now as nothing is done for these at the moment.
 
-	dbUnknownPlayers := []db.Player{}
-	for _, row := range unknownRows {
-		unknownDbPlayer, err := cfg.queries.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
+
+		unknownRows, err := file.GetAttendanceRowsByStatus(attendanceRows, file.AttendanceUnknown)
 		if err != nil {
-			log.Println(err)
-			continue
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("unable to get the possibly attending player rows in handler: %v", err)
+			return
 		}
-		dbUnknownPlayers = append(dbUnknownPlayers, unknownDbPlayer)
-	}
 
-	unknownPlayers := []player.Player{}
-	for _, dbUnknownPlayer := range dbUnknownPlayers {
-		unknownPlayers = append(unknownPlayers, player.FromDB(dbUnknownPlayer))
-	}
+		dbUnknownPlayers := []db.Player{}
+		for _, row := range unknownRows {
+			unknownDbPlayer, err := cfg.queries.GetPlayerByMyclubID(r.Context(), int64(row.PlayerRow.MyclubID))
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			dbUnknownPlayers = append(dbUnknownPlayers, unknownDbPlayer)
+		}
 
-	player.SortByScore(confirmedPlayers)
-	player.SortByScore(unknownPlayers)
+		unknownPlayers := []player.Player{}
+		for _, dbUnknownPlayer := range dbUnknownPlayers {
+			unknownPlayers = append(unknownPlayers, player.FromDB(dbUnknownPlayer))
+		}
+
+	*/
+
 	goalies, fieldPlayers := player.GetPreferences(confirmedPlayers)
 	team1, team2, err := practice.Distribute(fieldPlayers, goalies)
 
@@ -113,10 +119,10 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 
 	newPractice := practice.Practice{
-		TeamOnePlayers: team1,
-		TeamTwoPlayers: team2,
-		UnknownPlayers: unknownPlayers,
-		Date:           practiceDate,
+		TeamOnePlayers: practice.FromPlayer(team1),
+		TeamTwoPlayers: practice.FromPlayer(team2),
+		// UnknownPlayers: unknownPlayers,
+		Date: practiceDate,
 	}
 
 	if err != nil {
@@ -142,12 +148,12 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	for _, teamOnePlayer := range newPractice.TeamOnePlayers {
 		err = queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
 			PracticeID: dbPracticeId,
-			PlayerID:   teamOnePlayer.ID,
+			PlayerID:   teamOnePlayer.Player.ID,
 			TeamNumber: 1,
 		})
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Printf("failed to add player [%d] %s to practice %d in team 1", teamOnePlayer.ID, teamOnePlayer.Name, dbPracticeId)
+			log.Printf("failed to add player [%d] %s to practice %d in team 1", teamOnePlayer.Player.ID, teamOnePlayer.Player.Name, dbPracticeId)
 			return
 		}
 	}
@@ -155,12 +161,12 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	for _, teamTwoPlayer := range newPractice.TeamTwoPlayers {
 		err = queryTx.AddPlayerToPractice(r.Context(), db.AddPlayerToPracticeParams{
 			PracticeID: dbPracticeId,
-			PlayerID:   teamTwoPlayer.ID,
+			PlayerID:   teamTwoPlayer.Player.ID,
 			TeamNumber: 2,
 		})
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Printf("failed to add player [%d] %s to practice %d in team 2", teamTwoPlayer.ID, teamTwoPlayer.Name, dbPracticeId)
+			log.Printf("failed to add player [%d] %s to practice %d in team 2", teamTwoPlayer.Player.ID, teamTwoPlayer.Player.Name, dbPracticeId)
 			return
 		}
 	}
@@ -178,6 +184,7 @@ func (cfg *webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request)
 		log.Printf("unable to parse practice id from path: %v", err)
 		return
 	}
+	// TODO: Figure out where and how to add the HasVest flag.
 	dbPracticeRows, err := cfg.queries.GetPracticeWithPlayers(r.Context(), int64(practiceId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -199,9 +206,26 @@ func (cfg *webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request)
 		log.Printf("failed to convert the practice players: %v", err)
 		return
 	}
-	player.SortByScore(currentPractice.TeamOnePlayers)
-	player.SortByScore(currentPractice.TeamTwoPlayers)
-	component := components.PracticePage(currentPractice)
+	practice.SortByScore(currentPractice.TeamOnePlayers)
+	practice.SortByScore(currentPractice.TeamTwoPlayers)
+
+	practiceView := view.Practice{
+		Date:  currentPractice.Date,
+		Teams: make([]view.Team, 2),
+	}
+	practiceView.Teams[0] = view.FromPractice(currentPractice.TeamOnePlayers, 1)
+	practiceView.Teams[1] = view.FromPractice(currentPractice.TeamTwoPlayers, 2)
+	for teamIndex := range practiceView.Teams {
+		for playerIndex, player := range practiceView.Teams[teamIndex].Players {
+			practiceView.Teams[teamIndex].Players[playerIndex].MoveURL = fmt.Sprintf("/practices/%d/players/%d", currentPractice.ID, player.ID)
+			practiceView.Teams[teamIndex].Players[playerIndex].ToggleVestURL = fmt.Sprintf("/practices/%d/players/%d/vest", currentPractice.ID, player.ID)
+
+			// TOOD: Think where to do this properly
+
+		}
+	}
+
+	component := components.PracticePage(practiceView)
 	component.Render(r.Context(), w)
 }
 
@@ -221,6 +245,7 @@ func (cfg *webConfig) handleMovePlayer(w http.ResponseWriter, r *http.Request) {
 		log.Printf("unable to parse practice id from path: %v", err)
 		return
 	}
+
 	dbPracticePlayer, err := cfg.queries.GetPracticePlayer(r.Context(), db.GetPracticePlayerParams{
 		PracticeID: int64(practiceId),
 		PlayerID:   int64(playerId),
@@ -252,4 +277,32 @@ func (cfg *webConfig) handleMovePlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("HX-Redirect", fmt.Sprintf("/practices/%d", practiceId))
+}
+
+func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Request) {
+	practiceId, err := strconv.Atoi(r.PathValue("practice_id"))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unable to parse practice id from path: %v", err)
+		return
+	}
+
+	playerId, err := strconv.Atoi(r.PathValue("player_id"))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unable to parse practice id from path: %v", err)
+		return
+	}
+
+	dbPracticePlayer, err := cfg.queries.GetPracticePlayer(r.Context(), db.GetPracticePlayerParams{
+		PracticeID: int64(practiceId),
+		PlayerID:   int64(playerId),
+	})
+	err = cfg.queries.TogglePracticePlayerVest(r.Context(), db.TogglePracticePlayerVestParams{
+		PracticeID: int64(practiceId),
+		PlayerID:   int64(playerId),
+		HasVest:    !dbPracticePlayer.HasVest,
+	})
 }

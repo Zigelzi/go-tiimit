@@ -27,6 +27,7 @@ type PracticePlayer struct {
 	PracticeID int64
 	PlayerID   int64
 	TeamNumber int64
+	HasVest    bool
 }
 
 type User struct {

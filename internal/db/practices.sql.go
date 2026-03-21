@@ -82,7 +82,8 @@ const getPracticePlayer = `-- name: GetPracticePlayer :one
 SELECT
     practice_id,
     player_id,
-    team_number
+    team_number,
+    has_vest
 FROM
     practice_players
 WHERE
@@ -98,7 +99,12 @@ type GetPracticePlayerParams struct {
 func (q *Queries) GetPracticePlayer(ctx context.Context, arg GetPracticePlayerParams) (PracticePlayer, error) {
 	row := q.db.QueryRowContext(ctx, getPracticePlayer, arg.PracticeID, arg.PlayerID)
 	var i PracticePlayer
-	err := row.Scan(&i.PracticeID, &i.PlayerID, &i.TeamNumber)
+	err := row.Scan(
+		&i.PracticeID,
+		&i.PlayerID,
+		&i.TeamNumber,
+		&i.HasVest,
+	)
 	return i, err
 }
 
@@ -107,6 +113,7 @@ SELECT
     pr.id as practice_id,
     pr.date,
     pp.team_number,
+    pp.has_vest,
     pl.id as player_id,
     pl.myclub_id,
     pl.name,
@@ -125,6 +132,7 @@ type GetPracticeWithPlayersRow struct {
 	PracticeID   sql.NullInt64
 	Date         sql.NullTime
 	TeamNumber   int64
+	HasVest      bool
 	PlayerID     sql.NullInt64
 	MyclubID     sql.NullInt64
 	Name         sql.NullString
@@ -146,6 +154,7 @@ func (q *Queries) GetPracticeWithPlayers(ctx context.Context, id int64) ([]GetPr
 			&i.PracticeID,
 			&i.Date,
 			&i.TeamNumber,
+			&i.HasVest,
 			&i.PlayerID,
 			&i.MyclubID,
 			&i.Name,
@@ -183,5 +192,25 @@ type SetPlayerTeamParams struct {
 
 func (q *Queries) SetPlayerTeam(ctx context.Context, arg SetPlayerTeamParams) error {
 	_, err := q.db.ExecContext(ctx, setPlayerTeam, arg.TeamNumber, arg.PracticeID, arg.PlayerID)
+	return err
+}
+
+const togglePracticePlayerVest = `-- name: TogglePracticePlayerVest :exec
+UPDATE practice_players
+SET
+    has_vest = ?
+WHERE
+    practice_id = ?
+    AND player_id = ?
+`
+
+type TogglePracticePlayerVestParams struct {
+	HasVest    bool
+	PracticeID int64
+	PlayerID   int64
+}
+
+func (q *Queries) TogglePracticePlayerVest(ctx context.Context, arg TogglePracticePlayerVestParams) error {
+	_, err := q.db.ExecContext(ctx, togglePracticePlayerVest, arg.HasVest, arg.PracticeID, arg.PlayerID)
 	return err
 }
