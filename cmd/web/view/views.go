@@ -1,6 +1,7 @@
 package view
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/practice"
@@ -36,6 +37,13 @@ func FromPractice(players []practice.PracticePlayer, teamNumber int) Team {
 		newTeam.Players = append(newTeam.Players, FromPlayer(player))
 	}
 	return newTeam
+}
+
+func (t *Team) GeneratePlayerURLs(practiceId int64) {
+	for i, player := range t.Players {
+		t.Players[i].MoveURL = fmt.Sprintf("/practices/%d/players/%d", practiceId, player.ID)
+		t.Players[i].ToggleVestURL = fmt.Sprintf("/practices/%d/players/%d/vest", practiceId, player.ID)
+	}
 }
 
 func FromPlayer(p practice.PracticePlayer) Player {

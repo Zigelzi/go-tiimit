@@ -215,15 +215,9 @@ func (cfg *webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request)
 	}
 	practiceView.Teams[0] = view.FromPractice(currentPractice.TeamOnePlayers, 1)
 	practiceView.Teams[1] = view.FromPractice(currentPractice.TeamTwoPlayers, 2)
-	for teamIndex := range practiceView.Teams {
-		for playerIndex, player := range practiceView.Teams[teamIndex].Players {
-			practiceView.Teams[teamIndex].Players[playerIndex].MoveURL = fmt.Sprintf("/practices/%d/players/%d", currentPractice.ID, player.ID)
-			practiceView.Teams[teamIndex].Players[playerIndex].ToggleVestURL = fmt.Sprintf("/practices/%d/players/%d/vest", currentPractice.ID, player.ID)
 
-			// TOOD: Think where to do this properly
-
-		}
-	}
+	practiceView.Teams[0].GeneratePlayerURLs(currentPractice.ID)
+	practiceView.Teams[1].GeneratePlayerURLs(currentPractice.ID)
 
 	component := components.PracticePage(practiceView)
 	component.Render(r.Context(), w)
