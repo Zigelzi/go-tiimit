@@ -274,6 +274,11 @@ func (cfg *webConfig) handleMovePlayer(w http.ResponseWriter, r *http.Request) {
 			PlayerID:   dbPracticePlayer.PlayerID,
 			TeamNumber: 1,
 		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to move player with ID [%d] from practice [%d] from team 2 to 1: %v", playerId, practiceId, err)
+			return
+		}
 	}
 
 	w.Header().Add("HX-Redirect", fmt.Sprintf("/practices/%d", practiceId))
