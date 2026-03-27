@@ -21,7 +21,7 @@ templ team(team view.Team) {
 				<ol>
 					<li class="mb-2 flex bg-white rounded-md px-2 hover:bg-slate-100 has-checked:bg-slate-600 has-checked:text-white">
 						<input class="absolute opacity-0" type="checkbox" name="players" id={ player.ID } value={ player.ID } hx-post={ player.ToggleVestURL } checked?={ player.HasVest } hx-swap="none"/>
-						<label class="grow py-4 ml-2 select-none" for={ player.ID }>
+						<label onclick="testClick(this)" class="grow py-4 ml-2 select-none" for={ player.ID }>
 							{ player.Name }
 							if player.IsGoalie {
 								<span>[{ fmt.Sprintf("%.1f", player.Score) } / Goalie]</span>

@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.12
 
 require (
-	github.com/a-h/templ v0.3.960
+	github.com/a-h/templ v0.3.1001
 	github.com/manifoldco/promptui v0.9.0
 	github.com/xuri/excelize/v2 v2.9.0
 	modernc.org/sqlite v1.44.1
