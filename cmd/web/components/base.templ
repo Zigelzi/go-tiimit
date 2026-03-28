@@ -24,15 +24,22 @@ templ Base(title string) {
 							person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
 					})
 				}
+
+				function identifyUser(userId, username) {
+					console.log(`identifying user ${userId}:${username}`)
+					posthog.identify(userId)
+				}
 		</script>
 			{{ apikey := analytics.GetPostHogApiKey(ctx) }}
 			@templ.JSFuncCall("initPostHog", apikey)
+			{{ user := auth.GetUserInfo(ctx) }}
+			@templ.JSFuncCall("identifyUser", user.ID, "matti")
+			// TODO: Figure out how to reset the identity on logout
 		</head>
 		<header>
 			<div class="flex justify-between px-4 py-2 border-b border-slate-300">
 				<a class="text-2xl" href="/">Tiumo</a>
 				<nav class="flex items-center gap-4">
-					{{ user := auth.GetUserInfo(ctx) }}
 					if user.IsLoggedIn {
 						<a hx-post="/logout" class="underline hover:cursor-pointer">Log out</a>
 					} else {
@@ -42,7 +49,7 @@ templ Base(title string) {
 			</div>
 		</header>
 		<body class="bg-slate-200">
-			<p></p>
+			<p>Test: { user.ID } { user.Username }</p>
 			<div class="max-w-sm mx-4 md:mx-auto my-8">
 				{ children... }
 			</div>

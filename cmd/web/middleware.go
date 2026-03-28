@@ -32,7 +32,7 @@ func (cfg *webConfig) getUserInfoFromRequest(r *http.Request) auth.UserInfo {
 			IsLoggedIn: false,
 		}
 	}
-	_, err = cfg.queries.GetActiveSession(r.Context(), sessionCookie.Value)
+	userSession, err := cfg.queries.GetActiveSession(r.Context(), sessionCookie.Value)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) == false {
 			log.Printf("failed to get active user session: %v", err)
@@ -41,6 +41,7 @@ func (cfg *webConfig) getUserInfoFromRequest(r *http.Request) auth.UserInfo {
 	}
 
 	return auth.UserInfo{
+		ID:         userSession.UserID,
 		IsLoggedIn: true,
 	}
 }
