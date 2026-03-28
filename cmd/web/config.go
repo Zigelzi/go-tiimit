@@ -7,8 +7,9 @@ import (
 )
 
 type webConfig struct {
-	queries *db.Queries
-	db      *sql.DB
-	address string
-	env     string
+	queries  *db.Queries
+	db       *sql.DB
+	address  string
+	env      string
+	phApiKey string
 }

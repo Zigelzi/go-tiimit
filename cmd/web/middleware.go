@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Zigelzi/go-tiimit/cmd/web/analytics"
 	"github.com/Zigelzi/go-tiimit/internal/auth"
 )
 
@@ -60,5 +61,24 @@ func requireAuth(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (cfg *webConfig) analyticsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip adding analytics to the static assets (CSS, JS, etc.)
+		if strings.HasPrefix(r.URL.Path, "/static/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Add PostHog API key only to full page loads
+		if r.Header.Get("HX-Request") == "true" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		ctxWithApiKey := analytics.WithPostHogApiKey(r.Context(), cfg.phApiKey)
+		next.ServeHTTP(w, r.WithContext(ctxWithApiKey))
 	})
 }

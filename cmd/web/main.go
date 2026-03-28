@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/joho/godotenv"
@@ -31,11 +32,17 @@ func main() {
 		return
 	}
 
+	postHogApiKey := os.Getenv("POSTHOG_API_KEY")
+	if postHogApiKey == "" {
+		log.Printf("POSTHOG_API_KEY environment variable is not set. Starting without PostHog.")
+	}
+
 	cfg := webConfig{
-		queries: db.New(newDb),
-		db:      newDb,
-		address: "127.0.0.1:8080",
-		env:     "development",
+		queries:  db.New(newDb),
+		db:       newDb,
+		address:  "127.0.0.1:8080",
+		env:      "development",
+		phApiKey: postHogApiKey,
 	}
 
 	mux := http.NewServeMux()
@@ -63,9 +70,9 @@ func main() {
 	mux.HandleFunc("POST /login", cfg.handleLoginUser)
 	mux.HandleFunc("POST /logout", cfg.handleLogout)
 
-	muxWithAuth := cfg.authMiddleware(mux)
+	muxWithMiddleware := cfg.analyticsMiddleware(cfg.authMiddleware(mux))
 	server := http.Server{
-		Handler: muxWithAuth,
+		Handler: muxWithMiddleware,
 		Addr:    cfg.address,
 	}
 	log.Printf("Starting server on address %s", cfg.address)
