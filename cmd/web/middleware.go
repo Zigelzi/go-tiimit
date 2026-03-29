@@ -72,13 +72,6 @@ func (cfg *webConfig) analyticsMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-
-		// Add PostHog API key only to full page loads
-		if r.Header.Get("HX-Request") == "true" {
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		ctxWithApiKey := analytics.WithPostHogApiKey(r.Context(), cfg.phApiKey)
 		next.ServeHTTP(w, r.WithContext(ctxWithApiKey))
 	})
