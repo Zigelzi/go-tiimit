@@ -80,15 +80,21 @@ func (q *Queries) GetNewestPractices(ctx context.Context, limit int64) ([]Practi
 
 const getPracticePlayer = `-- name: GetPracticePlayer :one
 SELECT
-    practice_id,
-    player_id,
-    team_number,
-    has_vest
+    pp.practice_id,
+    pp.player_id,
+    pp.team_number,
+    pp.has_vest,
+    pl.myclub_id,
+    pl.name,
+    pl.run_power,
+    pl.ball_handling,
+    pl.is_goalie
 FROM
-    practice_players
+    practice_players pp
+    INNER JOIN players pl ON pl.id = pp.player_id
 WHERE
-    practice_id = ?
-    AND player_id = ?
+    pp.practice_id = ?
+    AND pp.player_id = ?
 `
 
 type GetPracticePlayerParams struct {
@@ -96,16 +102,102 @@ type GetPracticePlayerParams struct {
 	PlayerID   int64
 }
 
-func (q *Queries) GetPracticePlayer(ctx context.Context, arg GetPracticePlayerParams) (PracticePlayer, error) {
+type GetPracticePlayerRow struct {
+	PracticeID   int64
+	PlayerID     int64
+	TeamNumber   int64
+	HasVest      bool
+	MyclubID     int64
+	Name         string
+	RunPower     float64
+	BallHandling float64
+	IsGoalie     bool
+}
+
+func (q *Queries) GetPracticePlayer(ctx context.Context, arg GetPracticePlayerParams) (GetPracticePlayerRow, error) {
 	row := q.db.QueryRowContext(ctx, getPracticePlayer, arg.PracticeID, arg.PlayerID)
-	var i PracticePlayer
+	var i GetPracticePlayerRow
 	err := row.Scan(
 		&i.PracticeID,
 		&i.PlayerID,
 		&i.TeamNumber,
 		&i.HasVest,
+		&i.MyclubID,
+		&i.Name,
+		&i.RunPower,
+		&i.BallHandling,
+		&i.IsGoalie,
 	)
 	return i, err
+}
+
+const getPracticeTeamPlayers = `-- name: GetPracticeTeamPlayers :many
+SELECT
+    pp.practice_id,
+    pp.player_id,
+    pp.team_number,
+    pp.has_vest,
+    pl.myclub_id,
+    pl.name,
+    pl.run_power,
+    pl.ball_handling,
+    pl.is_goalie
+FROM
+    practice_players pp
+    INNER JOIN players pl ON pl.id = pp.player_id
+WHERE
+    pp.practice_id = ?
+    AND pp.team_number = ?
+`
+
+type GetPracticeTeamPlayersParams struct {
+	PracticeID int64
+	TeamNumber int64
+}
+
+type GetPracticeTeamPlayersRow struct {
+	PracticeID   int64
+	PlayerID     int64
+	TeamNumber   int64
+	HasVest      bool
+	MyclubID     int64
+	Name         string
+	RunPower     float64
+	BallHandling float64
+	IsGoalie     bool
+}
+
+func (q *Queries) GetPracticeTeamPlayers(ctx context.Context, arg GetPracticeTeamPlayersParams) ([]GetPracticeTeamPlayersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPracticeTeamPlayers, arg.PracticeID, arg.TeamNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPracticeTeamPlayersRow
+	for rows.Next() {
+		var i GetPracticeTeamPlayersRow
+		if err := rows.Scan(
+			&i.PracticeID,
+			&i.PlayerID,
+			&i.TeamNumber,
+			&i.HasVest,
+			&i.MyclubID,
+			&i.Name,
+			&i.RunPower,
+			&i.BallHandling,
+			&i.IsGoalie,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getPracticeWithPlayers = `-- name: GetPracticeWithPlayers :many

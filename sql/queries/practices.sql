@@ -49,15 +49,21 @@ WHERE
 
 -- name: GetPracticePlayer :one
 SELECT
-    practice_id,
-    player_id,
-    team_number,
-    has_vest
+    pp.practice_id,
+    pp.player_id,
+    pp.team_number,
+    pp.has_vest,
+    pl.myclub_id,
+    pl.name,
+    pl.run_power,
+    pl.ball_handling,
+    pl.is_goalie
 FROM
-    practice_players
+    practice_players pp
+    INNER JOIN players pl ON pl.id = pp.player_id
 WHERE
-    practice_id = ?
-    AND player_id = ?;
+    pp.practice_id = ?
+    AND pp.player_id = ?;
 
 -- name: TogglePracticePlayerVest :exec
 UPDATE practice_players
@@ -65,4 +71,22 @@ SET
     has_vest = ?
 WHERE
     practice_id = ?
-    AND player_id = ?
+    AND player_id = ?;
+
+-- name: GetPracticeTeamPlayers :many
+SELECT
+    pp.practice_id,
+    pp.player_id,
+    pp.team_number,
+    pp.has_vest,
+    pl.myclub_id,
+    pl.name,
+    pl.run_power,
+    pl.ball_handling,
+    pl.is_goalie
+FROM
+    practice_players pp
+    INNER JOIN players pl ON pl.id = pp.player_id
+WHERE
+    pp.practice_id = ?
+    AND pp.team_number = ?;

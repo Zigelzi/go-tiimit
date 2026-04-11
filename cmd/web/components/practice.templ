@@ -8,8 +8,8 @@ templ PracticePage(practice view.Practice) {
 			<div class="mb-4 text-sm">
 				<p>Practices on { practice.Date.Weekday() } { practice.Date.Format("02.01.2006") }</p>
 			</div>
-			@team(practice.Teams[0])
-			@team(practice.Teams[1])
+			@Team(practice.Teams[0])
+			@Team(practice.Teams[1])
 		</div>
 	}
 }

@@ -40,10 +40,20 @@ func FromPractice(players []practice.PracticePlayer, teamNumber int) Team {
 }
 
 func (t *Team) GeneratePlayerURLs(practiceId int64) {
-	for i, player := range t.Players {
-		t.Players[i].MoveURL = fmt.Sprintf("/practices/%d/players/%d", practiceId, player.ID)
-		t.Players[i].ToggleVestURL = fmt.Sprintf("/practices/%d/players/%d/vest", practiceId, player.ID)
+	for i := range t.Players {
+		t.Players[i].GenerateURLs(practiceId)
 	}
+}
+
+func (t *Team) VestCount() int {
+	numberOfVests := 0
+
+	for _, player := range t.Players {
+		if player.HasVest {
+			numberOfVests++
+		}
+	}
+	return numberOfVests
 }
 
 func FromPlayer(p practice.PracticePlayer) Player {
@@ -54,4 +64,9 @@ func FromPlayer(p practice.PracticePlayer) Player {
 		HasVest:  p.HasVest,
 		Score:    p.Player.Score(),
 	}
+}
+
+func (p *Player) GenerateURLs(practiceId int64) {
+	p.MoveURL = fmt.Sprintf("/practices/%d/players/%d", practiceId, p.ID)
+	p.ToggleVestURL = fmt.Sprintf("/practices/%d/players/%d/vest", practiceId, p.ID)
 }

@@ -40,7 +40,7 @@ func FromDBWithPlayers(dbPracticeRows []db.GetPracticeWithPlayersRow) (Practice,
 	teamOnePlayers := []PracticePlayer{}
 	teamTwoPlayers := []PracticePlayer{}
 	for _, row := range dbPracticeRows {
-
+		// TODO: Reuse creating the practice players to improve maintainability.
 		currentPlayer := PracticePlayer{
 			Player: player.New(
 				row.MyclubID.Int64,
@@ -78,6 +78,21 @@ func FromPlayer(players []player.Player) []PracticePlayer {
 		}
 	}
 	return practicePlayers
+}
+
+func PracticePlayerFromDB(dbPracticePlayer db.GetPracticeTeamPlayersRow) PracticePlayer {
+	player := player.New(
+		dbPracticePlayer.MyclubID,
+		dbPracticePlayer.Name,
+		dbPracticePlayer.RunPower,
+		dbPracticePlayer.BallHandling,
+		dbPracticePlayer.IsGoalie,
+	)
+	player.ID = dbPracticePlayer.PlayerID
+	return PracticePlayer{
+		Player:  player,
+		HasVest: dbPracticePlayer.HasVest,
+	}
 }
 
 func SortByScore(players []PracticePlayer) {

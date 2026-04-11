@@ -299,9 +299,38 @@ func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Requ
 		PracticeID: int64(practiceId),
 		PlayerID:   int64(playerId),
 	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to get the player [%d] for practice [%d]: %v", playerId, practiceId, err)
+		return
+	}
+
 	err = cfg.queries.TogglePracticePlayerVest(r.Context(), db.TogglePracticePlayerVestParams{
 		PracticeID: int64(practiceId),
 		PlayerID:   int64(playerId),
 		HasVest:    !dbPracticePlayer.HasVest,
 	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed to toggle the player [%d] vest for practice [%d]: %v", playerId, practiceId, err)
+		return
+	}
+
+	dbTeamPlayers, err := cfg.queries.GetPracticeTeamPlayers(r.Context(), db.GetPracticeTeamPlayersParams{
+		PracticeID: int64(practiceId),
+		TeamNumber: dbPracticePlayer.TeamNumber,
+	})
+
+	teamPracticePlayers := []practice.PracticePlayer{}
+	for _, dbTeamPlayer := range dbTeamPlayers {
+		practicePlayer := practice.PracticePlayerFromDB(dbTeamPlayer)
+		teamPracticePlayers = append(teamPracticePlayers, practicePlayer)
+	}
+
+	practice.SortByScore(teamPracticePlayers)
+	teamView := view.FromPractice(teamPracticePlayers, int(dbPracticePlayer.TeamNumber))
+	teamView.GeneratePlayerURLs(int64(practiceId))
+
+	component := components.Team(teamView)
+	component.Render(r.Context(), w)
 }
