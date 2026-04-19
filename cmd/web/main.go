@@ -56,7 +56,7 @@ func main() {
 	fileserver := http.FileServer(http.FS(staticFs))
 	mux.Handle("/static/", disableCacheInDevMode(http.StripPrefix("/static/", fileserver), cfg.env))
 
-	mux.HandleFunc("/", cfg.handleIndexPage)
+	mux.HandleFunc("/{$}", cfg.handleIndexPage)
 
 	// Practices
 	mux.Handle("GET /practices/new", requireAuth(http.HandlerFunc(cfg.handleSetupPracticePage)))
