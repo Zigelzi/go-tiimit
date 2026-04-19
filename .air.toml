@@ -7,11 +7,11 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./tmp/main"
-cmd = "go build -o ./tmp/main ./cmd/web"
+cmd = "go build -o ./tmp/main ./cmd/web && templ generate --notify-proxy"
 delay = 100
 #exclude_dir = ["assets", "tmp", "vendor", "testdata", "player-files", "attendance-files", "node_modules"]
 exclude_dir = []
-exclude_file = []
+exclude_file = ["cmd/web/tailwind.css"]
 exclude_regex = ["_test.go"]
 exclude_unchanged = false
 follow_symlink = false
@@ -19,7 +19,8 @@ full_bin = ""
 #include_dir = ["./cmd/web"]
 include_dir = ["cmd"]
 #include_ext = ["go", "templ", "tmpl", "html", "css"]
-include_ext = ["go"]
+# Air rebuilds binary on CSS changes, as static assets are embedded with go:embed
+include_ext = ["go", "css"]
 include_file = []
 kill_delay = "0s"
 log = "build-errors.log"

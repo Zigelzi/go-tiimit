@@ -62,6 +62,13 @@ func (player Player) Details() (details string) {
 	}
 }
 
+func (p Player) RunPower() float64 {
+	return p.runPower
+}
+func (p Player) BallHandling() float64 {
+	return p.ballHandling
+}
+
 func (player Player) UpdateRunPower(dbQuery *db.Queries, newRunPower float64) error {
 	if newRunPower < 0 {
 		newRunPower = 0

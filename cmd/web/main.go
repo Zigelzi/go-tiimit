@@ -56,7 +56,7 @@ func main() {
 	fileserver := http.FileServer(http.FS(staticFs))
 	mux.Handle("/static/", disableCacheInDevMode(http.StripPrefix("/static/", fileserver), cfg.env))
 
-	mux.HandleFunc("/", cfg.handleIndexPage)
+	mux.HandleFunc("/{$}", cfg.handleIndexPage)
 
 	// Practices
 	mux.Handle("GET /practices/new", requireAuth(http.HandlerFunc(cfg.handleSetupPracticePage)))
@@ -64,6 +64,11 @@ func main() {
 	mux.Handle("POST /practices/{practice_id}/players/{player_id}", requireAuth(http.HandlerFunc(cfg.handleMovePlayer)))
 	mux.Handle("POST /practices/{practice_id}/players/{player_id}/vest", requireAuth(http.HandlerFunc(cfg.handleTogglePlayerVest)))
 	mux.Handle("POST /practice", requireAuth(http.HandlerFunc(cfg.handleCreatePractice)))
+
+	// Players
+	mux.Handle("GET /players", requireAuth(http.HandlerFunc(cfg.handleViewPlayersPage)))
+	mux.Handle("POST /players", requireAuth(http.HandlerFunc(cfg.handleAddPlayerToClub)))
+	mux.Handle("GET /players/add", requireAuth(http.HandlerFunc(cfg.handleAddPlayerForm)))
 
 	// Auth
 	mux.HandleFunc("GET /login", cfg.handleLoginPage)

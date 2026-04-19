@@ -22,11 +22,13 @@ func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 	dbUser, err := cfg.queries.GetUserByUsername(r.Context(), username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			w.Write([]byte("<p class='text-red-500'>Incorrect username or password </p>"))
+			component := components.FormError("Incorrect username or password")
+			component.Render(r.Context(), w)
 			return
 		} else {
 			log.Printf("failed to get user [%s]: %v", username, err)
-			w.Write([]byte("<p class='text-red-500'>Logging in failed, try again later.</p>"))
+			component := components.FormError("Incorrect username or password")
+			component.Render(r.Context(), w)
 			return
 		}
 	}
@@ -34,14 +36,16 @@ func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	err = auth.CheckPassword(password, dbUser.HashedPassword)
 	if err != nil {
-		w.Write([]byte("<p class='text-red-500'>Incorrect username or password </p>"))
+		component := components.FormError("Incorrect username or password")
+		component.Render(r.Context(), w)
 		return
 	}
 
 	sessionToken, err := auth.MakeToken()
 	if err != nil {
 		log.Printf("failed to generate session token: %v", err)
-		w.Write([]byte("<p class='text-red-500'>Logging in failed, try again later.</p>"))
+		component := components.FormError("Logging in failed, try again later.")
+		component.Render(r.Context(), w)
 		return
 	}
 	session, err := cfg.queries.StartUserSession(r.Context(), db.StartUserSessionParams{
@@ -51,7 +55,8 @@ func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("failed to start new session: %v", err)
-		w.Write([]byte("<p class='text-red-500'>Logging in failed, try again later.</p>"))
+		component := components.FormError("Logging in failed, try again later.")
+		component.Render(r.Context(), w)
 		return
 	}
 

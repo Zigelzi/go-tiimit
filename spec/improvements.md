@@ -11,6 +11,7 @@ Possible improvement ideas categorized based on the user flow.
 - [x] Move player to other team to balance teams.
 - [ ] View total score of the team to balance teams.
 - [ ] View unknown players that weren't possible to distribute.
+- [ ] Display players who weren't possible to distribute to practices (e.g doesn't exist in club)
 - [ ] Distribute the players who haven't signed up, but showed up to the practice (unknown players).
 - [ ] Create and distribute a guest/tryout player.
 

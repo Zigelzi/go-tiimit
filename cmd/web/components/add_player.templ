@@ -1,0 +1,26 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
+
+templ AddPlayerForm(form view.AddPlayerForm) {
+	<form hx-post="/players">
+		<h2 class="text-xl font-bold mb-2">Add player to club</h2>
+		<div>
+			<label class="form-label" for="myclub-id">MyClub ID:</label>
+			<input class="form-input" type="number" name="myclub-id" id="myclub-id" placeholder="1337" min="0" max="9999" value={ form.MyClubId }/>
+			if form.HasError("myclub-id") {
+				@FormError(form.FieldErrors["myclub-id"])
+			}
+		</div>
+		<div>
+			<label class="form-label" for="name">Name:</label>
+			<input class="form-input" type="text" name="name" id="name" placeholder="Mauno Mahdoton" value={ form.Name }/>
+			if form.HasError("name") {
+				@FormError(form.FieldErrors["name"])
+			}
+		</div>
+		<div class="mt-4">
+			<button class="btn btn-primary">Add</button>
+		</div>
+	</form>
+}

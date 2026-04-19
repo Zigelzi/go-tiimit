@@ -16,20 +16,9 @@ dev/tailwind:
 	bunx --yes @tailwindcss/cli -i ./cmd/web/tailwind.css -o ./cmd/web/static/tailwind.css --minify --watch
 
 
-# watch for any js or css change in the static/ folder, then reload the browser via templ proxy.
-dev/sync_assets:
-	@echo "\n\nStarting sync assets"
-	air \
-	--build.cmd "templ generate --notify-proxy" \
-	--build.bin "true" \
-	--build.delay "100" \
-	--build.exclude_dir "" \
-	--build.include_dir "./cmd/web/static" \
-	--build.include_ext "css"
-
-# start all 5 watch processes in parallel.
+# start all 3 watch processes in parallel.
 dev: 
-	make -j4 dev/tailwind dev/server dev/templ dev/sync_assets
+	make -j4 dev/tailwind dev/server dev/templ
 
 prod/build-arm64:
 	make prod/tailwind
