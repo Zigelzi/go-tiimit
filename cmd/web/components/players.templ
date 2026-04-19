@@ -1,0 +1,26 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
+
+templ PlayersPage(players []view.Player) {
+	@Base("Players") {
+		<h2 class="text-2xl">Players</h2>
+		<div>
+			if len(players) == 0 {
+				<p>Your club doesn't have players yet!</p>
+				<p>Add your first player</p>
+			} else {
+				<ul>
+					for _, player := range players {
+						<li>
+							[{ player.ID }] { player.Name }
+							if player.IsGoalie {
+								Goalie
+							}
+						</li>
+					}
+				</ul>
+			}
+		</div>
+	}
+}
