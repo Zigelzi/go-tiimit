@@ -21,7 +21,7 @@ dev/sync_assets:
 	@echo "\n\nStarting sync assets"
 	air \
 	--build.cmd "templ generate --notify-proxy" \
-	--build.bin "true" \
+	--build.bin true \
 	--build.delay "100" \
 	--build.exclude_dir "" \
 	--build.include_dir "./cmd/web/static" \
