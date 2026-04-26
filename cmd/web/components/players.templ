@@ -4,22 +4,37 @@ import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
 templ PlayersPage(players []view.Player) {
 	@Base("Players") {
-		<h2 class="text-2xl">Players</h2>
+		<h2 class="text-2xl mb-4">Players</h2>
 		<div>
 			if len(players) == 0 {
 				<p>Your club doesn't have players yet!</p>
 				<p>Add your first player</p>
 			} else {
-				<ul>
+				<table class="w-full">
+					<tr class="">
+						<th class="pr-4 text-left">ID</th>
+						<th class="pr-4 text-left">Name</th>
+						<th class="pr-4 text-left">Goalie</th>
+					</tr>
 					for _, player := range players {
-						<li>
-							[{ player.ID }] { player.Name }
-							if player.IsGoalie {
-								Goalie
-							}
-						</li>
+						<tr class="border-b border-slate-300 hover:bg-slate-300">
+							<td class="pr-2 text-left py-1">
+								{ player.ID }
+							</td>
+							<td class="pr-4 text-left py-1">
+								{ player.Name }
+							</td>
+							<td class="pr-2 text-left py-1">
+								if player.IsGoalie {
+									Yes
+								} else {
+									No
+								}
+							</td>
+						</tr>
 					}
-				</ul>
+				</table>
+				<ul></ul>
 			}
 		</div>
 	}
