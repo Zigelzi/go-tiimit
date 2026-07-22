@@ -13,54 +13,52 @@ templ PlayersPage(players []view.Player) {
 				hx-swap="outerHTML"
 			>Add new player to club</button>
 		</div>
-		<div>
-			if len(players) == 0 {
-				<p>Your club doesn't have players yet!</p>
-				<p>Add your first player</p>
-			} else {
-				<div class="w-full overflow-scroll">
-					<table>
-						<tr class="">
-							<th class="pr-4 text-left">ID</th>
-							<th class="pr-4 text-left">MyClub ID</th>
-							<th class="pr-4 text-left">Name</th>
-							<th class="pr-4 text-left">Goalie</th>
-							<th class="pr-4 text-left text-nowrap">Run power</th>
-							<th class="pr-4 text-left text-nowrap">Ball handling</th>
-							<th class="pr-4 text-left text-nowrap">Total score</th>
+		if len(players) == 0 {
+			<p>Your club doesn't have players yet!</p>
+			<p>Add your first player</p>
+		} else {
+			<div class="w-full overflow-scroll">
+				<table>
+					<tr class="">
+						<th class="pr-4 text-left">ID</th>
+						<th class="pr-4 text-left">MyClub ID</th>
+						<th class="pr-4 text-left">Name</th>
+						<th class="pr-4 text-left">Goalie</th>
+						<th class="pr-4 text-left text-nowrap">Run power</th>
+						<th class="pr-4 text-left text-nowrap">Ball handling</th>
+						<th class="pr-4 text-left text-nowrap">Total score</th>
+					</tr>
+					for _, player := range players {
+						<tr class="border-b border-slate-300 hover:bg-slate-300">
+							<td class="pr-2 text-left py-1">
+								{ player.ID }
+							</td>
+							<td class="pr-2 text-left py-1">
+								{ player.MyclubId }
+							</td>
+							<td class="pr-4 text-left py-1 text-nowrap">
+								{ player.Name }
+							</td>
+							<td class="pr-2 text-left py-1">
+								if player.IsGoalie {
+									Yes
+								} else {
+									No
+								}
+							</td>
+							<td class="pr-2 text-left py-1">
+								{ player.RunPower }
+							</td>
+							<td class="pr-2 text-left py-1">
+								{ player.BallHandling }
+							</td>
+							<td class="pr-2 text-left py-1">
+								{ fmt.Sprintf("%.1f", player.Score) }
+							</td>
 						</tr>
-						for _, player := range players {
-							<tr class="border-b border-slate-300 hover:bg-slate-300">
-								<td class="pr-2 text-left py-1">
-									{ player.ID }
-								</td>
-								<td class="pr-2 text-left py-1">
-									{ player.MyclubId }
-								</td>
-								<td class="pr-4 text-left py-1 text-nowrap">
-									{ player.Name }
-								</td>
-								<td class="pr-2 text-left py-1">
-									if player.IsGoalie {
-										Yes
-									} else {
-										No
-									}
-								</td>
-								<td class="pr-2 text-left py-1">
-									{ player.RunPower }
-								</td>
-								<td class="pr-2 text-left py-1">
-									{ player.BallHandling }
-								</td>
-								<td class="pr-2 text-left py-1">
-									{ fmt.Sprintf("%.1f", player.Score) }
-								</td>
-							</tr>
-						}
-					</table>
-				</div>
-			}
-		</div>
+					}
+				</table>
+			</div>
+		}
 	}
 }
