@@ -1,17 +1,16 @@
 @import "tailwindcss";
 
 @layer components {
-    .form-label {
-        @apply block mb-2;
-    }
-
-    .form-input {
-        @apply w-full bg-white rounded-sm border px-2 py-2;
-    /* a11y: a visible focus indicator for keyboard users */
-        @apply focus:outline-2 focus:outline-blue-500;
-
+  .form-label {
+    @apply block mb-2;
   }
-  
+
+  .form-input {
+    @apply w-full bg-white rounded-sm border px-2 py-2;
+    /* a11y: a visible focus indicator for keyboard users */
+    @apply focus:outline-2 focus:outline-blue-500;
+  }
+
   .btn {
     @apply px-4 py-2 rounded-md;
   }
@@ -20,5 +19,12 @@
   }
   .btn-secondary {
     @apply border bg-white hover:bg-gray-100;
+  }
+}
+
+@layer base {
+  th,
+  td {
+    @apply px-3 py-2 text-left;
   }
 }

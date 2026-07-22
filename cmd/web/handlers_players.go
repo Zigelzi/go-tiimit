@@ -118,3 +118,124 @@ func (cfg *webConfig) handleAddPlayerToClub(w http.ResponseWriter, r *http.Reque
 	}
 	w.Header().Add("HX-Redirect", "/players")
 }
+
+func (cfg *webConfig) handleEditPlayerRow(w http.ResponseWriter, r *http.Request) {
+	playerId, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		log.Printf("failed to convert the id [%s] to int64: %v", r.PathValue("id"), err)
+		return
+	}
+
+	dbPlayer, err := cfg.queries.GetPlayerById(r.Context(), playerId)
+	if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+		log.Printf("failed to get player with id %d: %v", playerId, err)
+		return
+	}
+	viewPlayer := view.FromPlayer(player.FromDB(dbPlayer))
+	editRow := view.EditPlayerRow{
+		Player:      viewPlayer,
+		FieldErrors: make(map[string]string),
+	}
+	component := components.PlayerRowEdit(editRow)
+	component.Render(r.Context(), w)
+}
+
+func (cfg *webConfig) handleSavePlayerRow(w http.ResponseWriter, r *http.Request) {
+	form := view.EditPlayerRow{
+		FieldErrors: make(map[string]string),
+	}
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("failed to parse form: %v", err)
+		form.GeneralError = "Something went wrong when parsing the form. Try again later."
+	}
+
+	playerId, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		log.Printf("failed to convert the id [%s] to int64: %v", r.PathValue("id"), err)
+		form.GeneralError = "Player ID needs to be number."
+	}
+
+	form.ID = playerId
+
+	// TODO: Fetch the player details to display name and myclub ID correctly.
+	dbPlayer, err := cfg.queries.GetPlayerById(r.Context(), form.ID)
+	if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+		log.Printf("failed to query player with ID [%d]: %v", form.ID, err)
+		form.GeneralError = "Something went wrong when updating the player. Try again later."
+	} else if errors.Is(err, sql.ErrNoRows) {
+		log.Printf("user tried to query player with ID [%d] when updating their details", form.ID)
+		form.GeneralError = fmt.Sprintf("Player with ID %d doesn't exist", form.ID)
+	}
+
+	form.Player = view.FromPlayer(player.FromDB(dbPlayer))
+
+	runPower, err := strconv.ParseFloat(r.FormValue("run-power"), 64)
+	if err != nil {
+		log.Printf("failed to convert run power [%s] to float: %v", r.FormValue("run-power"), err)
+		form.FieldErrors["run-power"] = "Run power needs to be number between 0-10."
+	}
+	ballHandling, err := strconv.ParseFloat(r.FormValue("ball-handling"), 64)
+	if err != nil {
+		log.Printf("failed to convert ball handling [%s] to float: %v", r.FormValue("ball-handling"), err)
+		form.FieldErrors["ball-handling"] = "Ball handling needs to be number between 0-10."
+	}
+
+	form.RunPower = runPower
+	form.BallHandling = ballHandling
+
+	err = player.ValidateScore(form.RunPower)
+	if errors.Is(err, player.ErrInvalidScore) {
+		log.Printf("run power needs to be between 0-10")
+		form.FieldErrors["run-power"] = "Run power needs to be number between 0-10."
+	}
+
+	err = player.ValidateScore(form.BallHandling)
+	if errors.Is(err, player.ErrInvalidScore) {
+		log.Printf("ball handling needs to be between 0-10")
+		form.FieldErrors["ball-handling"] = "Ball handling needs to be number between 0-10."
+	}
+
+	if len(form.FieldErrors) > 0 || form.GeneralError != "" {
+		component := components.PlayerRowEdit(form)
+		component.Render(r.Context(), w)
+		return
+	}
+
+	updatedPlayer, err := cfg.queries.UpdatePlayerAttributes(r.Context(), db.UpdatePlayerAttributesParams{
+		RunPower:     form.RunPower,
+		BallHandling: form.BallHandling,
+		ID:           form.ID,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("player with ID [%d] doesn't exist", playerId)
+			form.GeneralError = fmt.Sprintf("Player with ID %d doesn't exist.", playerId)
+		} else {
+			log.Printf("failed to update player ID [%d] attributes: %v", playerId, err)
+			form.GeneralError = "Something went wrong when updating a player. Try again later."
+		}
+	}
+
+	viewPlayer := view.FromPlayer(player.FromDB(updatedPlayer))
+	component := components.PlayerRow(viewPlayer)
+	component.Render(r.Context(), w)
+}
+
+func (cfg *webConfig) handleViewPlayerRow(w http.ResponseWriter, r *http.Request) {
+	playerId, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		log.Printf("failed to convert the id [%s] to int64: %v", r.PathValue("id"), err)
+		return
+	}
+
+	dbPlayer, err := cfg.queries.GetPlayerById(r.Context(), playerId)
+	if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+		log.Printf("failed to get player with id %d: %v", playerId, err)
+		return
+	}
+	viewPlayer := view.FromPlayer(player.FromDB(dbPlayer))
+
+	component := components.PlayerRow(viewPlayer)
+	component.Render(r.Context(), w)
+}

@@ -1,0 +1,85 @@
+package components
+
+import (
+	"fmt"
+	"github.com/Zigelzi/go-tiimit/cmd/web/view"
+)
+
+templ PlayerRowEdit(editRow view.EditPlayerRow) {
+	<tbody id={ editRow.RowID() } class="border-b border-slate-300 hover:bg-slate-300 h-16">
+		<tr>
+			<td class="pr-2 text-left py-1">
+				{ editRow.ID }
+			</td>
+			<td class="pr-2 text-left py-1">
+				{ editRow.MyclubId }
+			</td>
+			<td class="pr-4 text-left py-1 text-nowrap">
+				{ editRow.Name }
+			</td>
+			<td class="pr-2 text-left py-1">
+				if editRow.IsGoalie {
+					Yes
+				} else {
+					No
+				}
+			</td>
+			<td class="pr-2 text-left py-1">
+				<input
+					type="number"
+					name="run-power"
+					min="0"
+					max="10"
+					value={ editRow.RunPower }
+					aria-label="Run power"
+					class="bg-white p-2"
+				/>
+			</td>
+			<td class="pr-2 text-left py-1">
+				<input
+					type="number"
+					name="ball-handling"
+					min="0"
+					max="10"
+					value={ editRow.BallHandling }
+					aria-label="Ball handling"
+					class="bg-white p-2"
+				/>
+			</td>
+			<td class="pr-2 text-left py-1">
+				{ fmt.Sprintf("%.1f", editRow.Score) }
+			</td>
+			<td>
+				<button
+					class="btn btn-primary"
+					hx-post={ editRow.SaveURL() }
+					hx-target={ fmt.Sprintf("#%s", editRow.RowID()) }
+					hx-swap="outerHTML"
+					hx-include="closest tr"
+				>Save</button>
+				<button
+					class="btn btn-secondary"
+					hx-get={ editRow.ViewURL() }
+					hx-target={ fmt.Sprintf("#%s", editRow.RowID()) }
+					hx-swap="outerHTML"
+				>Cancel</button>
+			</td>
+		</tr>
+		if len(editRow.FieldErrors) > 0 {
+			for _, err := range editRow.FieldErrors {
+				<tr>
+					<td colspan="8">
+						@FormError(err)
+					</td>
+				</tr>
+			}
+		}
+		if editRow.GeneralError != "" {
+			<tr>
+				<td colspan="8">
+					@FormError(editRow.GeneralError)
+				</td>
+			</tr>
+		}
+	</tbody>
+}

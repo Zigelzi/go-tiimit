@@ -7,6 +7,11 @@ import (
 	"github.com/Zigelzi/go-tiimit/internal/db"
 )
 
+const minScore = 0
+const maxScore = 10
+
+var ErrInvalidScore = fmt.Errorf("score must be between %d-%d", minScore, maxScore)
+
 type Player struct {
 	ID           int64
 	MyClubId     int64
@@ -20,18 +25,10 @@ func New(myclub_id int64, name string, runPower float64, ballHandling float64, i
 	if myclub_id < 0 {
 		myclub_id = 0
 	}
-	if runPower < 0 {
-		runPower = 0
-	}
-	if runPower > 10 {
-		runPower = 10
-	}
-	if ballHandling < 0 {
-		ballHandling = 0
-	}
-	if ballHandling > 10 {
-		ballHandling = 10
-	}
+
+	runPower = clampScore(runPower)
+	ballHandling = clampScore(ballHandling)
+
 	return Player{
 		MyClubId:     myclub_id,
 		Name:         name,
@@ -39,6 +36,25 @@ func New(myclub_id int64, name string, runPower float64, ballHandling float64, i
 		ballHandling: ballHandling,
 		IsGoalie:     isGoalie,
 	}
+}
+
+func clampScore(score float64) float64 {
+	if score < minScore {
+		return minScore
+	}
+	if score > maxScore {
+		return maxScore
+	}
+
+	return score
+}
+
+func ValidateScore(score float64) error {
+	if score < minScore || score > maxScore {
+		return ErrInvalidScore
+	}
+
+	return nil
 }
 
 func FromDB(dbPlayer db.Player) Player {

@@ -33,8 +33,26 @@ Scores are required by the schema, but this slice doesn't collect them. A new pl
 
 Decision: New players use neutral default scores (5/5). Consider allowing custom scores based on feedback and experience.
 
-### Out of scope for now (later slices)
+### Editing player scores (Slice 2)
+Coach can edit the ball handling and run power of a player, so that they can represent players abilities more accurately over time and players are distributed evenly to practices.
 
-- Editing a player's scores from the web (still done via CLI import today).
-- Setting goalie status at creation or from the web (CLI `ToggleGoalieStatus` still works; new players default to not-goalie).
+Editing happens **inline in the players list** — the row's cells become inputs, with Save/Cancel, then swap back. Scores are **whole numbers 0–10**. This is the first of two commits toward a single "edit player" form; goalie editing (Slice 3) is added to the same form afterwards.
+
+**Expected behaviour**
+1. You can start editing players score from players list.
+2. You can update both ball handling and run power of a player.
+3. Current values are prefilled when starting to edit the player.
+4. You can save the changes and the new scores will be applied to the player.
+5. You can cancel the edit action and the changes will not be applied.
+6. You can see the updated total score of a player after saving the changes.
+
+### Updating player goalie status (Slice 3)
+Coach can update if player is willing to be a goalie, so that teams are created with goalies on each side. Built on the same inline edit form as Slice 2 — a goalie checkbox is added to the row, shipped as its own commit.
+
+**Expected behaviour**
+1. You can mark the player as (willing to be) a goalie in the player list, when editing a player.
+2. Players current goalie preference is prefilled, when starting to edit the player.
+3. You can see the updated goalie status of a player after saving the changes.
+   
+### Out of scope for now (later slices)
 - Where the coach finds the MyClub ID — assumed they look it up in MyClub. Revisit if this proves to be friction.

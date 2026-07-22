@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/Zigelzi/go-tiimit/internal/practice"
 )
 
@@ -16,6 +17,17 @@ type Team struct {
 	Number     int
 	TotalScore float64
 	Players    []Player
+}
+
+func FromPractice(players []practice.PracticePlayer, teamNumber int) Team {
+	newTeam := Team{
+		Number:     teamNumber,
+		TotalScore: practice.TotalScore(players),
+	}
+	for _, player := range players {
+		newTeam.Players = append(newTeam.Players, FromPracticePlayer(player))
+	}
+	return newTeam
 }
 
 func (t *Team) GeneratePlayerURLs(practiceId int64) {
@@ -48,23 +60,41 @@ type Player struct {
 	ToggleVestURL string
 }
 
+func FromPlayer(player player.Player) Player {
+	return Player{
+		ID:           player.ID,
+		MyclubId:     player.MyClubId,
+		Name:         player.Name,
+		RunPower:     player.RunPower(),
+		BallHandling: player.BallHandling(),
+		IsGoalie:     player.IsGoalie,
+		Score:        player.Score(),
+	}
+}
+
+func (p *Player) ViewURL() string {
+	return fmt.Sprintf("/players/%d", p.ID)
+}
+
+func (p *Player) EditURL() string {
+	return fmt.Sprintf("/players/%d/edit", p.ID)
+}
+
+func (p *Player) SaveURL() string {
+	// Return same value but to keep name explicit
+	return p.ViewURL()
+}
+
+func (p *Player) RowID() string {
+	return fmt.Sprintf("player-row-%d", p.ID)
+}
+
 func (p *Player) GenerateURLs(practiceId int64) {
 	p.MoveURL = fmt.Sprintf("/practices/%d/players/%d", practiceId, p.ID)
 	p.ToggleVestURL = fmt.Sprintf("/practices/%d/players/%d/vest", practiceId, p.ID)
 }
 
-func FromPractice(players []practice.PracticePlayer, teamNumber int) Team {
-	newTeam := Team{
-		Number:     teamNumber,
-		TotalScore: practice.TotalScore(players),
-	}
-	for _, player := range players {
-		newTeam.Players = append(newTeam.Players, FromPlayer(player))
-	}
-	return newTeam
-}
-
-func FromPlayer(p practice.PracticePlayer) Player {
+func FromPracticePlayer(p practice.PracticePlayer) Player {
 	return Player{
 		ID:       p.Player.ID,
 		MyclubId: p.Player.MyClubId,
@@ -84,5 +114,16 @@ type AddPlayerForm struct {
 
 func (pf AddPlayerForm) HasError(field string) bool {
 	_, ok := pf.FieldErrors[field]
+	return ok
+}
+
+type EditPlayerRow struct {
+	Player
+	FieldErrors  map[string]string
+	GeneralError string
+}
+
+func (epr EditPlayerRow) HasError(field string) bool {
+	_, ok := epr.FieldErrors[field]
 	return ok
 }

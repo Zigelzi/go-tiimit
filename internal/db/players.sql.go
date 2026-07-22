@@ -75,6 +75,34 @@ func (q *Queries) GetAllPlayers(ctx context.Context) ([]Player, error) {
 	return items, nil
 }
 
+const getPlayerById = `-- name: GetPlayerById :one
+SELECT
+    id,
+    name,
+    myclub_id,
+    run_power,
+    ball_handling,
+    is_goalie
+FROM
+    players
+WHERE
+    id = ?
+`
+
+func (q *Queries) GetPlayerById(ctx context.Context, id int64) (Player, error) {
+	row := q.db.QueryRowContext(ctx, getPlayerById, id)
+	var i Player
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.MyclubID,
+		&i.RunPower,
+		&i.BallHandling,
+		&i.IsGoalie,
+	)
+	return i, err
+}
+
 const getPlayerByMyclubID = `-- name: GetPlayerByMyclubID :one
 SELECT
     id,
@@ -138,6 +166,40 @@ type ToggleGoalieStatusParams struct {
 func (q *Queries) ToggleGoalieStatus(ctx context.Context, arg ToggleGoalieStatusParams) error {
 	_, err := q.db.ExecContext(ctx, toggleGoalieStatus, arg.IsGoalie, arg.ID)
 	return err
+}
+
+const updatePlayerAttributes = `-- name: UpdatePlayerAttributes :one
+UPDATE players
+SET
+    run_power = ?,
+    ball_handling = ?
+WHERE
+    id = ? RETURNING id,
+    name,
+    myclub_id,
+    run_power,
+    ball_handling,
+    is_goalie
+`
+
+type UpdatePlayerAttributesParams struct {
+	RunPower     float64
+	BallHandling float64
+	ID           int64
+}
+
+func (q *Queries) UpdatePlayerAttributes(ctx context.Context, arg UpdatePlayerAttributesParams) (Player, error) {
+	row := q.db.QueryRowContext(ctx, updatePlayerAttributes, arg.RunPower, arg.BallHandling, arg.ID)
+	var i Player
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.MyclubID,
+		&i.RunPower,
+		&i.BallHandling,
+		&i.IsGoalie,
+	)
+	return i, err
 }
 
 const updatePlayerRunPower = `-- name: UpdatePlayerRunPower :exec

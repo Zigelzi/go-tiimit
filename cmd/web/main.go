@@ -68,6 +68,9 @@ func main() {
 	// Players
 	mux.Handle("GET /players", requireAuth(http.HandlerFunc(cfg.handleViewPlayersPage)))
 	mux.Handle("POST /players", requireAuth(http.HandlerFunc(cfg.handleAddPlayerToClub)))
+	mux.Handle("GET /players/{id}", requireAuth(http.HandlerFunc(cfg.handleViewPlayerRow)))
+	mux.Handle("POST /players/{id}", requireAuth(http.HandlerFunc(cfg.handleSavePlayerRow)))
+	mux.Handle("GET /players/{id}/edit", requireAuth(http.HandlerFunc(cfg.handleEditPlayerRow)))
 	mux.Handle("GET /players/add", requireAuth(http.HandlerFunc(cfg.handleAddPlayerForm)))
 
 	// Auth

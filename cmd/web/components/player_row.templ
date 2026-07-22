@@ -1,0 +1,46 @@
+package components
+
+import (
+	"fmt"
+	"github.com/Zigelzi/go-tiimit/cmd/web/view"
+)
+
+templ PlayerRow(player view.Player) {
+	<tbody id={ player.RowID() }>
+		<tr class="border-b border-slate-300 hover:bg-slate-300 h-16 ">
+			<td class="pr-2 text-left py-1">
+				{ player.ID }
+			</td>
+			<td class="pr-2 text-left py-1">
+				{ player.MyclubId }
+			</td>
+			<td class="pr-4 text-left py-1 text-nowrap">
+				{ player.Name }
+			</td>
+			<td class="pr-2 text-left py-1">
+				if player.IsGoalie {
+					Yes
+				} else {
+					No
+				}
+			</td>
+			<td class="pr-2 text-left py-1">
+				{ player.RunPower }
+			</td>
+			<td class="pr-2 text-left py-1">
+				{ player.BallHandling }
+			</td>
+			<td class="pr-2 text-left py-1">
+				{ fmt.Sprintf("%.1f", player.Score) }
+			</td>
+			<td>
+				<button
+					class="btn btn-primary"
+					hx-get={ player.EditURL() }
+					hx-target={ fmt.Sprintf("#%s", player.RowID()) }
+					hx-swap="outerHTML"
+				>Edit</button>
+			</td>
+		</tr>
+	</tbody>
+}

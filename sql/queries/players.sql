@@ -9,6 +9,19 @@ SELECT
 FROM
     players;
 
+-- name: GetPlayerById :one
+SELECT
+    id,
+    name,
+    myclub_id,
+    run_power,
+    ball_handling,
+    is_goalie
+FROM
+    players
+WHERE
+    id = ?;
+
 -- name: GetPlayerByMyclubID :one
 SELECT
     id,
@@ -52,3 +65,16 @@ SET
     run_power = ?
 WHERE
     myclub_id = ?;
+
+-- name: UpdatePlayerAttributes :one
+UPDATE players
+SET
+    run_power = ?,
+    ball_handling = ?
+WHERE
+    id = ? RETURNING id,
+    name,
+    myclub_id,
+    run_power,
+    ball_handling,
+    is_goalie;
