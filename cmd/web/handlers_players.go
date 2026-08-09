@@ -25,20 +25,29 @@ func (cfg *webConfig) handleViewPlayersPage(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	viewPlayers := []view.Player{}
+	// Get the query parameter which column to sort
+	sortQuery := r.URL.Query().Get("sort")
+
+	players := []player.Player{}
 	for _, dbPlayer := range dbPlayers {
-		player := player.FromDB(dbPlayer)
-		viewPlayers = append(viewPlayers, view.Player{
-			ID:           player.ID,
-			MyclubId:     player.MyClubId,
-			Name:         player.Name,
-			IsGoalie:     player.IsGoalie,
-			RunPower:     player.RunPower(),
-			BallHandling: player.BallHandling(),
-			Score:        player.Score(),
-		})
+		players = append(players, player.FromDB(dbPlayer))
 	}
-	playersPage := components.PlayersPage(viewPlayers)
+
+	switch sortQuery {
+	case "run-power":
+		player.SortByRunpower(players)
+	case "ball-handling":
+		player.SortByBallHandling(players)
+	case "score":
+		player.SortByScore(players)
+	}
+
+	viewPlayers := []view.Player{}
+	for _, player := range players {
+		viewPlayers = append(viewPlayers, view.FromPlayer(player))
+	}
+
+	playersPage := components.PlayersPage(viewPlayers, sortQuery)
 	playersPage.Render(r.Context(), w)
 }
 
