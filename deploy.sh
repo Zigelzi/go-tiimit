@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Load config file
 if [ -f .deploy.conf ]; then
@@ -9,21 +10,25 @@ else
     exit 1
 fi
 
-echo -e "BUILDING Tiumo"
+echo "RUNNING tests"
+go test ./...
+
+echo "BUILDING Tiumo"
 make prod/build-arm64
-echo -e "DEPLOYING Tiumo to ${PI_IP}"
+echo "DEPLOYING Tiumo to ${PI_IP}"
 
-echo -e "COPYING the binary to Raspberry [${PI_USER}@${PI_IP}:${TMP_DIR}]"
-scp -q ./build/web ${PI_USER}@${PI_IP}:${TMP_DIR}
+echo "COPYING the binary to Raspberry [${PI_USER}@${PI_IP}:${TMP_FILE}]"
+scp -q ./build/web ${PI_USER}@${PI_IP}:${TMP_FILE}
 
-ssh -t ${PI_USER}@${PI_IP} << EOF
-echo -e "BACKING UP the current version to [${TARGET_DIR}/backup]"
+ssh -t ${PI_USER}@${PI_IP} "
+set -e
+echo 'BACKING UP the current version to [${TARGET_DIR}/backup]'
 sudo cp ${TARGET_DIR}/web ${TARGET_DIR}/backup/web-backup-$(date +%Y%m%d-%H%M%S)
 
-echo -e "INSTALLING the new version to [${TARGET_DIR}]"
-sudo mv ${TMP_DIR}/web ${TARGET_DIR}
+echo 'INSTALLING the new version to [${TARGET_DIR}]'
+sudo mv ${TMP_FILE} ${TARGET_DIR}/web
 
-echo -e "RESTARTING the service"
+echo 'RESTARTING the service'
 sudo systemctl restart tiimit
-sudo systemctl status tiimit
-EOF
+systemctl status tiimit
+"

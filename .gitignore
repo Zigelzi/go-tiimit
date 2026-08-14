@@ -45,5 +45,5 @@ go.work.sum
 /build/
 .deploy.conf
 
-# Docs (for now)
-/docs/
+# Internal docs (for now)
+/internal-docs/
