@@ -70,7 +70,8 @@ WHERE
 UPDATE players
 SET
     run_power = ?,
-    ball_handling = ?
+    ball_handling = ?,
+    is_goalie = ?
 WHERE
     id = ? RETURNING id,
     name,

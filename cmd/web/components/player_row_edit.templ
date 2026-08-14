@@ -18,11 +18,7 @@ templ PlayerRowEdit(editRow view.EditPlayerRow) {
 				{ editRow.Name }
 			</td>
 			<td class="pr-2 text-left py-1">
-				if editRow.IsGoalie {
-					Yes
-				} else {
-					No
-				}
+				<input type="checkbox" name="is-goalie" checked?={ editRow.IsGoalie } aria-label="Is goalie"/>
 			</td>
 			<td class="pr-2 text-left py-1">
 				<input

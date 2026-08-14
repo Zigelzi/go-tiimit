@@ -171,19 +171,20 @@ func (cfg *webConfig) handleSavePlayerRow(w http.ResponseWriter, r *http.Request
 
 	form.Player = view.FromPlayer(player.FromDB(dbPlayer))
 
-	runPower, err := strconv.ParseFloat(r.FormValue("run-power"), 64)
+	runPower, err := strconv.ParseFloat(r.PostForm.Get("run-power"), 64)
 	if err != nil {
-		log.Printf("failed to convert run power [%s] to float: %v", r.FormValue("run-power"), err)
+		log.Printf("failed to convert run power [%s] to float: %v", r.PostForm.Get("run-power"), err)
 		form.FieldErrors["run-power"] = "Run power needs to be number between 0-10."
 	}
-	ballHandling, err := strconv.ParseFloat(r.FormValue("ball-handling"), 64)
+	ballHandling, err := strconv.ParseFloat(r.PostForm.Get("ball-handling"), 64)
 	if err != nil {
-		log.Printf("failed to convert ball handling [%s] to float: %v", r.FormValue("ball-handling"), err)
+		log.Printf("failed to convert ball handling [%s] to float: %v", r.PostForm.Get("ball-handling"), err)
 		form.FieldErrors["ball-handling"] = "Ball handling needs to be number between 0-10."
 	}
 
 	form.RunPower = runPower
 	form.BallHandling = ballHandling
+	form.IsGoalie = r.PostForm.Has("is-goalie")
 
 	err = player.ValidateScore(form.RunPower)
 	if errors.Is(err, player.ErrInvalidScore) {
@@ -206,6 +207,7 @@ func (cfg *webConfig) handleSavePlayerRow(w http.ResponseWriter, r *http.Request
 	updatedPlayer, err := cfg.queries.UpdatePlayerAttributes(r.Context(), db.UpdatePlayerAttributesParams{
 		RunPower:     form.RunPower,
 		BallHandling: form.BallHandling,
+		IsGoalie:     form.IsGoalie,
 		ID:           form.ID,
 	})
 	if err != nil {

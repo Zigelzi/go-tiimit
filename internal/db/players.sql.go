@@ -172,7 +172,8 @@ const updatePlayerAttributes = `-- name: UpdatePlayerAttributes :one
 UPDATE players
 SET
     run_power = ?,
-    ball_handling = ?
+    ball_handling = ?,
+    is_goalie = ?
 WHERE
     id = ? RETURNING id,
     name,
@@ -185,11 +186,17 @@ WHERE
 type UpdatePlayerAttributesParams struct {
 	RunPower     float64
 	BallHandling float64
+	IsGoalie     bool
 	ID           int64
 }
 
 func (q *Queries) UpdatePlayerAttributes(ctx context.Context, arg UpdatePlayerAttributesParams) (Player, error) {
-	row := q.db.QueryRowContext(ctx, updatePlayerAttributes, arg.RunPower, arg.BallHandling, arg.ID)
+	row := q.db.QueryRowContext(ctx, updatePlayerAttributes,
+		arg.RunPower,
+		arg.BallHandling,
+		arg.IsGoalie,
+		arg.ID,
+	)
 	var i Player
 	err := row.Scan(
 		&i.ID,
