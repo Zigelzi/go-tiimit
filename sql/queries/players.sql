@@ -41,13 +41,6 @@ INSERT INTO
 VALUES
     (?, ?, ?, ?);
 
--- name: ToggleGoalieStatus :exec
-UPDATE players
-SET
-    is_goalie = ?
-WHERE
-    id = ?;
-
 -- name: IsExistingPlayer :one
 SELECT
     EXISTS (
@@ -58,13 +51,6 @@ SELECT
         WHERE
             myclub_id = ?
     );
-
--- name: UpdatePlayerRunPower :exec
-UPDATE players
-SET
-    run_power = ?
-WHERE
-    myclub_id = ?;
 
 -- name: UpdatePlayerAttributes :one
 UPDATE players

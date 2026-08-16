@@ -107,48 +107,6 @@ func TestNewPlayer(t *testing.T) {
 	})
 }
 
-func TestDetails(t *testing.T) {
-	var testCases = []struct {
-		name     string
-		player   Player
-		expected string
-	}{
-		{
-			name:     "Player is goalie",
-			player:   Player{Name: "Matti Meikäläinen", IsGoalie: true},
-			expected: "Matti Meikäläinen [G]",
-		},
-		{
-			name:     "Player is not a goalie",
-			player:   Player{Name: "Matti Meikäläinen", IsGoalie: false},
-			expected: "Matti Meikäläinen",
-		},
-		{
-			name:     "Player goalie status is not known",
-			player:   Player{Name: "Matti Meikäläinen"},
-			expected: "Matti Meikäläinen",
-		},
-		{
-			name:     "Player name is empty and is not goalie",
-			player:   Player{Name: "", IsGoalie: false},
-			expected: "",
-		},
-		{
-			name:     "Player name is empty and is goalie",
-			player:   Player{Name: "", IsGoalie: true},
-			expected: " [G]",
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			actual := testCase.player.Details()
-			if actual != testCase.expected {
-				t.Errorf("Details() = %q: want %q", actual, testCase.expected)
-			}
-		})
-	}
-}
-
 func TestGetPreferences(t *testing.T) {
 	var goalies = []Player{
 		{Name: "Miika", IsGoalie: true},

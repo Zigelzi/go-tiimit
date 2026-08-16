@@ -150,24 +150,6 @@ func (q *Queries) IsExistingPlayer(ctx context.Context, myclubID int64) (int64, 
 	return column_1, err
 }
 
-const toggleGoalieStatus = `-- name: ToggleGoalieStatus :exec
-UPDATE players
-SET
-    is_goalie = ?
-WHERE
-    id = ?
-`
-
-type ToggleGoalieStatusParams struct {
-	IsGoalie bool
-	ID       int64
-}
-
-func (q *Queries) ToggleGoalieStatus(ctx context.Context, arg ToggleGoalieStatusParams) error {
-	_, err := q.db.ExecContext(ctx, toggleGoalieStatus, arg.IsGoalie, arg.ID)
-	return err
-}
-
 const updatePlayerAttributes = `-- name: UpdatePlayerAttributes :one
 UPDATE players
 SET
@@ -207,22 +189,4 @@ func (q *Queries) UpdatePlayerAttributes(ctx context.Context, arg UpdatePlayerAt
 		&i.IsGoalie,
 	)
 	return i, err
-}
-
-const updatePlayerRunPower = `-- name: UpdatePlayerRunPower :exec
-UPDATE players
-SET
-    run_power = ?
-WHERE
-    myclub_id = ?
-`
-
-type UpdatePlayerRunPowerParams struct {
-	RunPower float64
-	MyclubID int64
-}
-
-func (q *Queries) UpdatePlayerRunPower(ctx context.Context, arg UpdatePlayerRunPowerParams) error {
-	_, err := q.db.ExecContext(ctx, updatePlayerRunPower, arg.RunPower, arg.MyclubID)
-	return err
 }

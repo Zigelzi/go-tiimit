@@ -16,10 +16,6 @@ var attendanceName = map[AttendanceStatus]string{
 	AttendanceInvalid: "invalid",
 }
 
-func (as AttendanceStatus) String() string {
-	return attendanceName[as]
-}
-
 func determineStatus(status string) AttendanceStatus {
 	var attendanceMap = map[string]AttendanceStatus{
 		"Osallistuu":   AttendanceIn,

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -10,10 +11,14 @@ import (
 
 	"github.com/Zigelzi/go-tiimit/internal/auth"
 	"github.com/Zigelzi/go-tiimit/internal/db"
-	"github.com/Zigelzi/go-tiimit/internal/player"
 	"github.com/joho/godotenv"
 	"github.com/manifoldco/promptui"
 )
+
+type cliConfig struct {
+	queries *db.Queries
+	db      *sql.DB
+}
 
 func main() {
 	err := godotenv.Load()
@@ -45,9 +50,7 @@ func main() {
 }
 
 func selectAction(cfg cliConfig) bool {
-	// TODO: Move selecting create/import action to it's own function.
 	actions := []string{
-		"Manage players",
 		"Create new user",
 		"Exit",
 	}
@@ -63,11 +66,6 @@ func selectAction(cfg cliConfig) bool {
 
 	switch result {
 	case actions[0]:
-		err := player.Manage(cfg.queries)
-		if err != nil {
-			fmt.Println(err)
-		}
-	case actions[1]:
 		// Handler
 		fmt.Println("Creating new user")
 		fmt.Println("-----------------")
@@ -113,4 +111,16 @@ func selectAction(cfg cliConfig) bool {
 		return false
 	}
 	return true
+}
+
+func cleanInput(text string) []string {
+	text = strings.Trim(text, " ")
+	words := strings.Split(text, " ")
+	cleanedWords := make([]string, len(words))
+
+	for i, word := range words {
+		lowerCaseWord := strings.ToLower(word)
+		cleanedWords[i] = lowerCaseWord
+	}
+	return cleanedWords
 }

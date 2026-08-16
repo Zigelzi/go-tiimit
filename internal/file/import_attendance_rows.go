@@ -7,13 +7,6 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func ImportAttendancePlayerRowsFromPath(path string) ([]AttendancePlayerRow, error) {
-	excelFile, err := excelize.OpenFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("unable to open excel file from path %s: %w", path, err)
-	}
-	return ImportAttendancePlayerRows(excelFile)
-}
 func ImportAttendancePlayerRowsFromReader(reader io.Reader) ([]AttendancePlayerRow, error) {
 	excelFile, err := excelize.OpenReader(reader)
 	if err != nil {
@@ -39,21 +32,7 @@ func ImportAttendancePlayerRows(file *excelize.File) (attendancePlayerRows []Att
 	return attendancePlayerRows, nil
 }
 
-func closeFile(openFile *excelize.File) {
-	if err := openFile.Close(); err != nil {
-		fmt.Println(err)
-		return
-	}
-}
-
 func parseAttendanceRows(rows [][]string) ([]AttendancePlayerRow, error) {
-	// Takes excel row represented as string[row][column] as input.
-	// Returns error when there's no rows to parse.
-	// Returns error if myclubId, name or attendance is missing.
-	// Returns error if there's not exactly 4 columns.
-	// Returns equal number of attendees as there is parsed rows.
-	// Returns error if attendance status is not known
-	// Attendance rows always contain myclubid, name and attendance
 	var columnType = map[string]int{
 		"myClubId":   0,
 		"name":       1,
