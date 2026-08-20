@@ -1,7 +1,7 @@
 package components
 
 templ CreatePracticePage() {
-	@Base("Set up practice") {
+	@ContentPageLayout("Set up practice") {
 		<div>
 			<h2 class="pb-4 text-lg font-bold">Set up practice</h2>
 			<form
@@ -10,7 +10,7 @@ templ CreatePracticePage() {
 				hx-encoding="multipart/form-data"
 			>
 				<label for="attendance-list" class="form-label">Select attendance file <span class="text-sm ">(.xlsx)</span></label>
-				<input class="block py-4 max-w-full file:bg-blue-400 file:rounded-md file:px-4 file:py-2 file:block file:mb-4" type="file" name="attendace-list" id="attendace-list" accept=".xlsx"/>
+				<input class="btn btn-secondary block mb-4" type="file" name="attendace-list" id="attendace-list" accept=".xlsx"/>
 				<button type="submit" class="btn btn-primary">Send </button>
 			</form>
 			<div id="results"></div>

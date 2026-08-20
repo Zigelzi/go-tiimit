@@ -3,10 +3,11 @@ package components
 import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
 templ PracticePage(practice view.Practice) {
-	@Base("Practices") {
+	@ContentPageLayout("Practices") {
 		<div>
-			<div class="mb-4 text-sm">
-				<p>Practices on { practice.Date.Weekday() } { practice.Date.Format("02.01.2006") }</p>
+			<div class="mt-4 mb-6">
+				<p class="text-lg font-bold leading-5">{ practice.Date.Format("Monday _2 January") }</p>
+				<p class="text-sand-800 text-sm">{ practice.TotalPlayers() } players in</p>
 			</div>
 			@Team(practice.Teams[0])
 			@Team(practice.Teams[1])

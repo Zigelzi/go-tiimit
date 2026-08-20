@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import "tailwindcss";
 
 @layer components {
@@ -15,10 +16,10 @@
     @apply px-4 py-2 rounded-md;
   }
   .btn-primary {
-    @apply bg-blue-400 hover:bg-blue-300;
+    @apply bg-pitch-500 hover:bg-pitch-600 text-white shadow-[0_2px_0_#097633] active:translate-y-0.5 active:shadow-none;
   }
   .btn-secondary {
-    @apply border bg-white hover:bg-gray-100;
+    @apply bg-white border border-sand-400 hover:border-ink-900 text-ink-900;
   }
 }
 
@@ -27,4 +28,48 @@
   td {
     @apply px-3 py-2 text-left;
   }
+}
+
+@theme {
+  /* accent — primary action, "balanced", "in" */
+  --color-pitch-50: #edf9f1;
+  --color-pitch-100: #dcf5e5;
+  --color-pitch-200: #7cc99a;
+  --color-pitch-400: #35b45e;
+  --color-pitch-500: #109946; /* primary button, bars, active */
+  --color-pitch-600: #0b8a3d; /* hover */
+  --color-pitch-700: #0b7d37; /* accent text on light */
+  --color-pitch-800: #097633; /* 2px bottom shadow on buttons */
+  --color-pitch-900: #0a6a2e;
+
+  /* ink — chrome, headings, selected state */
+  --color-ink-900: #16181a;
+  --color-ink-800: #2a2e30;
+
+  /* neutrals — warm grey, not slate */
+  --color-sand-50: #fafaf7;
+  --color-sand-100: #f4f4f1; /* app background */
+  --color-sand-200: #eeeee8; /* track / rule */
+  --color-sand-300: #e6e6e0; /* card border */
+  --color-sand-400: #d8d8d2; /* input border */
+  --color-sand-500: #c9cdc9;
+  --color-sand-600: #a3a8a4;
+  --color-sand-700: #8a8f8b; /* mono labels */
+  --color-sand-800: #6c716d; /* body secondary */
+
+  /* signal — only for warnings, never for actions */
+  --color-flag-100: #f5e6cf;
+  --color-flag-300: #e6cdae;
+  --color-flag-500: #d9862f; /* unmatched rows, ball-handling bar */
+  --color-flag-700: #c1512c; /* delta too high */
+
+  /* vest colours — team identity, match the real bibs */
+  --color-vest-bibs: #109946;
+  --color-vest-shirts: #16181a;
+  --color-vest-yellows: #d9a52a;
+
+  --font-sans: Barlow, Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --spacing-gutter: 1rem;
 }

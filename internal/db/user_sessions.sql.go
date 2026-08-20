@@ -26,25 +26,26 @@ func (q *Queries) EndUserSession(ctx context.Context, sessionID string) error {
 
 const getActiveSession = `-- name: GetActiveSession :one
 SELECT
-    session_id, user_id, expires_at, created_at, deleted_at
+    us.user_id,
+    u.username
 FROM
-    user_sessions
+    user_sessions us
+    JOIN users u ON u.id = us.user_id
 WHERE
-    session_id = ?
-    AND expires_at > CURRENT_TIMESTAMP
-    AND deleted_at IS NULL
+    us.session_id = ?
+    AND us.expires_at > CURRENT_TIMESTAMP
+    AND us.deleted_at IS NULL
 `
 
-func (q *Queries) GetActiveSession(ctx context.Context, sessionID string) (UserSession, error) {
+type GetActiveSessionRow struct {
+	UserID   int64
+	Username string
+}
+
+func (q *Queries) GetActiveSession(ctx context.Context, sessionID string) (GetActiveSessionRow, error) {
 	row := q.db.QueryRowContext(ctx, getActiveSession, sessionID)
-	var i UserSession
-	err := row.Scan(
-		&i.SessionID,
-		&i.UserID,
-		&i.ExpiresAt,
-		&i.CreatedAt,
-		&i.DeletedAt,
-	)
+	var i GetActiveSessionRow
+	err := row.Scan(&i.UserID, &i.Username)
 	return i, err
 }
 
@@ -52,9 +53,7 @@ const startUserSession = `-- name: StartUserSession :one
 INSERT INTO
     user_sessions (session_id, user_id, expires_at)
 VALUES
-    (?, ?, ?)
-RETURNING
-    session_id, user_id, expires_at, created_at, deleted_at
+    (?, ?, ?) RETURNING session_id, user_id, expires_at, created_at, deleted_at
 `
 
 type StartUserSessionParams struct {

@@ -184,7 +184,6 @@ func (cfg *webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request)
 		log.Printf("unable to parse practice id from path: %v", err)
 		return
 	}
-	// TODO: Figure out where and how to add the HasVest flag.
 	dbPracticeRows, err := cfg.queries.GetPracticeWithPlayers(r.Context(), int64(practiceId))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

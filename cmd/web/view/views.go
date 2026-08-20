@@ -13,6 +13,10 @@ type Practice struct {
 	Teams []Team
 }
 
+func (p Practice) TotalPlayers() int {
+	return len(p.Teams[0].Players) + len(p.Teams[1].Players)
+}
+
 type Team struct {
 	Number     int
 	TotalScore float64

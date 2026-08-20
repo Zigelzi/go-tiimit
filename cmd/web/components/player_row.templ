@@ -6,16 +6,10 @@ import (
 )
 
 templ PlayerRow(player view.Player) {
-	<tbody id={ player.RowID() }>
-		<tr class="border-b border-slate-300 hover:bg-slate-300 h-16 ">
-			<td class="pr-2 text-left py-1">
-				{ player.ID }
-			</td>
-			<td class="pr-2 text-left py-1">
-				{ player.MyclubId }
-			</td>
+	<tbody id={ player.RowID() } class="bg-white">
+		<tr class="border-b border-sand-300 hover:bg-sand-100 h-15">
 			<td class="pr-4 text-left py-1 text-nowrap">
-				{ player.Name }
+				<span class="font-bold mr-2">{ player.Name }</span><span class="text-sand-700 text-sm">#{ player.MyclubId }</span>
 			</td>
 			<td class="pr-2 text-left py-1">
 				if player.IsGoalie {
@@ -30,7 +24,7 @@ templ PlayerRow(player view.Player) {
 			<td class="pr-2 text-left py-1">
 				{ player.BallHandling }
 			</td>
-			<td class="pr-2 text-left py-1">
+			<td class="pr-2 text-left py-1 font-bold">
 				{ fmt.Sprintf("%.1f", player.Score) }
 			</td>
 			<td>

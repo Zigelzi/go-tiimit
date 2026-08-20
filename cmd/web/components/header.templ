@@ -1,0 +1,17 @@
+package components
+
+templ SiteHeader() {
+	<header>
+		<div class="flex justify-between px-gutter py-2 border-b border-slate-300 bg-ink-900 text-sand-100">
+			<a class="text-2xl" href="/">Tiumo</a>
+		</div>
+	</header>
+}
+
+templ BackHeader(label, href string) {
+	<header>
+		<nav class="mx-auto max-w-3xl px-gutter py-2">
+			<a class=" text-sand-800 font-bold" href={ href }><span class="mr-1">{ "<" }</span> <span>{ label }</span> </a>
+		</nav>
+	</header>
+}

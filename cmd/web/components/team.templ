@@ -7,21 +7,28 @@ import (
 
 templ Team(team view.Team) {
 	<div class="mb-8" id={ fmt.Sprintf("team-%d", team.Number) }>
-		<div class="mb-4 flex justify-between">
+		<div class="flex justify-between">
 			<div>
-				<h2 class="font-bold text-lg">Team { team.Number }</h2>
-				<p class="text-sm">{ team.VestCount() }/{ len(team.Players) } players </p>
+				<p class="font-mono  text-sand-700 uppercase">
+					<span class="font-bold text-sm">
+						Team { team.Number } -
+					</span>
+					<span class="text-[10px] tracking-[0.09em]">{ len(team.Players) } players</span>
+				</p>
 			</div>
 			<div>
-				<p class="text-sm">Score: { fmt.Sprintf("%.1f", team.TotalScore) }</p>
+				<p class="text-[17px] font-mono font-semibold">{ fmt.Sprintf("%.1f", team.TotalScore) }</p>
 			</div>
 		</div>
+		<div class="mb-2">
+			<span class="text-lg font-bold mr-2">{ team.VestCount() } / { len(team.Players) }</span><span class="">vests</span>
+		</div>
 		if len(team.Players) > 0 {
-			for _, player := range team.Players {
-				<ol>
+			<ol class="-mx-gutter">
+				for _, player := range team.Players {
 					@PlayerCard(player, team.Number)
-				</ol>
-			}
+				}
+			</ol>
 		} else {
 			<p>No players in team { team.Number }</p>
 		}

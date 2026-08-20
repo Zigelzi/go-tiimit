@@ -39,9 +39,9 @@ func (cfg *webConfig) getUserInfoFromRequest(r *http.Request) auth.UserInfo {
 		}
 		return auth.UserInfo{IsLoggedIn: false}
 	}
-
 	return auth.UserInfo{
 		ID:         userSession.UserID,
+		Username:   userSession.Username,
 		IsLoggedIn: true,
 	}
 }

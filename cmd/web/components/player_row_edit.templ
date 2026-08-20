@@ -6,16 +6,10 @@ import (
 )
 
 templ PlayerRowEdit(editRow view.EditPlayerRow) {
-	<tbody id={ editRow.RowID() } class="border-b border-slate-300 hover:bg-slate-300 h-16">
+	<tbody id={ editRow.RowID() } class="border-b border-sand-300 hover:bg-sand-100 h-15">
 		<tr>
-			<td class="pr-2 text-left py-1">
-				{ editRow.ID }
-			</td>
-			<td class="pr-2 text-left py-1">
-				{ editRow.MyclubId }
-			</td>
 			<td class="pr-4 text-left py-1 text-nowrap">
-				{ editRow.Name }
+				<span class="font-bold mr-2">{ editRow.Name }</span><span class="text-sand-700 text-sm">#{ editRow.MyclubId }</span>
 			</td>
 			<td class="pr-2 text-left py-1">
 				<input type="checkbox" name="is-goalie" checked?={ editRow.IsGoalie } aria-label="Is goalie"/>
@@ -28,7 +22,7 @@ templ PlayerRowEdit(editRow view.EditPlayerRow) {
 					max="10"
 					value={ editRow.RunPower }
 					aria-label="Run power"
-					class="bg-white p-2"
+					class="bg-white px-2 py-1"
 				/>
 			</td>
 			<td class="pr-2 text-left py-1">
@@ -39,10 +33,10 @@ templ PlayerRowEdit(editRow view.EditPlayerRow) {
 					max="10"
 					value={ editRow.BallHandling }
 					aria-label="Ball handling"
-					class="bg-white p-2"
+					class="bg-white px-2 py-1"
 				/>
 			</td>
-			<td class="pr-2 text-left py-1">
+			<td class="pr-2 text-left py-1 font-bold">
 				{ fmt.Sprintf("%.1f", editRow.Score) }
 			</td>
 			<td>

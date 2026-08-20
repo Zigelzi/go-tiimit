@@ -3,25 +3,23 @@ package components
 import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
 templ PlayersPage(players []view.Player, sortColumn string) {
-	@Base("Players") {
+	@ContentPageLayout("Players") {
 		<h2 class="text-2xl mb-4">Players</h2>
 		<div class="mt-4 mb-8">
 			<button
-				class="p-2 bg-blue-400 rounded-md inline-block hover:bg-blue-300"
+				class="btn btn-primary"
 				hx-get="/players/add"
 				hx-swap="outerHTML"
-			>Add new player to club</button>
+			>+ Add player</button>
 		</div>
 		if len(players) == 0 {
 			<p>Your club doesn't have players yet!</p>
 			<p>Add your first player</p>
 		} else {
-			<div class="w-full overflow-scroll">
-				<table class="table-fixed p-2">
-					<thead>
-						<tr class="text-left text-nowrap bg-slate-600 text-white">
-							<th>ID</th>
-							<th>MyClub ID</th>
+			<div class="overflow-x-auto border border-sand-500 rounded-xl">
+				<table class="table-fixed p-2  ">
+					<thead class="">
+						<tr class="text-left text-nowrap bg-sand-100 text-sand-700 font-mono uppercase text-xs tracking-[0.09em] ">
 							<th>Name</th>
 							<th>Goalie</th>
 							<th>

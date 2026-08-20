@@ -3,38 +3,76 @@ package components
 import "github.com/Zigelzi/go-tiimit/internal/auth"
 import "github.com/Zigelzi/go-tiimit/internal/practice"
 import "strconv"
+import "time"
 
 templ IndexPage(practices []practice.Practice) {
-	@Base("Home") {
+	@HomeLayout("Home") {
 		<div class="min-h-[70vh] flex justify-center flex-col">
-			<h1 class="text-5xl mb-4">Tiumo</h1>
-			<p class="">Distribute football teams easily!</p>
 			{{ user := auth.GetUserInfo(ctx) }}
-			<div class="my-8">
-				if user.IsLoggedIn {
-					<a class="px-4 py-2 bg-blue-400 rounded-md inline-block hover:bg-blue-300" href="/practices/new">Set up</a>
-					<p>new practice.</p>
-				} else {
-					<a class="px-4 py-2 bg-blue-400 rounded-md inline-block hover:bg-blue-300" href="/login">Log in</a>
-					<p>
-						to set up and view practices.
-					</p>
-				}
-			</div>
 			if user.IsLoggedIn {
+				<p class="text-sand-800 font-mono uppercase text-sm mb-2 mt-4">{ time.Now().Format("Monday _2 January") }</p>
 				<div>
-					<h2 class="text-2xl">Latest practices</h2>
+					<a href="/practices/new" class="bg-pitch-500 hover:bg-pitch-800 rounded-xl p-5.5 block transition border border-sand-300">
+						<p class="font-mono text-sand-200 text-sm uppercase">Upload attendance to</p>
+						<p class="text-white text-2xl font-bold">Set up new teams</p>
+						<p class="text-sand-200 text-sm">{ "for the next practice" }</p>
+					</a>
+					if len(practices) > 0 {
+						<a
+							href={ "/practices/" + strconv.Itoa(int(practices[0].ID)) }
+							class="mt-4 bg-white rounded-xl p-5.5 block   transition border border-sand-300 hover:border-sand-800"
+						>
+							<p class="font-mono text-sand-700 text-sm uppercase">Upcoming practice</p>
+							<p class="text-2xl font-bold">{ practices[0].Date.Format("Monday _2 January") }</p>
+							<p class="text-pitch-700 hover:text-pitch-900">View practice</p>
+						</a>
+					} else {
+						<a
+							href="/practices/new"
+							class="mt-4 bg-white rounded-xl p-5.5 block   transition border border-sand-300 hover:border-sand-800"
+						>
+							<p class="font-mono text-sand-700 text-sm uppercase">Upcoming practice</p>
+							<p class="text-2xl font-bold">No upcoming practices</p>
+							<p class="text-pitch-700 hover:text-pitch-900">Set up a practice</p>
+						</a>
+					}
+				</div>
+				<div>
+					<a
+						href="/players"
+						class="mt-4 bg-white rounded-xl px-5.5 py-2 block   transition border border-sand-300 hover:border-sand-800"
+					>
+						<p class="text-lg font-bold">Players</p>
+						<p class="text-pitch-700 hover:text-pitch-900">View players</p>
+					</a>
+				</div>
+				<div class="mt-8">
+					<p class="font-bold text-sm border-b border-sand-300 pb-2">Earlier practices</p>
 					if len(practices) == 0 {
 						<p>No practices yet!</p>
 						<p>Set up the first one to view them.</p>
 					} else {
-						<ul class="my-4">
+						<ul class="my-4 border border-sand-500 rounded-xl overflow-hidden">
 							for _, practice := range practices {
-								<li class="mb-2 last:mb-0"><a class="bg-white block px-2 py-4 rounded-md hover:bg-slate-100 transition" href={ "/practices/" + strconv.Itoa(int(practice.ID)) }>{ practice.Date.Weekday() } { practice.Date.Format("02.01.2006") }</a></li>
+								<li class="">
+									<a
+										class="block px-2 py-4 border-b border-sand-300 bg-white  hover:bg-sand-100 transition"
+										href={ "/practices/" + strconv.Itoa(int(practice.ID)) }
+									>
+										{ practice.Date.Format("Monday 02.01.2006") }
+									</a>
+								</li>
 							}
 						</ul>
 					}
 				</div>
+			} else {
+				<a href="/login" class="bg-pitch-500 rounded-xl p-5.5 block">
+					<p class="text-white text-2xl font-bold">Log in</p>
+					<p class="text-sand-200 text-sm">
+						to set up and view practices.
+					</p>
+				</a>
 			}
 		</div>
 	}

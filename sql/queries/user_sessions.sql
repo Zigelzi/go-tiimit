@@ -2,19 +2,19 @@
 INSERT INTO
     user_sessions (session_id, user_id, expires_at)
 VALUES
-    (?, ?, ?)
-RETURNING
-    *;
+    (?, ?, ?) RETURNING *;
 
 -- name: GetActiveSession :one
 SELECT
-    *
+    us.user_id,
+    u.username
 FROM
-    user_sessions
+    user_sessions us
+    JOIN users u ON u.id = us.user_id
 WHERE
-    session_id = ?
-    AND expires_at > CURRENT_TIMESTAMP
-    AND deleted_at IS NULL;
+    us.session_id = ?
+    AND us.expires_at > CURRENT_TIMESTAMP
+    AND us.deleted_at IS NULL;
 
 -- name: EndUserSession :exec
 UPDATE user_sessions

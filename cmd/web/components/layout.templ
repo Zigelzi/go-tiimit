@@ -1,0 +1,39 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/internal/auth"
+
+templ HomeLayout(title string) {
+	@Base(title) {
+		@SiteHeader()
+		<main>
+			<div class="mx-auto max-w-3xl px-gutter">
+				{ children... }
+			</div>
+		</main>
+		<footer class="sticky bottom-0 bg-sand-100">
+			{{ user := auth.GetUserInfo(ctx) }}
+			if user.IsLoggedIn {
+				<div class="mx-auto max-w-3xl px-gutter flex justify-between border-t border-sand-300 py-2">
+					<div class="my-auto text-sand-700 ">
+						<p class="font-mono text-[10px] uppercase tracking-[0.09em]">Signed in as</p>
+						<p class="text-sm">{ user.Username }</p>
+					</div>
+					<div>
+						<a hx-post="/logout" class="btn btn-secondary block">Logout</a>
+					</div>
+				</div>
+			}
+		</footer>
+	}
+}
+
+templ ContentPageLayout(title string) {
+	@Base(title) {
+		@BackHeader("Home", "/")
+		<main>
+			<div class="mx-auto max-w-3xl px-gutter">
+				{ children... }
+			</div>
+		</main>
+	}
+}
