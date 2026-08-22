@@ -5,7 +5,7 @@ import "github.com/Zigelzi/go-tiimit/internal/auth"
 templ HomeLayout(title string) {
 	@Base(title) {
 		@SiteHeader()
-		<main>
+		<main class="flex-1">
 			<div class="mx-auto max-w-3xl px-gutter">
 				{ children... }
 			</div>
@@ -27,13 +27,18 @@ templ HomeLayout(title string) {
 	}
 }
 
-templ ContentPageLayout(title string) {
+templ ContentPageLayout(title, hint string) {
 	@Base(title) {
 		@BackHeader("Home", "/")
-		<main>
+		<main class="flex-1">
 			<div class="mx-auto max-w-3xl px-gutter">
 				{ children... }
 			</div>
 		</main>
+		if hint != "" {
+			<footer class="border-t border-sand-400 py-2 sticky bottom-0 bg-white">
+				<p class="text-sand-800 text-center text-sm">{ hint }</p>
+			</footer>
+		}
 	}
 }

@@ -3,7 +3,7 @@ package components
 import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
 templ PracticePage(practice view.Practice) {
-	@ContentPageLayout("Practices") {
+	@ContentPageLayout("Practices", "Tick a name as you hand out a vest") {
 		<div>
 			<div class="mt-4 mb-6">
 				<p class="text-lg font-bold leading-5">{ practice.Date.Format("Monday _2 January") }</p>

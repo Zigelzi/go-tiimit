@@ -8,8 +8,8 @@ import (
 templ Team(team view.Team) {
 	<div class="mb-8" id={ fmt.Sprintf("team-%d", team.Number) }>
 		<div class="flex justify-between">
-			<div>
-				<p class="font-mono  text-sand-700 uppercase">
+			<div class={ " border-b", team.VestClass() }>
+				<p class="font-mono text-sand-700 uppercase">
 					<span class="font-bold text-sm">
 						Team { team.Number } -
 					</span>
@@ -26,7 +26,7 @@ templ Team(team view.Team) {
 		if len(team.Players) > 0 {
 			<ol class="-mx-gutter">
 				for _, player := range team.Players {
-					@PlayerCard(player, team.Number)
+					@PlayerCard(player, team.Number, team.VestClass())
 				}
 			</ol>
 		} else {

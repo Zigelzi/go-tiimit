@@ -5,38 +5,40 @@ import (
 	"github.com/Zigelzi/go-tiimit/cmd/web/view"
 )
 
-templ PlayerCard(player view.Player, teamNumber int) {
-	<li
-		id={ fmt.Sprintf("player-card-%d", player.ID) }
-		class="flex border-b border-sand-300 bg-white px-2 hover:bg-slate-100 has-checked:bg-pitch-100 has-checked:text-sand-800 group"
-	>
-		<input
-			class="absolute opacity-0"
-			type="checkbox"
-			name="players"
-			id={ player.ID }
-			value={ player.ID }
-			hx-post={ player.ToggleVestURL }
-			hx-target={ fmt.Sprintf("#team-%d", teamNumber) }
-			hx-swap="outerHTML"
-			checked?={ player.HasVest }
-		/>
-		<label class="grow py-4 ml-2 select-none" for={ player.ID }>
-			<span class="text-lg font-semibold mr-2 group-has-checked:line-through">
-				{ player.Name }
-			</span>
-		</label>
-		<div class="my-auto">
-			if player.IsGoalie {
-				<span class=" mr-1 text-xs uppercase font-bold text-pitch-700 tracking-[0.06em]">GK</span>
-			}
-			<span class="font-mono text-sand-800 text-sm mr-3">{ fmt.Sprintf("%.1f", player.Score) }</span>
-			<button
-				class="btn btn-secondary"
-				hx-post={ player.MoveURL }
-			>
-				Move
-			</button>
-		</div>
-	</li>
+templ PlayerCard(player view.Player, teamNumber int, vestClass string) {
+	<div class={ "border-l-2", vestClass }>
+		<li
+			id={ fmt.Sprintf("player-card-%d", player.ID) }
+			class="flex border-b border-sand-300 bg-white px-2 hover:bg-slate-100 has-checked:bg-pitch-100 has-checked:text-sand-800 group"
+		>
+			<input
+				class="absolute opacity-0"
+				type="checkbox"
+				name="players"
+				id={ player.ID }
+				value={ player.ID }
+				hx-post={ player.ToggleVestURL }
+				hx-target={ fmt.Sprintf("#team-%d", teamNumber) }
+				hx-swap="outerHTML"
+				checked?={ player.HasVest }
+			/>
+			<label class="grow py-4 ml-2 select-none" for={ player.ID }>
+				<span class="text-lg font-semibold mr-2 group-has-checked:line-through">
+					{ player.Name }
+				</span>
+			</label>
+			<div class="my-auto">
+				if player.IsGoalie {
+					<span class=" mr-1 text-xs uppercase font-bold text-pitch-700 tracking-[0.06em]">GK</span>
+				}
+				<span class="font-mono text-sand-800 text-sm mr-3">{ fmt.Sprintf("%.1f", player.Score) }</span>
+				<button
+					class="btn btn-secondary"
+					hx-post={ player.MoveURL }
+				>
+					Move
+				</button>
+			</div>
+		</li>
+	</div>
 }

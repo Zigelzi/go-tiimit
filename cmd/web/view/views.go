@@ -42,6 +42,13 @@ type Team struct {
 	Players    []Player
 }
 
+func (t Team) VestClass() string {
+	if t.Number == 1 {
+		return "border-vest-yellows"
+	}
+	return "border-vest-bibs"
+}
+
 func FromPractice(players []practice.PracticePlayer, teamNumber int) Team {
 	newTeam := Team{
 		Number:     teamNumber,

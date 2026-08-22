@@ -3,7 +3,7 @@ package components
 import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
 templ PlayersPage(players []view.Player, sortColumn string) {
-	@ContentPageLayout("Players") {
+	@ContentPageLayout("Players", "") {
 		<h2 class="text-2xl mb-4">Players</h2>
 		<div class="mt-4 mb-8">
 			<button
