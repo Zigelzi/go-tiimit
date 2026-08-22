@@ -1,11 +1,11 @@
 package components
 
 import "github.com/Zigelzi/go-tiimit/internal/auth"
-import "github.com/Zigelzi/go-tiimit/internal/practice"
 import "strconv"
 import "time"
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
-templ IndexPage(practices []practice.Practice) {
+templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount int) {
 	@HomeLayout("Home") {
 		<div class="min-h-[70vh] flex justify-center flex-col">
 			{{ user := auth.GetUserInfo(ctx) }}
@@ -17,53 +17,63 @@ templ IndexPage(practices []practice.Practice) {
 						<p class="text-white text-2xl font-bold">Set up new teams</p>
 						<p class="text-sand-200 text-sm">{ "for the next practice" }</p>
 					</a>
-					if len(practices) > 0 {
+					if len(practiceSummaries) > 0 && practiceSummaries[0].IsUpcoming() {
 						<a
-							href={ "/practices/" + strconv.Itoa(int(practices[0].ID)) }
-							class="mt-4 bg-white rounded-xl p-5.5 block   transition border border-sand-300 hover:border-sand-800"
+							href={ "/practices/" + strconv.Itoa(int(practiceSummaries[0].ID)) }
+							class="mt-4 bg-white rounded-xl p-5.5 block transition border border-sand-300 hover:border-sand-800"
 						>
 							<p class="font-mono text-sand-700 text-xs uppercase">Next practice</p>
-							<p class="text-2xl font-bold">{ practices[0].Date.Format("Monday _2 January") }</p>
+							<p class="text-xl font-semibold">{ practiceSummaries[0].Date.Format("Monday _2 January") }</p>
+							<p class="text-sand-700 text-sm mb-2">{ practiceSummaries[0].PlayerCount } players</p>
 							<p class="text-pitch-700 hover:text-pitch-900 font-semibold">View practice</p>
 						</a>
 					} else {
 						<a
 							href="/practices/new"
-							class="mt-4 bg-white rounded-xl p-5.5 block   transition border border-sand-300 hover:border-sand-800"
+							class="mt-4 bg-white rounded-xl p-5.5 block transition border border-sand-300 hover:border-sand-800"
 						>
-							<p class="font-mono text-sand-700 text-sm uppercase">Next practice</p>
-							<p class="text-2xl font-bold">No upcoming practices</p>
-							<p class="text-pitch-700 hover:text-pitch-900">Set up a practice</p>
+							<p class="font-mono text-sand-700 text-xs uppercase">Next practice</p>
+							<p class="text-xl font-semibold">No upcoming practice</p>
+							<p class="text-pitch-700 hover:text-pitch-900 font-semibold">Set up a practice</p>
 						</a>
 					}
 				</div>
 				<div>
 					<a
 						href="/players"
-						class="mt-4 bg-white rounded-xl px-5.5 py-2 block   transition border border-sand-300 hover:border-sand-800"
+						class="mt-4 bg-white rounded-xl px-5.5 py-2 block transition border border-sand-300 hover:border-sand-800"
 					>
-						<p class="flex justify-between">
+						<p class="flex justify-between mb-1">
 							<span class="text-lg font-bold">Players</span> <span class="text-sand-700 text-xl">→</span>
 						</p>
-						<p class="text-sand-800 text-sm">View players</p>
+						<p class="text-sand-800 text-sm">{ clubPlayerCount } in the club</p>
 					</a>
 				</div>
 				<div class="mt-8">
 					<p class="font-bold text-sm border-b border-sand-300 pb-2">Earlier practices</p>
-					if len(practices) == 0 {
+					if len(practiceSummaries) == 0 {
 						<p>No practices yet!</p>
 						<p>Set up the first one to view them.</p>
 					} else {
 						<ul class="my-4 border border-sand-500 rounded-xl overflow-hidden">
-							for _, practice := range practices {
-								<li class="">
-									<a
-										class="block px-2 py-4 border-b border-sand-300 bg-white  hover:bg-sand-100 transition"
-										href={ "/practices/" + strconv.Itoa(int(practice.ID)) }
-									>
-										{ practice.Date.Format("Mon 02.01.") }
-									</a>
-								</li>
+							for _, practice := range practiceSummaries {
+								if practice.IsUpcoming() == false {
+									<li>
+										<a
+											class="block px-2 py-2 border-b border-sand-300 bg-white hover:bg-sand-100 transition"
+											href={ "/practices/" + strconv.Itoa(int(practice.ID)) }
+										>
+											<p class="font-mono text-sm">
+												{ practice.Date.Format("_2 January") }
+											</p>
+											<p class="text-sand-700 text-sm ">
+												<span>{ practice.PlayerCount } players</span>
+												<span class="mx-1">-</span>
+												<span>{ practice.DaysInPast() } days ago</span>
+											</p>
+										</a>
+									</li>
+								}
 							}
 						</ul>
 					}

@@ -31,11 +31,20 @@ WHERE
 
 -- name: GetNewestPractices :many
 SELECT
-    *
+    pr.id,
+    pr.date,
+    (
+        SELECT
+            COUNT(*)
+        FROM
+            practice_players pp
+        WHERE
+            pp.practice_id = pr.id
+    ) as player_count
 FROM
-    practices
+    practices pr
 ORDER BY
-    date DESC
+    pr.date DESC
 LIMIT
     ?;
 

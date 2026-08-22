@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/player"
@@ -15,6 +16,24 @@ type Practice struct {
 
 func (p Practice) TotalPlayers() int {
 	return len(p.Teams[0].Players) + len(p.Teams[1].Players)
+}
+
+type PracticeSummary struct {
+	ID          int64
+	Date        time.Time
+	PlayerCount int64
+}
+
+func (ps PracticeSummary) DaysInPast() float64 {
+	hoursInPast := time.Since(ps.Date).Hours()
+	daysInPast := math.Floor(hoursInPast / 24)
+	return daysInPast
+}
+
+func (ps PracticeSummary) IsUpcoming() bool {
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, ps.Date.Location())
+	return ps.Date.Compare(today) >= 0
 }
 
 type Team struct {

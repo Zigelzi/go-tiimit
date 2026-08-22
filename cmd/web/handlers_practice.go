@@ -17,15 +17,25 @@ import (
 )
 
 func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	dbPractices, err := cfg.queries.GetNewestPractices(r.Context(), 5)
+	dbPracticeSummaries, err := cfg.queries.GetNewestPractices(r.Context(), 5)
 	if err != nil {
 		log.Printf("failed to get practices: %v", err)
+		return
 	}
-	practices := []practice.Practice{}
-	for _, dbPractice := range dbPractices {
-		practices = append(practices, practice.FromDB(dbPractice))
+	dbPlayers, err := cfg.queries.GetAllPlayers(r.Context())
+	if err != nil {
+		log.Printf("failed to get all players: %v", err)
+		return
 	}
-	component := components.IndexPage(practices)
+	practiceSummaries := []view.PracticeSummary{}
+	for _, dbPracticeSummary := range dbPracticeSummaries {
+		practiceSummaries = append(practiceSummaries, view.PracticeSummary{
+			ID:          dbPracticeSummary.ID,
+			Date:        dbPracticeSummary.Date,
+			PlayerCount: dbPracticeSummary.PlayerCount,
+		})
+	}
+	component := components.IndexPage(practiceSummaries, len(dbPlayers))
 	component.Render(r.Context(), w)
 }
 

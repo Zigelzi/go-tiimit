@@ -46,25 +46,40 @@ func (q *Queries) CreatePractice(ctx context.Context, date time.Time) (int64, er
 
 const getNewestPractices = `-- name: GetNewestPractices :many
 SELECT
-    id, date
+    pr.id,
+    pr.date,
+    (
+        SELECT
+            COUNT(*)
+        FROM
+            practice_players pp
+        WHERE
+            pp.practice_id = pr.id
+    ) as player_count
 FROM
-    practices
+    practices pr
 ORDER BY
-    date DESC
+    pr.date DESC
 LIMIT
     ?
 `
 
-func (q *Queries) GetNewestPractices(ctx context.Context, limit int64) ([]Practice, error) {
+type GetNewestPracticesRow struct {
+	ID          int64
+	Date        time.Time
+	PlayerCount int64
+}
+
+func (q *Queries) GetNewestPractices(ctx context.Context, limit int64) ([]GetNewestPracticesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getNewestPractices, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Practice
+	var items []GetNewestPracticesRow
 	for rows.Next() {
-		var i Practice
-		if err := rows.Scan(&i.ID, &i.Date); err != nil {
+		var i GetNewestPracticesRow
+		if err := rows.Scan(&i.ID, &i.Date, &i.PlayerCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
