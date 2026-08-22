@@ -61,7 +61,7 @@ templ IndexPage(practices []practice.Practice) {
 										class="block px-2 py-4 border-b border-sand-300 bg-white  hover:bg-sand-100 transition"
 										href={ "/practices/" + strconv.Itoa(int(practice.ID)) }
 									>
-										{ practice.Date.Format("Monday 02.01.2006") }
+										{ practice.Date.Format("Mon 02.01.") }
 									</a>
 								</li>
 							}
