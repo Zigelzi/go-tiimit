@@ -1,0 +1,15 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
+
+templ TeamPlayers(team view.Team) {
+	if len(team.Players) > 0 {
+		<ol class="-mx-gutter" hx-sync="closest ol:queue all">
+			for _, player := range team.Players {
+				@PlayerCard(player, team.Number, team.VestBorderClass())
+			}
+		</ol>
+	} else {
+		<p>No players in team { team.Number }</p>
+	}
+}

@@ -10,6 +10,7 @@ import (
 )
 
 type Practice struct {
+	ID    int64
 	Date  time.Time
 	Teams []Team
 }
@@ -42,11 +43,18 @@ type Team struct {
 	Players    []Player
 }
 
-func (t Team) VestClass() string {
+func (t Team) VestBorderClass() string {
 	if t.Number == 1 {
 		return "border-vest-yellows"
 	}
 	return "border-vest-bibs"
+}
+
+func (t Team) VestBackgroundClass() string {
+	if t.Number == 1 {
+		return "bg-vest-yellows"
+	}
+	return "bg-vest-bibs"
 }
 
 func FromPractice(players []practice.PracticePlayer, teamNumber int) Team {
@@ -75,6 +83,10 @@ func (t *Team) VestCount() int {
 		}
 	}
 	return numberOfVests
+}
+
+func (t *Team) TabURL(practiceId int64) string {
+	return fmt.Sprintf("/practices/%d/teams/%d", practiceId, t.Number)
 }
 
 type Player struct {

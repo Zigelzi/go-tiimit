@@ -302,22 +302,23 @@ func (q *Queries) SetPlayerTeam(ctx context.Context, arg SetPlayerTeamParams) er
 	return err
 }
 
-const togglePracticePlayerVest = `-- name: TogglePracticePlayerVest :exec
+const togglePracticePlayerVest = `-- name: TogglePracticePlayerVest :one
 UPDATE practice_players
 SET
-    has_vest = ?
+    has_vest = NOT has_vest
 WHERE
     practice_id = ?
-    AND player_id = ?
+    AND player_id = ? RETURNING team_number
 `
 
 type TogglePracticePlayerVestParams struct {
-	HasVest    bool
 	PracticeID int64
 	PlayerID   int64
 }
 
-func (q *Queries) TogglePracticePlayerVest(ctx context.Context, arg TogglePracticePlayerVestParams) error {
-	_, err := q.db.ExecContext(ctx, togglePracticePlayerVest, arg.HasVest, arg.PracticeID, arg.PlayerID)
-	return err
+func (q *Queries) TogglePracticePlayerVest(ctx context.Context, arg TogglePracticePlayerVestParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, togglePracticePlayerVest, arg.PracticeID, arg.PlayerID)
+	var team_number int64
+	err := row.Scan(&team_number)
+	return team_number, err
 }

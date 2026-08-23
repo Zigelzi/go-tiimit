@@ -215,6 +215,7 @@ func (cfg *webConfig) handleViewPractice(w http.ResponseWriter, r *http.Request)
 	practice.SortByScore(currentPractice.TeamTwoPlayers)
 
 	practiceView := view.Practice{
+		ID:    currentPractice.ID,
 		Date:  currentPractice.Date,
 		Teams: make([]view.Team, 2),
 	}
@@ -285,7 +286,6 @@ func (cfg *webConfig) handleMovePlayer(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Request) {
 	practiceId, err := strconv.Atoi(r.PathValue("practice_id"))
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("unable to parse practice id from path: %v", err)
@@ -293,27 +293,15 @@ func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Requ
 	}
 
 	playerId, err := strconv.Atoi(r.PathValue("player_id"))
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("unable to parse practice id from path: %v", err)
 		return
 	}
 
-	dbPracticePlayer, err := cfg.queries.GetPracticePlayer(r.Context(), db.GetPracticePlayerParams{
+	updatedPlayerTeamId, err := cfg.queries.TogglePracticePlayerVest(r.Context(), db.TogglePracticePlayerVestParams{
 		PracticeID: int64(practiceId),
 		PlayerID:   int64(playerId),
-	})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("failed to get the player [%d] for practice [%d]: %v", playerId, practiceId, err)
-		return
-	}
-
-	err = cfg.queries.TogglePracticePlayerVest(r.Context(), db.TogglePracticePlayerVestParams{
-		PracticeID: int64(practiceId),
-		PlayerID:   int64(playerId),
-		HasVest:    !dbPracticePlayer.HasVest,
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -323,8 +311,14 @@ func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Requ
 
 	dbTeamPlayers, err := cfg.queries.GetPracticeTeamPlayers(r.Context(), db.GetPracticeTeamPlayersParams{
 		PracticeID: int64(practiceId),
-		TeamNumber: dbPracticePlayer.TeamNumber,
+		TeamNumber: updatedPlayerTeamId,
 	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed toget the players of practice [%d]: %v", practiceId, err)
+		return
+	}
 
 	teamPracticePlayers := []practice.PracticePlayer{}
 	for _, dbTeamPlayer := range dbTeamPlayers {
@@ -333,9 +327,54 @@ func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Requ
 	}
 
 	practice.SortByScore(teamPracticePlayers)
-	teamView := view.FromPractice(teamPracticePlayers, int(dbPracticePlayer.TeamNumber))
+	teamView := view.FromPractice(teamPracticePlayers, int(updatedPlayerTeamId))
 	teamView.GeneratePlayerURLs(int64(practiceId))
 
-	component := components.Team(teamView)
+	component := components.TeamHeader(teamView)
+	component.Render(r.Context(), w)
+}
+
+func (cfg *webConfig) handleViewTeam(w http.ResponseWriter, r *http.Request) {
+	practiceId, err := strconv.Atoi(r.PathValue("practice_id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unable to parse practice id from path: %v", err)
+		return
+	}
+
+	teamNumber, err := strconv.Atoi(r.PathValue("team_number"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unable to parse team number from path: %v", err)
+		return
+	}
+
+	if teamNumber < 1 || teamNumber > 2 {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("team number must be 1 or 2")
+		return
+	}
+	dbTeamPlayers, err := cfg.queries.GetPracticeTeamPlayers(r.Context(), db.GetPracticeTeamPlayersParams{
+		PracticeID: int64(practiceId),
+		TeamNumber: int64(teamNumber),
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("failed toget the players of practice [%d]: %v", practiceId, err)
+		return
+	}
+
+	teamPracticePlayers := []practice.PracticePlayer{}
+	for _, dbTeamPlayer := range dbTeamPlayers {
+		practicePlayer := practice.PracticePlayerFromDB(dbTeamPlayer)
+		teamPracticePlayers = append(teamPracticePlayers, practicePlayer)
+	}
+
+	practice.SortByScore(teamPracticePlayers)
+	teamView := view.FromPractice(teamPracticePlayers, int(teamNumber))
+	teamView.GeneratePlayerURLs(int64(practiceId))
+
+	component := components.TeamPanel(teamView)
 	component.Render(r.Context(), w)
 }

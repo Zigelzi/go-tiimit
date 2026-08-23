@@ -1,0 +1,31 @@
+package components
+
+import (
+	"fmt"
+	"github.com/Zigelzi/go-tiimit/cmd/web/view"
+)
+
+templ TeamHeaderWrapper(team view.Team) {
+	<div class="pb-2 sticky top-(--practice-header-height) bg-sand-100 -mx-gutter px-gutter" id={ fmt.Sprintf("team-header-%d", team.Number) }>
+		@TeamHeader(team)
+	</div>
+}
+
+templ TeamHeader(team view.Team) {
+	<div class="flex justify-between">
+		<div class={ " border-b-2", team.VestBorderClass() }>
+			<p class="font-mono text-sand-700 uppercase">
+				<span class="font-bold text-sm">
+					Team { team.Number } -
+				</span>
+				<span class="text-[10px] tracking-[0.09em]">{ len(team.Players) } players</span>
+			</p>
+		</div>
+		<div>
+			<p class="text-[17px] font-mono font-semibold">{ fmt.Sprintf("%.1f", team.TotalScore) }</p>
+		</div>
+	</div>
+	<div class="mb-2">
+		<span class="text-lg font-bold mr-2">{ team.VestCount() } / { len(team.Players) }</span><span class="">vests</span>
+	</div>
+}

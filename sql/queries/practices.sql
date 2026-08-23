@@ -74,13 +74,13 @@ WHERE
     pp.practice_id = ?
     AND pp.player_id = ?;
 
--- name: TogglePracticePlayerVest :exec
+-- name: TogglePracticePlayerVest :one
 UPDATE practice_players
 SET
-    has_vest = ?
+    has_vest = NOT has_vest
 WHERE
     practice_id = ?
-    AND player_id = ?;
+    AND player_id = ? RETURNING team_number;
 
 -- name: GetPracticeTeamPlayers :many
 SELECT

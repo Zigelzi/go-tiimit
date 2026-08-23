@@ -21,6 +21,10 @@
   .btn-secondary {
     @apply bg-white border border-sand-400 hover:border-ink-900 text-ink-900;
   }
+
+  .tab-active {
+    @apply bg-white;
+  }
 }
 
 @layer base {
@@ -72,4 +76,7 @@
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   --spacing-gutter: 1rem;
+
+  /* Practice page (practice.templ) header height defined manually */
+  --practice-header-height: 126px;
 }

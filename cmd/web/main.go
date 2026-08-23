@@ -61,6 +61,7 @@ func main() {
 	// Practices
 	mux.Handle("GET /practices/new", requireAuth(http.HandlerFunc(cfg.handleSetupPracticePage)))
 	mux.Handle("GET /practices/{id}", requireAuth(http.HandlerFunc(cfg.handleViewPractice)))
+	mux.Handle("GET /practices/{practice_id}/teams/{team_number}", requireAuth(http.HandlerFunc(cfg.handleViewTeam)))
 	mux.Handle("POST /practices/{practice_id}/players/{player_id}", requireAuth(http.HandlerFunc(cfg.handleMovePlayer)))
 	mux.Handle("POST /practices/{practice_id}/players/{player_id}/vest", requireAuth(http.HandlerFunc(cfg.handleTogglePlayerVest)))
 	mux.Handle("POST /practice", requireAuth(http.HandlerFunc(cfg.handleCreatePractice)))

@@ -1,0 +1,10 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
+
+templ TeamPanel(team view.Team) {
+	<div id="team-panel">
+		@TeamHeaderWrapper(team)
+		@TeamPlayers(team)
+	</div>
+}

@@ -5,12 +5,30 @@ import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 templ PracticePage(practice view.Practice) {
 	@ContentPageLayout("Practices", "Tick a name as you hand out a vest") {
 		<div>
-			<div class="mt-4 mb-6">
+			<div class="sticky top-0 bg-sand-100 pt-3 pb-1.5 -mx-gutter px-gutter">
 				<p class="text-lg font-bold leading-5">{ practice.Date.Format("Monday _2 January") }</p>
 				<p class="text-sand-800 text-sm">{ practice.TotalPlayers() } players in</p>
+				<div class="mt-2">
+					<div class="bg-sand-300 rounded-xl p-1 flex gap-2" id="tab-panel">
+						for _, team := range practice.Teams {
+							<button
+								class={ "py-2 rounded-xl flex flex-col grow justify-center gap-x-2", templ.KV("tab-active", team.Number == practice.Teams[0].Number) }
+								hx-get={ team.TabURL(practice.ID) }
+								hx-target="#team-panel"
+								hx-swap="outerHTML"
+								hx-on:click="toggleActiveTeam(this)"
+							>
+								<p class="flex items-center justify-center gap-1">
+									<span class={ "relative top-px size-2  shrink-0 rounded-xs", team.VestBackgroundClass() } aria-hidden="true"></span>
+									<span class="text-sm font-semibold ">Team { team.Number }</span>
+								</p>
+								<p class="text-xs text-sand-800">{ len(team.Players) } players</p>
+							</button>
+						}
+					</div>
+				</div>
 			</div>
-			@Team(practice.Teams[0])
-			@Team(practice.Teams[1])
+			@TeamPanel(practice.Teams[0])
 		</div>
 	}
 }

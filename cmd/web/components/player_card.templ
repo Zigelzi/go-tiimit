@@ -6,7 +6,7 @@ import (
 )
 
 templ PlayerCard(player view.Player, teamNumber int, vestClass string) {
-	<div class={ "border-l-2", vestClass }>
+	<div class={ "border-l-6", vestClass }>
 		<li
 			id={ fmt.Sprintf("player-card-%d", player.ID) }
 			class="flex border-b border-sand-300 bg-white px-2 hover:bg-slate-100 has-checked:bg-pitch-100 has-checked:text-sand-800 group"
@@ -18,8 +18,7 @@ templ PlayerCard(player view.Player, teamNumber int, vestClass string) {
 				id={ player.ID }
 				value={ player.ID }
 				hx-post={ player.ToggleVestURL }
-				hx-target={ fmt.Sprintf("#team-%d", teamNumber) }
-				hx-swap="outerHTML"
+				hx-target={ fmt.Sprintf("#team-header-%d", teamNumber) }
 				checked?={ player.HasVest }
 			/>
 			<label class="grow py-4 ml-2 select-none" for={ player.ID }>
