@@ -2,6 +2,7 @@ package practice
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/Zigelzi/go-tiimit/internal/player"
 )
@@ -15,37 +16,61 @@ func Distribute(fieldPlayers, goalies []player.Player) (teamOnePlayers, teamTwoP
 	if len(fieldPlayers) == 0 && len(goalies) == 0 {
 		return teamOnePlayers, teamTwoPlayers, ErrNoPlayers
 	}
-	distributePlayers(fieldPlayers, &teamOnePlayers, &teamTwoPlayers)
-	distributePlayers(goalies, &teamOnePlayers, &teamTwoPlayers)
+
+	teamOnePlayers, teamTwoPlayers = distributePlayers(fieldPlayers, teamOnePlayers, teamTwoPlayers)
+
+	teamOnePlayers, teamTwoPlayers = distributePlayers(goalies, teamOnePlayers, teamTwoPlayers)
 
 	return teamOnePlayers, teamTwoPlayers, nil
 }
 
-func distributePlayers(players []player.Player, team1, team2 *[]player.Player) {
-	startFromFirstTeam := true
-	if len(*team1) != len(*team2) {
-		// First player needs to be distributed to second team when the teams aren't even.
-		// This is to ensure teams are distributed evenly and one team doesn't have two more players.
-		startFromFirstTeam = false
-	}
-	for i, distributedPlayer := range players {
-		if startFromFirstTeam {
-			if isEven(i) {
-				*team1 = append(*team1, distributedPlayer)
-			} else {
-				*team2 = append(*team2, distributedPlayer)
-			}
+func distributePlayers(players []player.Player, initialTeam1, initialTeam2 []player.Player) (distributedTeam1, distributedTeam2 []player.Player) {
+	// Avoid sorting the original list to avoid unexpected side effects
+	sortedPlayers := slices.Clone(players)
+	player.SortByScore(sortedPlayers)
 
+	team1Score := getTeamScore(initialTeam1)
+	distributedTeam1 = initialTeam1
+
+	team2Score := getTeamScore(initialTeam2)
+	distributedTeam2 = initialTeam2
+
+	for _, distributedPlayer := range sortedPlayers {
+		assignToTeam1 := shouldAssignToTeam1(distributedTeam1, distributedTeam2, team1Score, team2Score)
+		if assignToTeam1 {
+			distributedTeam1 = append(distributedTeam1, distributedPlayer)
+			team1Score += distributedPlayer.Score()
 		} else {
-			if isEven(i + 1) {
-				*team1 = append(*team1, distributedPlayer)
-			} else {
-				*team2 = append(*team2, distributedPlayer)
-			}
+			distributedTeam2 = append(distributedTeam2, distributedPlayer)
+			team2Score += distributedPlayer.Score()
 		}
+
 	}
+	return distributedTeam1, distributedTeam2
 }
 
-func isEven(number int) bool {
-	return number%2 == 0
+func getTeamScore(teamPlayers []player.Player) float64 {
+	teamScore := 0.0
+	for _, p := range teamPlayers {
+		teamScore += p.Score()
+	}
+	return teamScore
+}
+
+func shouldAssignToTeam1(team1, team2 []player.Player, team1Score, team2Score float64) bool {
+	// Teams can have at most one player difference.
+	playerDifference := len(team1) - len(team2)
+	if playerDifference > 0 {
+		return false
+	}
+	if playerDifference < 0 {
+		return true
+	}
+
+	// Assign to team 1 if even score (arbitrary)
+	if team1Score == team2Score {
+		return true
+	}
+	// Optimize based on score
+	return team1Score < team2Score
 }

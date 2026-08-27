@@ -135,10 +135,6 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 		Date: practiceDate,
 	}
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	// REPO START - Storing the data.
 	tx, err := cfg.db.Begin()
 	if err != nil {
