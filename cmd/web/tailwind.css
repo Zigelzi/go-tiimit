@@ -13,13 +13,17 @@
   }
 
   .btn {
-    @apply px-4 py-2 rounded-md;
+    @apply px-4 py-2 rounded-md inline-block;
   }
   .btn-primary {
     @apply bg-pitch-500 hover:bg-pitch-600 text-white shadow-[0_2px_0_#097633] active:translate-y-0.5 active:shadow-none;
   }
   .btn-secondary {
     @apply bg-white border border-sand-400 hover:border-ink-900 text-ink-900;
+  }
+
+  .btn-secondary-active {
+    @apply bg-ink-900 border-sand-400 text-white hover:border-sand-100;
   }
 
   .tab-active {

@@ -97,6 +97,7 @@ type Player struct {
 	RunPower      float64
 	BallHandling  float64
 	IsGoalie      bool
+	IsInactive    bool
 	HasVest       bool
 	MoveURL       string
 	ToggleVestURL string
@@ -110,6 +111,7 @@ func FromPlayer(player player.Player) Player {
 		RunPower:     player.RunPower(),
 		BallHandling: player.BallHandling(),
 		IsGoalie:     player.IsGoalie,
+		IsInactive:   player.IsInactive,
 		Score:        player.Score(),
 	}
 }
@@ -125,6 +127,10 @@ func (p *Player) EditURL() string {
 func (p *Player) SaveURL() string {
 	// Return same value but to keep name explicit
 	return p.ViewURL()
+}
+
+func (p *Player) SetInactiveURL() string {
+	return fmt.Sprintf("/players/%d/inactivate", p.ID)
 }
 
 func (p *Player) RowID() string {

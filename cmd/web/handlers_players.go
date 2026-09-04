@@ -16,22 +16,32 @@ import (
 )
 
 func (cfg *webConfig) handleViewPlayersPage(w http.ResponseWriter, r *http.Request) {
-
-	dbPlayers, err := cfg.queries.GetAllPlayers(r.Context())
-
-	if err != nil && errors.Is(err, sql.ErrNoRows) == false {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("failed to get players: %v", err)
-		return
+	showInactive := r.URL.Query().Get("inactive") == "true"
+	dbPlayers := []db.Player{}
+	if showInactive {
+		inactivePlayers, err := cfg.queries.GetInactivePlayers(r.Context())
+		if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to get players: %v", err)
+			return
+		}
+		dbPlayers = inactivePlayers
+	} else {
+		activePlayers, err := cfg.queries.GetActivePlayers(r.Context())
+		if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("failed to get players: %v", err)
+			return
+		}
+		dbPlayers = activePlayers
 	}
-
-	querySortKey := r.URL.Query().Get("sort")
 
 	players := []player.Player{}
 	for _, dbPlayer := range dbPlayers {
 		players = append(players, player.FromDB(dbPlayer))
 	}
 
+	querySortKey := r.URL.Query().Get("sort")
 	player.SortPlayersByDescending(players, querySortKey)
 
 	viewPlayers := []view.Player{}
@@ -39,7 +49,7 @@ func (cfg *webConfig) handleViewPlayersPage(w http.ResponseWriter, r *http.Reque
 		viewPlayers = append(viewPlayers, view.FromPlayer(player))
 	}
 
-	playersPage := components.PlayersPage(viewPlayers, querySortKey)
+	playersPage := components.PlayersPage(viewPlayers, querySortKey, showInactive)
 	playersPage.Render(r.Context(), w)
 }
 
@@ -241,4 +251,65 @@ func (cfg *webConfig) handleViewPlayerRow(w http.ResponseWriter, r *http.Request
 
 	component := components.PlayerRow(viewPlayer)
 	component.Render(r.Context(), w)
+}
+
+func (cfg *webConfig) handleSetPlayerInactive(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("failed to parse form: %v", err)
+		renderError(w, r, "Couldn't set player to inactive. Try again later")
+		return
+	}
+
+	playerId, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		log.Printf("failed to convert the id [%s] to int64: %v", r.PathValue("id"), err)
+		renderError(w, r, "Couldn't set player to inactive. Try again later")
+		return
+	}
+
+	dbPlayers := []db.Player{}
+	isInactivated := r.Form.Get("inactive") == "true"
+	if isInactivated {
+		err = cfg.queries.SetPlayerInactive(r.Context(), playerId)
+		if err != nil {
+			log.Printf("failed to set player [%d] to inactive: %v", playerId, err)
+			renderError(w, r, "Couldn't set player to inactive. Try again later")
+			return
+		}
+		activePlayers, err := cfg.queries.GetActivePlayers(r.Context())
+
+		if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+			log.Printf("failed to get players: %v", err)
+			renderError(w, r, "Couldn't set player to inactive. Try again later")
+			return
+		}
+		dbPlayers = activePlayers
+	} else {
+		err = cfg.queries.SetPlayerActive(r.Context(), playerId)
+		if err != nil {
+			log.Printf("failed to set player [%d] to active: %v", playerId, err)
+			renderError(w, r, "Couldn't set player to inactive. Try again later")
+			return
+		}
+		inactivePlayers, err := cfg.queries.GetInactivePlayers(r.Context())
+		if err != nil && errors.Is(err, sql.ErrNoRows) == false {
+			log.Printf("failed to get players: %v", err)
+			renderError(w, r, "Couldn't set player to inactive. Try again later")
+			return
+		}
+		dbPlayers = inactivePlayers
+	}
+
+	players := []player.Player{}
+	for _, dbPlayer := range dbPlayers {
+		players = append(players, player.FromDB(dbPlayer))
+	}
+
+	viewPlayers := []view.Player{}
+	for _, player := range players {
+		viewPlayers = append(viewPlayers, view.FromPlayer(player))
+	}
+
+	renderOK(w, r, components.PlayerTableContent(viewPlayers))
 }

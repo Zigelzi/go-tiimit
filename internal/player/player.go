@@ -18,6 +18,7 @@ type Player struct {
 	runPower     float64
 	ballHandling float64
 	IsGoalie     bool
+	IsInactive   bool
 }
 
 func New(myclub_id int64, name string, runPower float64, ballHandling float64, isGoalie bool) Player {
@@ -65,6 +66,7 @@ func FromDB(dbPlayer db.Player) Player {
 		dbPlayer.IsGoalie)
 
 	newPlayer.ID = dbPlayer.ID
+	newPlayer.IsInactive = dbPlayer.InactivatedAt.Valid
 	return newPlayer
 }
 

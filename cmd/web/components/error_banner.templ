@@ -1,0 +1,11 @@
+package components
+
+templ ErrorBanner(msg string) {
+	<div id="app-error" hx-swap-oob="true" class="mx-auto max-w-3xl px-gutter text-center">
+		if msg != "" {
+			<p class="bg-flag-700  py-2 rounded text-white">
+				{ msg }
+			</p>
+		}
+	</div>
+}

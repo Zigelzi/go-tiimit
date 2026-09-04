@@ -10,12 +10,13 @@ import (
 )
 
 type Player struct {
-	ID           int64
-	Name         string
-	MyclubID     int64
-	RunPower     float64
-	BallHandling float64
-	IsGoalie     bool
+	ID            int64
+	Name          string
+	MyclubID      int64
+	RunPower      float64
+	BallHandling  float64
+	IsGoalie      bool
+	InactivatedAt sql.NullTime
 }
 
 type Practice struct {

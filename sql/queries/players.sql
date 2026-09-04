@@ -1,13 +1,30 @@
--- name: GetAllPlayers :many
+-- name: GetActivePlayers :many
 SELECT
     id,
     name,
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 FROM
-    players;
+    players
+WHERE
+    inactivated_at is null;
+
+-- name: GetInactivePlayers :many
+SELECT
+    id,
+    name,
+    myclub_id,
+    run_power,
+    ball_handling,
+    is_goalie,
+    inactivated_at
+FROM
+    players
+WHERE
+    inactivated_at is not null;
 
 -- name: GetPlayerById :one
 SELECT
@@ -16,7 +33,8 @@ SELECT
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 FROM
     players
 WHERE
@@ -29,7 +47,8 @@ SELECT
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 FROM
     players
 WHERE
@@ -64,4 +83,19 @@ WHERE
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie;
+    is_goalie,
+    inactivated_at;
+
+-- name: SetPlayerInactive :exec
+UPDATE players
+SET
+    inactivated_at = CURRENT_TIMESTAMP
+WHERE
+    id = ?;
+
+-- name: SetPlayerActive :exec
+UPDATE players
+SET
+    inactivated_at = NULL
+WHERE
+    id = ?;

@@ -14,7 +14,7 @@ templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount int) {
 				<div>
 					<a href="/practices/new" class="bg-pitch-500 hover:bg-pitch-800 rounded-xl p-5.5 block transition border border-sand-300">
 						<p class="font-mono text-sand-200 text-xs uppercase">Upload attendance</p>
-						<p class="text-white text-2xl font-bold">Set up new teams</p>
+						<p class="text-white text-2xl font-bold">Set up teams</p>
 						<p class="text-sand-200 text-sm">{ "for the next practice" }</p>
 					</a>
 					if len(practiceSummaries) > 0 && practiceSummaries[0].IsUpcoming() {
@@ -34,7 +34,7 @@ templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount int) {
 						>
 							<p class="font-mono text-sand-700 text-xs uppercase">Next practice</p>
 							<p class="text-xl font-semibold">No upcoming practice</p>
-							<p class="text-pitch-700 hover:text-pitch-900 font-semibold">Set up a practice</p>
+							<p class="text-pitch-700 hover:text-pitch-900 font-semibold">Set up teams</p>
 						</a>
 					}
 				</div>
@@ -46,7 +46,7 @@ templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount int) {
 						<p class="flex justify-between mb-1">
 							<span class="text-lg font-bold">Players</span> <span class="text-sand-700 text-xl">→</span>
 						</p>
-						<p class="text-sand-800 text-sm">{ clubPlayerCount } in the club</p>
+						<p class="text-sand-800 text-sm">{ clubPlayerCount } active in the club</p>
 					</a>
 				</div>
 				<div class="mt-8">

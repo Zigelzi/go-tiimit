@@ -73,6 +73,7 @@ func main() {
 	mux.Handle("POST /players/{id}", requireAuth(http.HandlerFunc(cfg.handleSavePlayerRow)))
 	mux.Handle("GET /players/{id}/edit", requireAuth(http.HandlerFunc(cfg.handleEditPlayerRow)))
 	mux.Handle("GET /players/add", requireAuth(http.HandlerFunc(cfg.handleAddPlayerForm)))
+	mux.Handle("PUT /players/{id}/inactivate", requireAuth(http.HandlerFunc(cfg.handleSetPlayerInactive)))
 
 	// Auth
 	mux.HandleFunc("GET /login", cfg.handleLoginPage)

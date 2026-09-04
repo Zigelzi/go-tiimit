@@ -6,70 +6,68 @@ import (
 )
 
 templ PlayerRowEdit(editRow view.EditPlayerRow) {
-	<tbody id={ editRow.RowID() } class="border-b border-sand-300 hover:bg-sand-100 h-15">
-		<tr>
-			<td class="pr-4 text-left py-1 text-nowrap">
-				<span class="font-bold mr-2">{ editRow.Name }</span><span class="text-sand-700 text-sm">#{ editRow.MyclubId }</span>
-			</td>
-			<td class="pr-2 text-left py-1">
-				<input type="checkbox" name="is-goalie" checked?={ editRow.IsGoalie } aria-label="Is goalie"/>
-			</td>
-			<td class="pr-2 text-left py-1">
-				<input
-					type="number"
-					name="run-power"
-					min="0"
-					max="10"
-					value={ editRow.RunPower }
-					aria-label="Run power"
-					class="bg-white px-2 py-1"
-				/>
-			</td>
-			<td class="pr-2 text-left py-1">
-				<input
-					type="number"
-					name="ball-handling"
-					min="0"
-					max="10"
-					value={ editRow.BallHandling }
-					aria-label="Ball handling"
-					class="bg-white px-2 py-1"
-				/>
-			</td>
-			<td class="pr-2 text-left py-1 font-bold">
-				{ fmt.Sprintf("%.1f", editRow.Score) }
-			</td>
-			<td>
-				<button
-					class="btn btn-primary"
-					hx-post={ editRow.SaveURL() }
-					hx-target={ fmt.Sprintf("#%s", editRow.RowID()) }
-					hx-swap="outerHTML"
-					hx-include="closest tr"
-				>Save</button>
-				<button
-					class="btn btn-secondary"
-					hx-get={ editRow.ViewURL() }
-					hx-target={ fmt.Sprintf("#%s", editRow.RowID()) }
-					hx-swap="outerHTML"
-				>Cancel</button>
-			</td>
-		</tr>
-		if len(editRow.FieldErrors) > 0 {
-			for _, err := range editRow.FieldErrors {
-				<tr>
-					<td colspan="8">
-						@FormError(err)
-					</td>
-				</tr>
-			}
-		}
-		if editRow.GeneralError != "" {
+	<tr id={ editRow.RowID() } class="border-b border-sand-300 hover:bg-sand-100 h-15">
+		<td class="pr-4 text-left py-1 text-nowrap">
+			<span class="font-bold mr-2">{ editRow.Name }</span><span class="text-sand-700 text-sm">#{ editRow.MyclubId }</span>
+		</td>
+		<td class="pr-2 text-left py-1">
+			<input type="checkbox" name="is-goalie" checked?={ editRow.IsGoalie } aria-label="Is goalie"/>
+		</td>
+		<td class="pr-2 text-left py-1">
+			<input
+				type="number"
+				name="run-power"
+				min="0"
+				max="10"
+				value={ editRow.RunPower }
+				aria-label="Run power"
+				class="bg-white px-2 py-1"
+			/>
+		</td>
+		<td class="pr-2 text-left py-1">
+			<input
+				type="number"
+				name="ball-handling"
+				min="0"
+				max="10"
+				value={ editRow.BallHandling }
+				aria-label="Ball handling"
+				class="bg-white px-2 py-1"
+			/>
+		</td>
+		<td class="pr-2 text-left py-1 font-bold">
+			{ fmt.Sprintf("%.1f", editRow.Score) }
+		</td>
+		<td>
+			<button
+				class="btn btn-primary"
+				hx-post={ editRow.SaveURL() }
+				hx-target={ fmt.Sprintf("#%s", editRow.RowID()) }
+				hx-swap="outerHTML"
+				hx-include="closest tr"
+			>Save</button>
+			<button
+				class="btn btn-secondary"
+				hx-get={ editRow.ViewURL() }
+				hx-target={ fmt.Sprintf("#%s", editRow.RowID()) }
+				hx-swap="outerHTML"
+			>Cancel</button>
+		</td>
+	</tr>
+	if len(editRow.FieldErrors) > 0 {
+		for _, err := range editRow.FieldErrors {
 			<tr>
 				<td colspan="8">
-					@FormError(editRow.GeneralError)
+					@FormError(err)
 				</td>
 			</tr>
 		}
-	</tbody>
+	}
+	if editRow.GeneralError != "" {
+		<tr>
+			<td colspan="8">
+				@FormError(editRow.GeneralError)
+			</td>
+		</tr>
+	}
 }

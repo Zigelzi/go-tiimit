@@ -2,58 +2,58 @@ package components
 
 import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
-templ PlayersPage(players []view.Player, sortColumn string) {
+templ PlayersPage(players []view.Player, sortColumn string, showInactive bool) {
 	@ContentPageLayout("Players", "") {
-		<h2 class="text-2xl mb-4">Players</h2>
-		<div class="mt-4 mb-8">
-			<button
-				class="btn btn-primary"
-				hx-get="/players/add"
-				hx-swap="outerHTML"
-			>+ Add player</button>
-		</div>
-		if len(players) == 0 {
-			<p>Your club doesn't have players yet!</p>
-			<p>Add your first player</p>
-		} else {
-			<div class="overflow-x-auto border border-sand-500 rounded-xl">
-				<table class="table-fixed p-2  ">
-					<thead class="">
-						<tr class="text-left text-nowrap bg-sand-100 text-sand-700 font-mono uppercase text-xs tracking-[0.09em] ">
-							<th>Name</th>
-							<th>Goalie</th>
-							<th>
-								<a href="/players?sort=run-power" class="underline">
-									Run power
-								</a>
-								if sortColumn == "run-power" {
-									<span class="ml-1">▼</span>
-								}
-							</th>
-							<th>
-								<a href="/players?sort=ball-handling" class="underline">
-									Ball handling
-								</a>
-								if sortColumn == "ball-handling" {
-									<span class="ml-1">▼</span>
-								}
-							</th>
-							<th>
-								<a href="/players?sort=score" class="underline">
-									Total score
-								</a>
-								if sortColumn == "score" {
-									<span class="ml-1">▼</span>
-								}
-							</th>
-							<th class="min-w-48">Actions</th>
-						</tr>
-					</thead>
-					for _, player := range players {
-						@PlayerRow(player)
-					}
-				</table>
+		<div class="mt-4 mb-8 flex justify-between">
+			<h2 class="text-lg font-bold leading-5">Players</h2>
+			<div>
+				if showInactive {
+					<a href="/players" class="btn btn-secondary-active">Inactive players</a>
+				} else {
+					<a href="/players?inactive=true" class="btn btn-secondary">Inactive players</a>
+				}
+				<button
+					class="btn btn-primary"
+					hx-get="/players/add"
+					hx-swap="outerHTML"
+				>+ Add player</button>
 			</div>
-		}
+		</div>
+		<div class="overflow-x-auto border border-sand-500 rounded-xl">
+			<table class="table-fixed p-2  ">
+				<thead>
+					<tr class="text-left text-nowrap bg-sand-100 text-sand-700 font-mono uppercase text-xs tracking-[0.09em] ">
+						<th>Name</th>
+						<th>Goalie</th>
+						<th>
+							<a href="/players?sort=run-power" class="underline">
+								Run power
+							</a>
+							if sortColumn == "run-power" {
+								<span class="ml-1">▼</span>
+							}
+						</th>
+						<th>
+							<a href="/players?sort=ball-handling" class="underline">
+								Ball handling
+							</a>
+							if sortColumn == "ball-handling" {
+								<span class="ml-1">▼</span>
+							}
+						</th>
+						<th>
+							<a href="/players?sort=score" class="underline">
+								Total score
+							</a>
+							if sortColumn == "score" {
+								<span class="ml-1">▼</span>
+							}
+						</th>
+						<th class="min-w-52">Actions</th>
+					</tr>
+				</thead>
+				@PlayerTableContent(players)
+			</table>
+		</div>
 	}
 }

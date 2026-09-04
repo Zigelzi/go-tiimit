@@ -6,35 +6,50 @@ import (
 )
 
 templ PlayerRow(player view.Player) {
-	<tbody id={ player.RowID() } class="bg-white">
-		<tr class="border-b border-sand-300 hover:bg-sand-100 h-15">
-			<td class="pr-4 text-left py-1 text-nowrap">
-				<span class="font-bold mr-2">{ player.Name }</span><span class="text-sand-700 text-sm">#{ player.MyclubId }</span>
-			</td>
-			<td class="pr-2 text-left py-1">
-				if player.IsGoalie {
-					Yes
-				} else {
-					No
-				}
-			</td>
-			<td class="pr-2 text-left py-1">
-				{ player.RunPower }
-			</td>
-			<td class="pr-2 text-left py-1">
-				{ player.BallHandling }
-			</td>
-			<td class="pr-2 text-left py-1 font-bold">
-				{ fmt.Sprintf("%.1f", player.Score) }
-			</td>
-			<td>
+	<tr id={ player.RowID() } class="bg-white border-b border-sand-300 hover:bg-sand-100 h-15">
+		<td class="pr-4 text-left py-1 text-nowrap">
+			<span class="font-bold mr-2">{ player.Name }</span><span class="text-sand-700 text-sm">#{ player.MyclubId }</span>
+		</td>
+		<td class="pr-2 text-left py-1">
+			if player.IsGoalie {
+				Yes
+			} else {
+				No
+			}
+		</td>
+		<td class="pr-2 text-left py-1">
+			{ player.RunPower }
+		</td>
+		<td class="pr-2 text-left py-1">
+			{ player.BallHandling }
+		</td>
+		<td class="pr-2 text-left py-1 font-bold">
+			{ fmt.Sprintf("%.1f", player.Score) }
+		</td>
+		<td>
+			<button
+				class="btn btn-primary"
+				hx-get={ player.EditURL() }
+				hx-target={ fmt.Sprintf("#%s", player.RowID()) }
+				hx-swap="outerHTML"
+			>Edit</button>
+			if player.IsInactive {
 				<button
-					class="btn btn-primary"
-					hx-get={ player.EditURL() }
-					hx-target={ fmt.Sprintf("#%s", player.RowID()) }
+					class="btn btn-secondary"
+					hx-put={ player.SetInactiveURL() }
+					hx-vals='{"inactive":"false"}'
+					hx-target="#player-table-content"
 					hx-swap="outerHTML"
-				>Edit</button>
-			</td>
-		</tr>
-	</tbody>
+				>Set active</button>
+			} else {
+				<button
+					class="btn btn-secondary"
+					hx-put={ player.SetInactiveURL() }
+					hx-vals='{"inactive":"true"}'
+					hx-target="#player-table-content"
+					hx-swap="outerHTML"
+				>Set inactive</button>
+			}
+		</td>
+	</tr>
 }

@@ -33,20 +33,23 @@ func (q *Queries) AddPlayer(ctx context.Context, arg AddPlayerParams) error {
 	return err
 }
 
-const getAllPlayers = `-- name: GetAllPlayers :many
+const getActivePlayers = `-- name: GetActivePlayers :many
 SELECT
     id,
     name,
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 FROM
     players
+WHERE
+    inactivated_at is null
 `
 
-func (q *Queries) GetAllPlayers(ctx context.Context) ([]Player, error) {
-	rows, err := q.db.QueryContext(ctx, getAllPlayers)
+func (q *Queries) GetActivePlayers(ctx context.Context) ([]Player, error) {
+	rows, err := q.db.QueryContext(ctx, getActivePlayers)
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +64,53 @@ func (q *Queries) GetAllPlayers(ctx context.Context) ([]Player, error) {
 			&i.RunPower,
 			&i.BallHandling,
 			&i.IsGoalie,
+			&i.InactivatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getInactivePlayers = `-- name: GetInactivePlayers :many
+SELECT
+    id,
+    name,
+    myclub_id,
+    run_power,
+    ball_handling,
+    is_goalie,
+    inactivated_at
+FROM
+    players
+WHERE
+    inactivated_at is not null
+`
+
+func (q *Queries) GetInactivePlayers(ctx context.Context) ([]Player, error) {
+	rows, err := q.db.QueryContext(ctx, getInactivePlayers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Player
+	for rows.Next() {
+		var i Player
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MyclubID,
+			&i.RunPower,
+			&i.BallHandling,
+			&i.IsGoalie,
+			&i.InactivatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -82,7 +132,8 @@ SELECT
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 FROM
     players
 WHERE
@@ -99,6 +150,7 @@ func (q *Queries) GetPlayerById(ctx context.Context, id int64) (Player, error) {
 		&i.RunPower,
 		&i.BallHandling,
 		&i.IsGoalie,
+		&i.InactivatedAt,
 	)
 	return i, err
 }
@@ -110,7 +162,8 @@ SELECT
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 FROM
     players
 WHERE
@@ -127,6 +180,7 @@ func (q *Queries) GetPlayerByMyclubID(ctx context.Context, myclubID int64) (Play
 		&i.RunPower,
 		&i.BallHandling,
 		&i.IsGoalie,
+		&i.InactivatedAt,
 	)
 	return i, err
 }
@@ -150,6 +204,32 @@ func (q *Queries) IsExistingPlayer(ctx context.Context, myclubID int64) (int64, 
 	return column_1, err
 }
 
+const setPlayerActive = `-- name: SetPlayerActive :exec
+UPDATE players
+SET
+    inactivated_at = NULL
+WHERE
+    id = ?
+`
+
+func (q *Queries) SetPlayerActive(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setPlayerActive, id)
+	return err
+}
+
+const setPlayerInactive = `-- name: SetPlayerInactive :exec
+UPDATE players
+SET
+    inactivated_at = CURRENT_TIMESTAMP
+WHERE
+    id = ?
+`
+
+func (q *Queries) SetPlayerInactive(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setPlayerInactive, id)
+	return err
+}
+
 const updatePlayerAttributes = `-- name: UpdatePlayerAttributes :one
 UPDATE players
 SET
@@ -162,7 +242,8 @@ WHERE
     myclub_id,
     run_power,
     ball_handling,
-    is_goalie
+    is_goalie,
+    inactivated_at
 `
 
 type UpdatePlayerAttributesParams struct {
@@ -187,6 +268,7 @@ func (q *Queries) UpdatePlayerAttributes(ctx context.Context, arg UpdatePlayerAt
 		&i.RunPower,
 		&i.BallHandling,
 		&i.IsGoalie,
+		&i.InactivatedAt,
 	)
 	return i, err
 }

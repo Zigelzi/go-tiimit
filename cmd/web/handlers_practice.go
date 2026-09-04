@@ -22,7 +22,7 @@ func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
 		log.Printf("failed to get practices: %v", err)
 		return
 	}
-	dbPlayers, err := cfg.queries.GetAllPlayers(r.Context())
+	dbPlayers, err := cfg.queries.GetActivePlayers(r.Context())
 	if err != nil {
 		log.Printf("failed to get all players: %v", err)
 		return

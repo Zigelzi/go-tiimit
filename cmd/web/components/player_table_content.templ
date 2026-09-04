@@ -1,0 +1,24 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
+
+templ PlayerTableContent(players []view.Player) {
+	<tbody id="player-table-content">
+		if len(players) > 0 {
+			for _, player := range players {
+				@PlayerRow(player)
+			}
+		} else {
+			<tr class="bg-white border-b border-sand-300 hover:bg-sand-100 h-15">
+				<td colspan="8">
+					<p class="mb-2">
+						Your club doesn't have players yet.
+					</p>
+					<p>
+						Add your first player
+					</p>
+				</td>
+			</tr>
+		}
+	</tbody>
+}
