@@ -1,0 +1,46 @@
+meta {
+  name: Move player between teams
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/practices/:practiceId/players/:playerId
+  body: none
+  auth: none
+}
+
+params:path {
+  playerId: 1
+  practiceId: 1
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("redirects back to the practice page", function() {
+    expect(res.getHeader("hx-redirect")).to.equal("/practices/" + bru.getEnvVar("practiceId"));
+  });
+}
+
+docs {
+  Swaps the player between team 1 and team 2. There's no target team in
+  the request — the handler reads the current team and flips it, so
+  running this twice returns the player to where they started.
+  
+  ## Edge cases
+  
+  Identical to **Toggle player vest**: player `999999` or a real player
+  not in this practice gives `500` with an empty body; non-numeric ids in
+  the path give `400` with an empty body.
+  
+  ## One thing not reachable from here
+  
+  The handler switches on team number 1 and 2 with NO default case. A row
+  with any other team number would silently do nothing and still return
+  the redirect, as if the move had worked. Not reachable today, since only
+  1 and 2 are ever written — but it's the kind of thing that stops being
+  true if teams ever become configurable.
+}

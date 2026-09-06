@@ -1,0 +1,20 @@
+meta {
+  name: Get add player form
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/players/add
+  body: formUrlEncoded
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Returns the empty add-player form. No inputs, so nothing to get wrong —
+  included for completeness.
+}

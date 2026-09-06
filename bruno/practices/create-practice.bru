@@ -1,0 +1,80 @@
+meta {
+  name: Create practice
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/practice
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  attendace-list: @file(fixtures/attendance-2026-01-15.xlsx)
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("redirects to the new practice", function() {
+    expect(res.getHeader("hx-redirect")).to.match(/^\/practices\/\d+$/);
+  });
+}
+
+docs {
+  Multipart upload — the endpoint that's hardest to feed bad data through
+  the browser form.
+
+  Put a real MyClub attendance export at
+  `bruno/fixtures/attendance-2026-01-15.xlsx` first. That folder is
+  gitignored, since exports contain real names.
+
+  Two things to know before you start:
+
+  - The FILENAME matters as much as the contents. `file.ParseDate` reads
+    the practice date out of it.
+  - The form field is `attendace-list` — note the typo. It's spelled that
+    way in both create_practice.templ and the handler, so it has to match
+    here too.
+
+  Success is `200`, empty body, `HX-Redirect` to the new practice.
+
+  ## Edge cases
+
+  | Change | Expected |
+  |---|---|
+  | disable the file field | `200`, EMPTY body — nothing happens |
+  | rename the field to `attendance-list` (correct spelling) | same silent `200` |
+  | send `fixtures/not-an-excel.txt` | `500`, empty body |
+  | send a valid xlsx named with no date | `500`, empty body |
+  | header `Cookie: user_session_id=nope` | `401` + `HX-Redirect: /login` |
+
+  Fixtures to create for those:
+
+      echo "not a spreadsheet" > bruno/fixtures/not-an-excel.txt
+      cp <a real export> bruno/fixtures/no-date-in-name.xlsx
+
+  ## What each case does
+
+  **No file.** `r.FormFile` fails, the handler logs and returns without
+  writing a status, so Go defaults to `200 OK` with an empty body. HTMX
+  swaps the target with nothing and the page doesn't move.
+
+  **Correctly-spelled field name.** Hits the same path as no file at all,
+  since the handler looks for `attendace-list` and doesn't find it.
+
+  **Non-Excel file.** `accept=".xlsx"` only filters the browser's file
+  picker; it isn't enforced server-side, so the upload reaches `excelize`,
+  which can't open it.
+
+  ## Ordering
+
+  `handleCreatePractice` parses the file, looks up every player, and
+  distributes the teams BEFORE it parses the date from the filename. On
+  the bad-filename case all of that work happens and is then discarded.
+  Nothing is written to the DB — the transaction starts after the date
+  parse.
+}

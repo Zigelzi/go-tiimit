@@ -1,0 +1,56 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  username: {{username}}
+  password: {{password}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("sets the session cookie", function() {
+    expect(res.getHeader("set-cookie"), "no Set-Cookie — login failed").to.not.be.undefined;
+  });
+}
+
+docs {
+  Run this first. Bruno keeps the `user_session_id` cookie in its jar and
+  sends it with every other request in the collection.
+  
+  Set `username` / `password` in the environment to a user you created
+  with the CLI (`go run ./cmd/cli`).
+  
+  Success is `200` + `HX-Redirect: /` + a `Set-Cookie` header, with an
+  empty body. Failure is also `200`, with a `FormError` fragment and no
+  redirect — the status code never tells you which happened.
+  
+  ## Edge cases
+  
+  Change the body and re-send:
+  
+  | Change | Expected |
+  |---|---|
+  | wrong `password` | "Incorrect username or password" fragment |
+  | `username` that doesn't exist | identical message |
+  | both fields removed | identical message |
+  
+  The identical message for a wrong password and an unknown username is
+  deliberate and correct — a different message would let anyone probe for
+  valid usernames.
+  
+  The failing cases do NOT clear the cookie jar, so running them after a
+  successful login leaves you logged in. Use **Logout** to actually drop
+  the session.
+}

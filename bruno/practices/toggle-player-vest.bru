@@ -1,0 +1,47 @@
+meta {
+  name: Toggle player vest
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/practices/:practiceId/players/:playerId/vest
+  body: none
+  auth: none
+}
+
+params:path {
+  playerId: 22
+  practiceId: 14
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns the team header fragment", function() {
+    expect(res.getBody()).to.not.be.empty;
+  });
+}
+
+docs {
+  Flips the vest flag for one player and re-renders that team's header
+  (the vest count). Run twice to toggle back.
+  
+  The player must already be in this practice — `playerId` alone isn't
+  enough, it's the practice/player PAIR that has to exist.
+  
+  ## Edge cases
+  
+  | URL change | Expected |
+  |---|---|
+  | player `999999` | `500`, empty body |
+  | a real player not in this practice | `500`, empty body |
+  | `/practices/abc/players/xyz/vest` | `400`, empty body |
+  
+  Where the `500` comes from: `TogglePracticePlayerVest` uses
+  `RETURNING team_number`, so a non-matching row gives `sql.ErrNoRows`,
+  and the handler's error branch doesn't distinguish that from a real
+  database failure.
+}

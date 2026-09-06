@@ -1,0 +1,51 @@
+headers {
+  HX-Request: true
+  HX-Current-URL: {{baseUrl}}/
+}
+
+docs {
+  # go-tiimit API collection
+
+  Manual testing for the fragment/action endpoints — the ones HTMX calls,
+  not the full page routes.
+
+  ## Setup
+
+  1. Run the app: `make dev` (server listens on 127.0.0.1:8080).
+  2. Pick the `local` environment.
+  3. Run **auth > Login** once. Bruno stores the `user_session_id`
+     cookie and sends it on every later request in this collection.
+  4. Set `playerId`, `practiceId` and `myClubId` in the environment to
+     values that exist in your local DB.
+
+  ## The HX-Request header
+
+  Set at collection level so every request looks like an HTMX call.
+  It matters in two places:
+
+  - `requireAuth` returns `401` + `HX-Redirect: /login` for HTMX requests
+    instead of a `303` redirect.
+  - Nothing else branches on it today, but the handlers return HTML
+    fragments that only make sense as an HTMX swap.
+
+  Remove the header on a request (Headers tab) to see the non-HTMX path.
+
+  ## renderError vs renderOK
+
+  `handleSetPlayerInactive`, `handleViewPlayersPage` and
+  `handleAddPlayerForm` use the `renderError`/`renderOK` helpers so far;
+  the rollout to the remaining handlers is in progress. Telling them apart
+  in a response:
+
+  | Signal | renderError | renderOK |
+  |---|---|---|
+  | `HX-Reswap: none` response header | present | absent |
+  | Body | just the `#app-error` div, populated | the real fragment + an empty `#app-error` div |
+
+  Both return `200 OK` — the status code is not the signal, the
+  `HX-Reswap` header is. The tests on those requests assert exactly that.
+
+  Other handlers still signal failure the old way: a bare
+  `w.WriteHeader(4xx/5xx)` with an empty body, or silently returning
+  `200` with nothing at all. Requests below note which behaviour to expect.
+}

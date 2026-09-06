@@ -1,0 +1,36 @@
+meta {
+  name: Get player edit row
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/players/:playerId/edit
+  body: none
+  auth: none
+}
+
+params:path {
+  playerId: 1
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns the editable row with score inputs", function() {
+    expect(res.getBody()).to.contain("run-power");
+    expect(res.getBody()).to.contain("ball-handling");
+  });
+}
+
+docs {
+  The editable version of the row.
+  
+  ## Edge cases
+  
+  Same two as **Get player row** — a non-numeric id gives an empty `200`,
+  a missing id gives a form pre-filled with zeroes. Saving that form would
+  then write 0/0 over nothing in particular.
+}

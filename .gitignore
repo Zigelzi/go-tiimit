@@ -47,3 +47,7 @@ go.work.sum
 
 # Internal docs (for now)
 /internal-docs/
+
+# Bruno test fixtures (may contain real player names from MyClub exports)
+/bruno/fixtures/*
+!/bruno/fixtures/.gitkeep

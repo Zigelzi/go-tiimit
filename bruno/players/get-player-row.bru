@@ -1,0 +1,42 @@
+meta {
+  name: Get player row
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/players/:playerId
+  body: none
+  auth: none
+}
+
+params:path {
+  playerId: sadf
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns a table row fragment", function() {
+    expect(res.getBody()).to.contain("<tr");
+  });
+}
+
+docs {
+  The read-only player row. Used to cancel out of edit mode.
+  
+  ## Edge cases
+  
+  Change the id in the URL:
+  
+  | id | Expected | Note |
+  |---|---|---|
+  | `abc` | `200`, EMPTY body | handler logs and returns without writing a status, so Go defaults to 200 |
+  | `999999` | `200`, a blank row | `sql.ErrNoRows` is tolerated, so it renders a zero-valued player: empty name, ID 0, scores 0 |
+  
+  In the browser the empty body means HTMX swaps the target with nothing,
+  so the row disappears. The blank row renders as a row with no name and
+  zeroes in the score columns.
+}

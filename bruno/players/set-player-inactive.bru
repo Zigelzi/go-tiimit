@@ -1,0 +1,99 @@
+meta {
+  name: Set player inactive
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/players/:playerId/inactivate
+  body: formUrlEncoded
+  auth: none
+}
+
+params:path {
+  playerId: 1
+}
+
+body:json {
+  sadf
+}
+
+body:text {
+  This
+  
+}
+
+body:form-urlencoded {
+  inactive: true
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("renderOK: no HX-Reswap header", function() {
+    expect(res.getHeader("hx-reswap")).to.be.undefined;
+  });
+  
+  test("renderOK: fragment plus an empty error banner", function() {
+    const body = res.getBody();
+    expect(body).to.contain('id="app-error"');
+    expect(body).to.contain("<tr");
+  });
+}
+
+docs {
+  The only handler currently using the `renderError` / `renderOK` helpers,
+  so this request shows what both look like on the wire.
+  
+  `inactive=true` deactivates and returns the remaining ACTIVE players.
+  Anything else (including a missing field) reactivates and returns the
+  INACTIVE list — the handler compares against the literal string "true".
+  
+  The `hx-vals` attribute in player_row.templ looks like JSON, but HTMX
+  serialises it as form fields, which is why this body is form-urlencoded.
+  
+  ## Telling renderOK from renderError
+  
+  Both return `200 OK`. The status code is not the signal.
+  
+  | | `renderError` | `renderOK` |
+  |---|---|---|
+  | `HX-Reswap: none` | present | absent |
+  | Body | only `#app-error`, populated | the fragment, then an EMPTY `#app-error` |
+  | In the browser | banner appears, page unchanged | page updates, old banner cleared |
+  
+  The empty banner on success is what clears a stale error. That's why
+  `renderOK` renders it at all rather than just the fragment.
+  
+  ## Edge cases
+  
+  | Change | Expected |
+  |---|---|
+  | `inactive: false` | `renderOK`, reactivates, returns the inactive list |
+  | id `abc` | `renderError` — see below |
+  | id `999999` | `renderOK`, no banner — see below |
+  | header `Cookie: user_session_id=nope` | `401` + `HX-Redirect: /login` |
+  
+  **id `abc`** is the one path in the app that currently produces a
+  `renderError`. Assert on it by swapping the tests above for:
+  
+      expect(res.getHeader("hx-reswap")).to.equal("none");
+      expect(res.getBody()).to.contain("Couldn't set player to inactive");
+      expect(res.getBody()).to.not.contain("<tr");
+  
+  Note the message says "set player to inactive" even on the reactivate
+  path, because every branch reuses the same string. Send `inactive=false`
+  with a bad id to see it.
+  
+  **id `999999`** takes the SUCCESS path: an UPDATE matching zero rows
+  isn't an SQL error, so there's no banner and the table re-renders
+  unchanged. `SetPlayerInactive` doesn't return rows affected, so the
+  handler has nothing to distinguish it from a real update.
+  
+  **The unauthenticated case** shows `requireAuth` branching on
+  `HX-Request` (set at collection level): with it you get `401` +
+  `HX-Redirect`, without it a `303` to `/login`. An explicit `Cookie`
+  header overrides Bruno's jar, so it stays logged out even after Login.
+}

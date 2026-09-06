@@ -1,0 +1,70 @@
+meta {
+  name: Save player row
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/players/:playerId
+  body: formUrlEncoded
+  auth: none
+}
+
+params:path {
+  playerId: 1
+}
+
+body:form-urlencoded {
+  run-power: 7.5
+  ball-handling: 6
+  ~is-goalie: on
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("returns the updated read-only row", function() {
+    expect(res.getBody()).to.contain("<tr");
+  });
+}
+
+docs {
+  Saves the score edits and returns the read-only row.
+  
+  Enable the `is-goalie` field to mark the player a goalie. The handler
+  uses `r.PostForm.Has("is-goalie")`, so the VALUE doesn't matter, only
+  whether the key is present — mirroring how an unchecked HTML checkbox
+  simply isn't submitted. Disable the field to clear the flag.
+  
+  ## Edge cases
+  
+  | Change | Expected |
+  |---|---|
+  | `run-power: 42` | "Run power needs to be number between 0-10." |
+  | `ball-handling: -3` | matching ball handling message |
+  | `run-power: kahdeksan` | same message — `ParseFloat` fails |
+  | `ball-handling` empty | same message — an empty string isn't a valid float |
+  | id `abc` in the URL | "Player ID needs to be number." |
+  | id `999999` | see below |
+  
+  Both range and parse failures produce the same user-facing message, so
+  from the outside you can't tell 42 from "kahdeksan". Fine in practice.
+  
+  The browser inputs carry min/max, so the range cases are only reachable
+  from here.
+  
+  ## Two things to look at in the response
+  
+  **id `999999`.** The control flow in `handleSavePlayerRow` is tangled:
+  the lookup treats `sql.ErrNoRows` as both a tolerated case and an error
+  case, and if the final `UpdatePlayerAttributes` errors, the handler
+  sets `GeneralError` but does NOT return — it falls through and renders
+  the read-only row built from a zero-valued player. Send it and check
+  whether the message survives into the response.
+  
+  **id `abc`.** The handler sets `GeneralError` and keeps going, querying
+  player ID 0 before it reaches the check that stops it, so one bad
+  request does a DB read it doesn't use.
+}

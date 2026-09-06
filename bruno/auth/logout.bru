@@ -1,0 +1,33 @@
+meta {
+  name: Logout
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/logout
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("redirects to the front page", function() {
+    expect(res.getHeader("hx-redirect")).to.equal("/");
+  });
+}
+
+docs {
+  Ends the session server-side and expires the cookie. If later requests
+  still succeed, clear cookies manually from Bruno's cookie settings.
+
+  ## Edge cases
+
+  | Change | Expected |
+  |---|---|
+  | no cookie at all (run before Login) | `200`, does nothing — the handler returns early on the missing-cookie error |
+  | `Cookie: user_session_id=garbage` header | `200` + redirect; deleting a nonexistent session isn't an error |
+}

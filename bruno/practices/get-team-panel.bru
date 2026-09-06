@@ -1,0 +1,42 @@
+meta {
+  name: Get team panel
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/practices/:practiceId/teams/1
+  body: none
+  auth: none
+}
+
+params:path {
+  practiceId: 1
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  The fragment behind the team tabs on the practice page.
+  
+  ## Edge cases
+  
+  | URL change | Expected |
+  |---|---|
+  | `/teams/2` | the other team |
+  | `/teams/3` or `/teams/0` | `400`, empty body |
+  | `/teams/kissa` | `400`, empty body |
+  | practice `999999` | `200`, an EMPTY team panel |
+  
+  This handler validates the range explicitly
+  (`teamNumber < 1 || teamNumber > 2`) and returns a bare `400` with no
+  body. HTMX drops 4xx bodies by default, so nothing is swapped and the
+  page is unchanged.
+  
+  A practice that doesn't exist is not an error here:
+  `GetPracticeTeamPlayers` returns an empty slice, so you get a panel with
+  zero players and a `200`. The practice PAGE (`GET /practices/{id}`)
+  404s for the same id.
+}

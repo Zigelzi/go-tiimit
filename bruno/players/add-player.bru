@@ -1,0 +1,70 @@
+meta {
+  name: Add player
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/players
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  name: {{playerName}}
+  myclub-id: {{myClubId}}
+}
+
+vars:pre-request {
+  myClubId: 123
+  playerName: 
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("redirects to the player list on success", function() {
+    expect(res.getHeader("hx-redirect")).to.equal("/players");
+  });
+}
+
+docs {
+  Success is `HX-Redirect: /players` with an empty body. Every validation
+  failure returns the re-rendered form instead, also as `200`.
+  
+  New players get run power and ball handling 5, and `is_goalie = false`.
+  
+  Bump `myClubId` in the environment between successful runs, or you hit
+  the duplicate check.
+  
+  ## Edge cases
+  
+  | Change | Expected |
+  |---|---|
+  | `name` empty or only spaces | "Name can't be empty." — the check trims first |
+  | `myclub-id: not-a-number` | "MyClub ID must be a number, like 1337." |
+  | `myclub-id` empty | see the bug below |
+  | `myclub-id` already used | "Player with this MyClub ID already exists." |
+  | `myclub-id: -5` | ACCEPTED and written to the DB |
+  | `myclub-id: 9223372036854775808` | rejected — one past int64, the parse fails |
+  | both fields empty | two field errors at once |
+  
+  The UI form is `type="number"` with `min="0"`, so the non-numeric and
+  negative cases are only reachable from here.
+  
+  ## Two things to watch on those
+  
+  1. Empty `myclub-id` reports the WRONG message. The empty check sets
+     "MyClub ID can't be empty.", then `ParseInt("")` fails and overwrites
+     it with "must be a number" — same map key, second write wins. The
+     user is told the field is malformed when it's actually blank.
+  
+  2. Watch the server log on the non-numeric case. The log line has a
+     broken format verb (`%\n` instead of `%v`) in
+     cmd/web/handlers_players.go, so it prints `%!(NOVERB)`.
+  
+  On the negative case, the handler only checks that the value parses as
+  an integer — there's no range check, so `-5` is stored as-is.
+}
