@@ -2,72 +2,53 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What this is
+## Project status
 
-Tiimit distributes football (soccer) teams for practice sessions. A coach imports a club's players from a MyClub Excel export, then for each practice imports an attendance-report Excel export; the app splits confirmed players into two balanced teams based on player scores. It's a webapp (server-rendered with templ + HTMX) plus a companion CLI for administrative tasks (creating users, importing players, managing goalie status). Built for a single club with fewer than 10 users — the code is intentionally simple rather than scaled.
+Deliberately not restated here. This file is loaded every session, which makes a status summary in it go stale. `spec/README.md` makes the rule explicit ("one fact lives in exactly one file", "the spec is the status tracker; there is no separate tool"), so:
+
+- **What is built and where each milestone stands:** `spec/milestones/NN-*.md`, each carrying a Status line (`draft -> red-teamed -> in-progress -> done`). Everything built before the switch to this workflow (2026-11) is described in `spec/legacy/`. `git log --oneline main` is the merged list, one squashed commit per milestone from then on.
+- **The entities and how they are stored:** `spec/domain-model.md`.
+- **What each spec file is for:** the table in `spec/README.md`.
+
+Do not restate any of that here. Add to the file it belongs in and let this section keep pointing.
+
+Code layout and the rules for where new code goes: `ARCHITECTURE.md` at the repository root. Read it before adding or moving code, and update it before a branch merges to `main` when the change altered a layer, a rule, a package's job or a recorded decision (step 7 of `spec/constitution.md`). Do not restate it here. `go doc ./internal/practice` (and the other packages) lists what exists.
+
+## What Tiimit is
+
+Tiimit splits the players who turn up to a hobby football practice into two balanced teams. A coach imports the club's players from a MyClub Excel export, then for each practice imports the attendance report; the app distributes confirmed players by score, with a goalie on each side, and the coach hands out vests from a phone on the pitch. A web app (templ + HTMX) plus a small CLI for creating users. One club, fewer than 10 users, deployed to a Raspberry Pi and reachable from the public web behind login. See `README.md` and `spec/user-flows.md`.
 
 ## Commands
 
-Dev environment (runs templ, air, tailwind, and asset-sync watchers together):
-```
-make dev
-```
+- `make dev`: live reload (templ watch + proxy, Air, Tailwind watch)
+- `make prod/build-arm64`: arm64 binary for the Pi into `./build`
+- `./deploy.sh`: test, build and install on the Pi (needs `.deploy.conf`, copied from `.deploy.conf.example`). **A deploy is also a migration of the live database.** Only when Human-PM asks. Setup and recovery: `docs/deployment-guide.md`
+- `go test ./...`; a single test: `go test ./internal/practice/ -run TestDistribute -v`
+- After editing SQL: `sqlc generate`. After editing a `.templ`: `templ generate` (or have `make dev` running) before `go build`/`go test`/`go vet`
+- Migrations run automatically against `DB_PATH` on every server/CLI startup. Env vars: see `.env.example` (`POSTHOG_API_KEY` is optional)
 
-Individual watchers, if you only need one:
-```
-make dev/templ      # templ generate -watch, proxies :8080 -> :7331 for live reload
-make dev/server      # air: rebuilds/reruns the Go server on .go changes
-make dev/tailwind    # tailwind CLI watch, writes cmd/web/static/tailwind.css
-make dev/sync_assets # notifies the templ proxy when static CSS changes
-```
+Milestone 00 replaces the bun-based Tailwind build with the standalone CLI and adds `make test`/`make generate`/`make run`; update this list when it lands.
 
-Production build (arm64, for Raspberry Pi deploy target):
-```
-make prod/build-arm64
-```
+Generated code: a file is generated if, and only if, its first line is `// Code generated ... DO NOT EDIT.` (templ's `*_templ.go`, sqlc's `internal/db/*.sql.go`, `db.go`, `models.go`). Change its source (`.templ`, `sql/`) instead. sqlc's output is committed; `*_templ.go` and the built `cmd/web/static/tailwind.css` are gitignored, so regenerate them on a fresh checkout. Everything else, including `internal/db/config.go`, is edited directly.
 
-Deploy to the configured Raspberry Pi (requires `.deploy.conf`, copy from `.deploy.conf.example`):
-```
-./deploy.sh
-```
+Stack (decided; see `spec/constitution.md`): Go + [templ](https://templ.guide/llms.md) + HTMX + TailwindCSS, SQLite (`modernc.org/sqlite`), Goose migrations, sqlc.
 
-Tests:
-```
-go test ./...                                 # all packages
-go test ./internal/practice/...               # single package
-go test ./internal/practice/ -run TestDistribute  # single test
-```
+## How work is meant to be done here
 
-templ files must be generated before `go build`/`go test`/`go vet` will see current markup — `*_templ.go` files are committed, but if you edit a `.templ` file, run `templ generate` (or have `make dev/templ` running) before compiling.
+`spec/constitution.md` is the source of truth for the workflow, and `spec/README.md` for how specs are structured and written. Read them, don't rely on this summary. The operative rules for a session working here:
 
-Database schema changes: add a SQL file to `sql/schema/` (goose migration, timestamp-prefixed filename) and/or a query to `sql/queries/`, then regenerate the Go query code:
-```
-sqlc generate
-```
-Migrations run automatically against `DB_PATH` on every server/CLI startup (`db.RunMigrations`, via goose, embedded FS in `sql/migrations.go`).
+- Two actors: Human-PM (the user, who makes the product decisions) and the main session (does most phases inline).
+- Spawn sub-agents at only two points: red-teaming the spec, and code-reviewing the diff. Implementation runs inline in the main session; a sub-agent only for a slice of roughly 100+ hand-written lines.
+- When goals conflict, the earlier goal wins (feedback, then quality, then tokens). Prefer targeted reads over broad codebase sweeps.
+- BDD acceptance conditions become tests before implementation, written from the spec, not from the code.
+- Vertical slices, sequentially. Stop after every slice: commit, give Human-PM a 2–4 step test checklist, wait.
+- Code-review loop is bounded (max 2 rounds). Factual disputes → settle with a test; subjective → the simpler option; product/scope → escalate to Human-PM as a plain-language trade-off.
+- Starting a milestone: Human-PM opens a fresh session and describes what to build; the main session creates the `feature/<name>` branch and scaffolds the spec from `spec/milestones/_template.md` on that branch. Ideas to pick from: `spec/product-notes.md`.
+- Commits are the agent's job, with standing authorization to commit without asking. Conventional Commits (`type(scope): summary`), Conventional Branch names (`feature/practice-tabs`). Squash the branch into one commit, merge locally to `main` (`git merge --squash`) after Human-PM accepts, then push to `origin` (github.com/Zigelzi/go-tiimit). Deploying is a separate step Human-PM asks for.
 
-Required env vars (see `.env.example`): `DB_PATH`, `GOOSE_MIGRATION_DIR`/`GOOSE_DRIVER`/`GOOSE_DBSTRING` (goose CLI use), `POSTHOG_API_KEY` (optional — server logs a warning and runs without analytics if unset).
+The three goals shaping every decision, in priority order: (1) reduce time to feedback by right-sizing and scoping the work, (2) maximize code quality and maintainability, so a human or an LLM can extend the codebase easily and it is secure, (3) optimize token usage, to learn how to run effective agentic workflows.
 
-## Architecture
+## Scope constraints to respect
 
-**Two binaries, shared internal packages.**
-- `cmd/web` — the HTTP server (net/http `ServeMux`, no framework). `main.go` wires routes; `handlers_*.go` hold handlers grouped by resource (players, practice, auth); `middleware.go` has auth/analytics middleware; `components/` holds `.templ` templates (HTML) and their generated `_templ.go`; `view/` holds presentation-layer structs (e.g. `view.Player`, `view.Practice`) that adapt `internal/` domain types for templates — handlers convert domain -> view, never render domain types directly.
-- `cmd/cli` — an interactive REPL (`promptui`) for user creation and player management, sharing `internal/db` and `internal/auth`/`internal/player` with the web server.
-- `internal/` — domain logic, framework-free: `player` (Player type, scoring, MyClub import), `practice` (Practice/team distribution logic), `file` (parsing MyClub/attendance Excel exports via `excelize`), `auth` (password hashing, sessions, request-context user info), `db` (sqlc-generated queries + DB init/migration glue).
-
-**Data flow for the core "create practice" path** (see `handleCreatePractice` in `cmd/web/handlers_practice.go`): uploaded attendance Excel -> `internal/file` parses rows and filters to confirmed attendees -> matched against existing players in DB by MyClub ID -> `internal/player.GetPreferences` splits into goalies/field players -> `internal/practice.Distribute` alternates players into two teams (evening out team sizes, not just scores) -> practice + team assignments persisted in one DB transaction (`cfg.db.Begin()` / `queryTx := cfg.queries.WithTx(tx)`).
-
-**Database**: SQLite (`modernc.org/sqlite`, pure Go, no cgo). Schema lives in `sql/schema/*.sql` (goose migrations), queries in `sql/queries/*.sql`, generated code in `internal/db/*.sql.go` via `sqlc` (config: `sqlc.yaml`). Never hand-edit `internal/db/*.sql.go` — edit the `.sql` and regenerate.
-
-**Auth**: session-cookie based (`user_session_id`), not JWT. `authMiddleware` (in `cmd/web/middleware.go`) runs on every request, looks up the session, and stashes `auth.UserInfo` on the request context regardless of login state; `requireAuth` wraps individual routes and redirects to `/login` (or sends `HX-Redirect` for HTMX requests) if not logged in. Users are provisioned only via the CLI (`cmd/cli`), not self-service signup — see `spec/auth.md` for the original auth requirements.
-
-**Frontend**: server-rendered `templ` components styled with Tailwind v4 (via bunx, no bundler/build step beyond the CLI), interactivity via HTMX (`HX-Redirect` headers, `HX-Request` header checks in handlers/middleware) rather than client-side JS/a SPA framework.
-
-**Analytics**: PostHog, loaded conditionally based on `POSTHOG_API_KEY`; the key is threaded through request context (`cmd/web/analytics`) so templates can decide whether to emit the tracking snippet.
-
-## Notes
-
-- `spec/` contains lightweight product specs (e.g. `spec/auth.md`) with checkbox-style requirements — check here for the intended behavior/rationale behind a feature before changing it.
-- `spec/improvements.md` is a running backlog of not-yet-built ideas, organized by user flow.
-- `docs/` has deployment and security-checklist references for the Raspberry Pi production setup.
-- Use `docs/graphs.md` to draw any Mermaid diagrams that need to be easily referenced during conversations.
+- One club, fewer than 10 users. Keep the code simple rather than scaled; don't build multi-club features until a milestone asks for them.
+- Real player names are personal data: every page showing them requires login, and real MyClub exports (`*.xlsx`, `bruno/fixtures/`) are never committed. Tests use made-up names.
