@@ -107,7 +107,7 @@ func (cfg *webConfig) handleAddPlayerToClub(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if isExistingPlayer != 0 {
+	if isExistingPlayer {
 		log.Printf("player with MyClubId [%d] already exists\n", myClubId)
 		form.FieldErrors["myclub-id"] = "Player with this MyClub ID already exists. Check the ID or find them in the player list."
 	}
