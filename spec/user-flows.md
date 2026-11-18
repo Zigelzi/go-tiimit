@@ -44,23 +44,24 @@ Players don't use Tiimit directly, but by signing up to practices in separate ap
 **Setting up the practice**
 
 1. Players sign up to the practice in MyClub: each starts at "no answer" and moves to "attends" or "doesn't attend"
-2. 30-60 minutes before the practice, PO exports the attendance report from MyClub, from a phone if needed. PO does this even when they can't come to the practice
-3. PO imports the attendance report to Tiimit, which splits the players who attend into two balanced teams with a goalie on each side
+2. PO exports the attendance report from MyClub, from a phone if needed (30-60 min before practice).
+   1. PO does this even when they can't come to the practice
+3. PO sets up the practice in Tiimit and distributes the teams
+   1. Importing the MyClub attendance report to Tiimit.
 4. PO reviews the teams and moves players to rebalance them
-5. If PO can't come to the practice, PO sends the link to the practice to the AO who runs it
+5. PO sends the link to the practice to the AO who runs it, if PO can't come to the practice,
 
 **Running the practice**
 
-1. At the start of the practice, the organizer (PO, or AO from the link PO sent) opens today's practice on a phone
+1. Organizer (PO, or AO from the link PO sent) opens today's practice on a phone, in the beginning of the practice
 2. Organizer goes through one team and hands out vests, ticking each player who got one and seeing how many are left
 3. A player who didn't answer in MyClub turns up anyway, and the organizer puts them on a team by hand, since Tiimit can't add a player to a practice that is already set up (I4)
 
 ## Success measures and ratings
 
-<!-- Draft written by an agent from the legacy specs on 2026-11-17. Human-PM: correct the measures and fill in the ratings (1 to 5). -->
-
-| Flow                          | Success looks like                                                      | Rating (1–5) |
-| ----------------------------- | ----------------------------------------------------------------------- | ------------ |
-| Team player management        | A new player is playable at the next practice without SSH or the CLI.   | ?            |
-| Setting up the practice       | Teams are ready in under a minute and feel even on the pitch.           | ?            |
-| Running the practice          | Vests handed out one-handed, without scrolling back to check the count. | ?            |
+| Flow                    | Success looks like                                                                       | Rating (1–5) |
+| ----------------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| User management         | Organizer can set up their account and log in to Tiimit securely and in less than 5 mins | 1            |
+| Team player management  | A new player is playable at the next practice without SSH or the CLI.                    | 4            |
+| Setting up the practice | Teams are ready in under a minute and feel even on the pitch.                            | 3            |
+| Running the practice    | Vests handed out one-handed, without scrolling back to check the count.                  | 4            |
