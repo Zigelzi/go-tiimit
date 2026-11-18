@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -19,9 +18,9 @@ func main() {
 	if err != nil {
 		log.Printf("failed to load .env file: %v", err)
 	}
-	newDb, err := db.InitDB()
+	newDb, err := db.InitDB(os.Getenv("DB_PATH"))
 	if err != nil {
-		log.Fatalf("initializing database failed: %v", err)
+		log.Fatalf("initializing database from DB_PATH failed: %v", err)
 		return
 	}
 	defer newDb.Close()
@@ -45,16 +44,21 @@ func main() {
 		phApiKey: postHogApiKey,
 	}
 
+	server := http.Server{
+		Handler: cfg.routes(),
+		Addr:    cfg.address,
+	}
+	log.Printf("Starting server on address %s", cfg.address)
+	log.Fatal(server.ListenAndServe())
+}
+
+// routes returns the app's handler: every route, wrapped in the middleware
+// that puts the logged-in user and the PostHog key on the request.
+func (cfg *webConfig) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	staticFs, err := fs.Sub(staticFiles, "static")
-	if err != nil {
-		log.Fatalf("failed to initialize the static files")
-		return
-	}
-
-	fileserver := http.FileServer(http.FS(staticFs))
-	mux.Handle("/static/", disableCacheInDevMode(http.StripPrefix("/static/", fileserver), cfg.env))
+	// staticFiles holds the files under static/, so /static/x serves static/x.
+	mux.Handle("/static/", disableCacheInDevMode(http.FileServerFS(staticFiles), cfg.env))
 
 	mux.HandleFunc("/{$}", cfg.handleIndexPage)
 
@@ -80,13 +84,7 @@ func main() {
 	mux.HandleFunc("POST /login", cfg.handleLoginUser)
 	mux.HandleFunc("POST /logout", cfg.handleLogout)
 
-	muxWithMiddleware := cfg.analyticsMiddleware(cfg.authMiddleware(mux))
-	server := http.Server{
-		Handler: muxWithMiddleware,
-		Addr:    cfg.address,
-	}
-	log.Printf("Starting server on address %s", cfg.address)
-	server.ListenAndServe()
+	return cfg.analyticsMiddleware(cfg.authMiddleware(mux))
 }
 
 func disableCacheInDevMode(next http.Handler, env string) http.Handler {

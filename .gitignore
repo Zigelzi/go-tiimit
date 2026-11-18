@@ -38,6 +38,8 @@ go.work.sum
 /cmd/web/static/tailwind.css
 *_templ.go
 /tmp/
+/bin/
+# Left over in clones from before the bun-based build was removed.
 /node_modules/
 ./web
 

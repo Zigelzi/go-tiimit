@@ -25,9 +25,9 @@ func main() {
 	if err != nil {
 		log.Printf("failed to load .env file: %v", err)
 	}
-	newDb, err := db.InitDB()
+	newDb, err := db.InitDB(os.Getenv("DB_PATH"))
 	if err != nil {
-		log.Fatalf("initializing database failed: %v", err)
+		log.Fatalf("initializing database from DB_PATH failed: %v", err)
 		return
 	}
 	defer newDb.Close()

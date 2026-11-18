@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	migrations "github.com/Zigelzi/go-tiimit/sql"
 	"github.com/pressly/goose/v3"
@@ -13,10 +12,12 @@ import (
 const maxOpenConnections = 10
 const maxIdleConnections = 2
 
-func InitDB() (*sql.DB, error) {
-	dbPath := os.Getenv("DB_PATH")
+// InitDB opens the SQLite database at dbPath, creating the file if it does
+// not exist. The caller decides where the path comes from, so tests can pass
+// a temp file and never touch the real database.
+func InitDB(dbPath string) (*sql.DB, error) {
 	if dbPath == "" {
-		return nil, fmt.Errorf("DB_PATH environment variable isn't set")
+		return nil, fmt.Errorf("no database path given")
 	}
 
 	db, err := sql.Open("sqlite", dbPath)
@@ -27,6 +28,7 @@ func InitDB() (*sql.DB, error) {
 
 	// Verify that connection is opened successfully.
 	if err := db.Ping(); err != nil {
+		db.Close()
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 

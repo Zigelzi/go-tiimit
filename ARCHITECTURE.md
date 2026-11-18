@@ -52,7 +52,7 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 
 | You are adding | It goes in |
 |---|---|
-| A route, or anything read from the request | `cmd/web`, registered in `main.go`, handler in that resource's `handlers_*.go` |
+| A route, or anything read from the request | `cmd/web`, registered in `routes()` (`main.go`), handler in that resource's `handlers_*.go` |
 | A page or fragment | a `.templ` file in `cmd/web/components` |
 | A shape only a page needs (formatted values, which row is being edited) | `cmd/web/view` |
 | A rule about players: scores, sorting, goalie preference, imports into players | `internal/player` |
@@ -70,7 +70,7 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 - Errors shown to the coach go through the error banner component; the log line says which operation failed and on which ids.
 - Generated files are never edited by hand. `CLAUDE.md` says how to tell them apart.
 - Comments in production code (everything except `*_test.go`): a doc comment's first sentence starts with the name and says what it returns or does, so it works alone in `go doc`. Add more sentences only for a rule or a reason the code cannot show. Leave out spec ids (the tests carry the link to scenarios), history (that is git log), and the body retold in prose. Readers are LLM sessions first and Human-PM second: plain full sentences.
-- Tests: pure rules have table tests beside them in `internal/`. HTTP-level acceptance tests for milestone scenarios live in `cmd/web/*_test.go` (from milestone 00), building the app on a fresh SQLite file and driving the router. A test's comment carries its scenario number (`// 01/S3: ...`).
+- Tests: pure rules have table tests beside them in `internal/`. HTTP-level acceptance tests for milestone scenarios live in `cmd/web/*_test.go`, named after the handler file (`handlers_players_test.go`). They build the app on a fresh SQLite file in a temp directory, never `tiimit.db`, and drive `routes()` with `httptest`; the shared helpers (a logged-in coach, adding players and practices, readable checks on a page) are in `cmd/web/helpers_test.go`. Test data uses made-up names only. Tests don't call `t.Parallel`, because Goose keeps package-level state. A test's comment carries its scenario number (`// 01/S3: ...`).
 
 ## Not moved yet
 

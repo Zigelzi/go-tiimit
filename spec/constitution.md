@@ -69,7 +69,7 @@ Chosen to maximize interpretability (Human-PM wants to read what is happening), 
 - Go: backend language; compiles to a single static binary for trivial Pi deployment.
 - templ: type-safe HTML templating in Go (https://templ.guide/llms.md).
 - HTMX: server-driven interactions; responses are literal HTML, the most transparent thing to debug.
-- TailwindCSS via the standalone CLI binary (no Node/npm/bun toolchain). Until milestone 00 lands, the build still uses `bunx`.
+- TailwindCSS via the standalone CLI binary (no Node/npm/bun toolchain).
 - Alpine.js: the chosen tool for client-side reactive interactions, added only when a milestone first needs one. Prefer native HTML (`<details>`, `<dialog>`) and small plain scripts (like today's `static/tabs.js`) for simple toggles.
 - SQLite (`modernc.org/sqlite`, pure Go): a single file with no server process.
 - Goose: versioned migrations, embedded and run on every startup.

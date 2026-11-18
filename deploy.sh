@@ -11,7 +11,7 @@ else
 fi
 
 echo "RUNNING tests"
-go test ./...
+make generate test
 
 echo "BUILDING Tiumo"
 make prod/build-arm64

@@ -20,14 +20,14 @@ Tiimit splits the players who turn up to a hobby football practice into two bala
 
 ## Commands
 
-- `make dev`: live reload (templ watch + proxy, Air, Tailwind watch)
+- `make generate`: sqlc, templ and Tailwind. `make run` and `make prod/build-arm64` run it first, so a fresh checkout works with one command. The first run downloads the pinned standalone Tailwind CLI into `./bin` (no Node/bun)
+- `make test`: templ generate, then every test (it does not need sqlc or Tailwind). A single test: `go test ./internal/practice/ -run TestDistribute -v`
+- `make run`: the server with `.env`'s settings, on `localhost:8080`
+- `make dev`: live reload on `localhost:7331` (templ watch + proxy, Air, Tailwind watch)
 - `make prod/build-arm64`: arm64 binary for the Pi into `./build`
-- `./deploy.sh`: test, build and install on the Pi (needs `.deploy.conf`, copied from `.deploy.conf.example`). **A deploy is also a migration of the live database.** Only when Human-PM asks. Setup and recovery: `docs/deployment-guide.md`
-- `go test ./...`; a single test: `go test ./internal/practice/ -run TestDistribute -v`
+- `./deploy.sh`: `make test`, build and install on the Pi (needs `.deploy.conf`, copied from `.deploy.conf.example`). **A deploy is also a migration of the live database.** Only when Human-PM asks. Setup and recovery: `docs/deployment-guide.md`
 - After editing SQL: `sqlc generate`. After editing a `.templ`: `templ generate` (or have `make dev` running) before `go build`/`go test`/`go vet`
 - Migrations run automatically against `DB_PATH` on every server/CLI startup. Env vars: see `.env.example` (`POSTHOG_API_KEY` is optional)
-
-Milestone 00 replaces the bun-based Tailwind build with the standalone CLI and adds `make test`/`make generate`/`make run`; update this list when it lands.
 
 Generated code: a file is generated if, and only if, its first line is `// Code generated ... DO NOT EDIT.` (templ's `*_templ.go`, sqlc's `internal/db/*.sql.go`, `db.go`, `models.go`). Change its source (`.templ`, `sql/`) instead. sqlc's output is committed; `*_templ.go` and the built `cmd/web/static/tailwind.css` are gitignored, so regenerate them on a fresh checkout. Everything else, including `internal/db/config.go`, is edited directly.
 

@@ -161,9 +161,8 @@ TARGET_DIR="/opt/tiimit"
 
 ```mermaid
 flowchart TD
-    A["make prod/build-arm64"] --> B["tailwind --minify<br/>-> cmd/web/static/tailwind.css"]
-    B --> C["templ generate"]
-    C --> D["GOOS=linux GOARCH=arm64 go build<br/>-> ./build/web"]
+    T["make generate test<br/>(sqlc, templ, Tailwind, then go test)"] --> A["make prod/build-arm64<br/>(make generate again)"]
+    A --> D["GOOS=linux GOARCH=arm64 go build<br/>-> ./build/web"]
     D --> E["scp ./build/web -> PI:TMP_FILE"]
     E --> F["ssh: sudo cp current binary -> backup/web-backup-TIMESTAMP"]
     F --> G["ssh: sudo mv TMP_FILE -> /opt/tiimit/web"]
@@ -172,14 +171,11 @@ flowchart TD
     I --> J["migrations run on startup<br/>against the live database"]
 ```
 
-The build steps live in the [Makefile](../Makefile) (`prod/build-arm64` → `prod/tailwind` +
-`prod/build-server-arm64`). The remote steps run over a single SSH connection from
+The build steps live in the [Makefile](../Makefile) (`prod/build-arm64`, which runs `make generate` first). The remote steps run over a single SSH connection from
 [deploy.sh](../deploy.sh).
 
-**The script does not stop on failure.** There is no `set -e`, so a failed build, a failed copy,
-or a failed install still proceeds to restart the service — which then reports
-`active (running)` while running the *old* binary. Read the whole output, not just the green
-status at the end. Fixing this is item 1 in the backlog.
+The script stops at the first failing step (`set -euo pipefail` locally, `set -e` on the Pi;
+item 1 in the backlog).
 
 ## Verifying a deployment
 
@@ -400,7 +396,7 @@ able to recover; 7+ are cleanups.
 - [ ] **12. Automated database backups.** A cron job or systemd timer running `sqlite3 .backup`
       on a schedule, with a retention policy and a *tested* restore procedure.
 
-- [x] **13. Run the tests before deploying.** `go test ./...` as the first step of `deploy.sh`,
+- [x] **13. Run the tests before deploying.** `make generate test` as the first step of `deploy.sh`,
       so a broken build cannot reach the Pi.
 
 ## Reference

@@ -32,6 +32,7 @@ Numbers are stable: a done or dropped idea keeps its number and is marked, never
 - **I12** A vest tick that fails to save is visible on screen. Open decision: rely on the mismatch with the header count (recommended there), or untick the box automatically. *(legacy/practices.md, slice 2)*
 - **I13** Label the team tabs by vest colour, by team number, or both. Check how the coach actually refers to the teams during a session. *(legacy/practices.md, open decision)*
 - **I14** Keep two devices in sync when two coaches hand out vests at once. Only worth it if that starts happening.
+- **I24** Inactive players are still distributed into teams. Found before milestone 00; left alone there because it changes what a coach sees.
 
 ### User management
 
@@ -44,6 +45,8 @@ Numbers are stable: a done or dropped idea keeps its number and is marked, never
 
 - **I18** Tell "database unavailable" apart from "not logged in": the auth middleware treats every session lookup error as logged out. *(legacy/improvements.md)*
 - **I19** Error handling cleanups: a misleading repeated inactive/active message, a raw session token in the logs (a security issue: anyone with log access can replay it), a broken format verb, ambiguous log lines and typos. File and line list in [`legacy/improvements.md`](legacy/improvements.md#error-handling-cleanups).
+- **I22** The login cookie lacks the `Secure` flag and sets no explicit `SameSite` (`cmd/web/handlers_auth.go`). *(00/R12)*
+- **I23** Forms have no CSRF protection. *(00/R12)*
 - **I20** Deploy like Roundtrip. Roundtrip's milestone 18 (`../roundtrip/spec/milestones/18-pi-deploy.md`, files in `../roundtrip/deploy/`) solved most open items in [`../docs/deployment-guide.md`](../docs/deployment-guide.md#known-gaps--improvement-backlog), on the same Pi. Port it rather than redesign it:
   - A database snapshot with SQLite's `.backup` before every deploy, plus a weekly systemd timer; each keeps its newest 3. This is the most valuable part, because every deploy migrates the club's only copy of the data. (gaps 6, 12)
   - One root script kept in the repo (`roundtrip-pi`: snapshot, install, restart) as the only command the deploy user may run with sudo. That removes the wildcard sudo rule and puts the sudoers file in the repo. (gaps 4, 7)
