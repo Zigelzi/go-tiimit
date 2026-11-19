@@ -140,7 +140,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 
 	// REPO START - Storing the data.
-	tx, err := cfg.db.Begin()
+	tx, err := cfg.db.BeginTx(r.Context(), nil)
 	if err != nil {
 		log.Printf("failed to begin a transaction on practice with date [%v]: %v", newPractice.Date, err)
 		renderError(w, r, "Couldn't set up new practice right now. Try again later.")
@@ -162,7 +162,7 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 			TeamNumber: 1,
 		})
 		if err != nil {
-			log.Printf("failed to add player [%d] %s to practice %d in team 1", teamOnePlayer.Player.ID, teamOnePlayer.Player.Name, dbPracticeId)
+			log.Printf("failed to add player [%d] to practice [%d] in team 1: %v", teamOnePlayer.Player.ID, dbPracticeId, err)
 			renderError(w, r, "Couldn't set up new practice right now. Try again later.")
 			return
 		}
@@ -175,12 +175,17 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 			TeamNumber: 2,
 		})
 		if err != nil {
-			log.Printf("failed to add player [%d] %s to practice %d in team 2", teamTwoPlayer.Player.ID, teamTwoPlayer.Player.Name, dbPracticeId)
+			log.Printf("failed to add player [%d] to practice [%d] in team 2: %v", teamTwoPlayer.Player.ID, dbPracticeId, err)
 			renderError(w, r, "Couldn't set up new practice right now. Try again later.")
 			return
 		}
 	}
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		log.Printf("failed to commit the practice with date [%v]: %v", newPractice.Date, err)
+		renderError(w, r, "Couldn't set up new practice right now. Try again later.")
+		return
+	}
 	// REPO END
 	w.Header().Add("HX-Redirect", fmt.Sprintf("/practices/%d", dbPracticeId))
 }

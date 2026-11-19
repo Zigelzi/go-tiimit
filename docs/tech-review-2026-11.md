@@ -21,7 +21,7 @@ Sizes: **XS** a few lines, one commit. **S** one small `fix/` or `chore/` branch
 | #   | Topic                                                         | Size           | Why this position                                                            |
 | --- | ------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------- |
 | 1   | ~~Docs describe a player import that no longer exists~~ (done) | XS             | Every session reads these docs first; wrong facts there cost every milestone |
-| 2   | Creating a practice ignores the commit error                  | XS             | Can report success for a practice that was never saved                       |
+| 2   | ~~Creating a practice ignores the commit error~~ (done)       | XS             | Can report success for a practice that was never saved                       |
 | 3   | Attendance import panics on a short row or a near-empty sheet | XS             | Crash in the core flow, triggered by a slightly different export             |
 | 4   | CLI lowercases and truncates usernames and passwords          | XS             | Weakens passwords silently and makes mixed-case logins fail                  |
 | 5   | PostHog may receive player names                              | S              | Privacy rule in the constitution; needs a check, then a config change        |
@@ -55,6 +55,8 @@ Also, I19 in `product-notes.md` points at `legacy/improvements.md#error-handling
 **Why first:** the workflow's whole premise is that a fresh session learns the project from these files. A wrong fact in `CLAUDE.md` is read in every session and can steer a milestone (e.g. a red-team asking about player imports). **Fix:** correct the four places; rewrite I19 to list only the two remaining items without line numbers.
 
 ### 2. Creating a practice ignores the commit error
+
+**Status (2026-11-19):** fixed on `fix/practice-commit-error`: the commit error is checked and shown as the error banner, the transaction uses the request context, and the player logs carry the error and the id but no name. The text below is the original finding, kept as history.
 
 `cmd/web/handlers_practice.go:183` calls `tx.Commit()` without checking its error, then sends `HX-Redirect` to the new practice. If the commit fails (for example a locked database, see #7), the coach is sent to a practice that does not exist and gets a blank 404. Two smaller issues in the same block: `cfg.db.Begin()` (`:143`) ignores the request context, and the two `AddPlayerToPractice` failure logs (`:165`, `:178`) omit `err` but include the player's name (personal data in logs).
 
