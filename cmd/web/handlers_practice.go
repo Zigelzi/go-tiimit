@@ -317,7 +317,7 @@ func (cfg *webConfig) handleTogglePlayerVest(w http.ResponseWriter, r *http.Requ
 	})
 
 	if err != nil {
-		log.Printf("failed toget the players of practice [%d]: %v", practiceId, err)
+		log.Printf("failed to get the players of practice [%d]: %v", practiceId, err)
 		renderError(w, r, "Couldn't toggle the vest of a player right now. Try again later.")
 		return
 	}
@@ -361,7 +361,7 @@ func (cfg *webConfig) handleViewTeam(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		log.Printf("failed toget the players of practice [%d]: %v", practiceId, err)
+		log.Printf("failed to get the players of practice [%d]: %v", practiceId, err)
 		renderError(w, r, "Couldn't display team right now. Try again later.")
 		return
 	}

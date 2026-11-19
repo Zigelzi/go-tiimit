@@ -79,7 +79,7 @@ func (cfg *webConfig) handleLogout(w http.ResponseWriter, r *http.Request) {
 	err = cfg.queries.EndUserSession(r.Context(), sessionCookie.Value)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) == false {
-			log.Printf("failed to log out session [%v]: %v", sessionCookie.Value, err)
+			log.Printf("failed to log out session: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

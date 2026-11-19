@@ -12,10 +12,9 @@ From November 2026, Tiimit is built with an agentic workflow, with Claude Code w
 
 ### Manage players
 
-1. Import players from MyClub to Tiimit by using Excel exported from MyClub.
-2. Add a player by hand, for example a mid-season joiner.
-3. Adjust the scores and goalie willingness of players to ensure balanced teams.
-4. Set a player inactive when they leave or pause.
+1. Add a player by hand, for example a mid-season joiner.
+2. Adjust the scores and goalie willingness of players to ensure balanced teams.
+3. Set a player inactive when they leave or pause.
 
 ### Distribute teams
 

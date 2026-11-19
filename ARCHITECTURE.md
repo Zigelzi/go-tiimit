@@ -50,19 +50,19 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 
 ## Where does new code go
 
-| You are adding | It goes in |
-|---|---|
-| A route, or anything read from the request | `cmd/web`, registered in `routes()` (`main.go`), handler in that resource's `handlers_*.go` |
-| A page or fragment | a `.templ` file in `cmd/web/components` |
-| A shape only a page needs (formatted values, which row is being edited) | `cmd/web/view` |
-| A rule about players: scores, sorting, goalie preference, imports into players | `internal/player` |
-| A rule about practices or how teams are distributed | `internal/practice` |
-| Reading a MyClub export | `internal/file` |
-| Anything about passwords or sessions | `internal/auth` |
-| A table or column | a Goose migration in `sql/schema` (timestamp-prefixed), then regenerate |
-| A query | `sql/queries`, then regenerate |
-| A user-management task an admin runs | `cmd/cli` (until I17, deprecating the CLI, is decided) |
-| Anything about running on the Pi | `deploy.sh`, `.deploy.conf.example`, with the steps a person runs in `docs/deployment-guide.md` |
+| You are adding                                                          | It goes in                                                                                      |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| A route, or anything read from the request                              | `cmd/web`, registered in `routes()` (`main.go`), handler in that resource's `handlers_*.go`     |
+| A page or fragment                                                      | a `.templ` file in `cmd/web/components`                                                         |
+| A shape only a page needs (formatted values, which row is being edited) | `cmd/web/view`                                                                                  |
+| A rule about players: scores, sorting, goalie preference                | `internal/player`                                                                               |
+| A rule about practices or how teams are distributed                     | `internal/practice`                                                                             |
+| Reading a MyClub export                                                 | `internal/file`                                                                                 |
+| Anything about passwords or sessions                                    | `internal/auth`                                                                                 |
+| A table or column                                                       | a Goose migration in `sql/schema` (timestamp-prefixed), then regenerate                         |
+| A query                                                                 | `sql/queries`, then regenerate                                                                  |
+| A user-management task an admin runs                                    | `cmd/cli` (until I17, deprecating the CLI, is decided)                                          |
+| Anything about running on the Pi                                        | `deploy.sh`, `.deploy.conf.example`, with the steps a person runs in `docs/deployment-guide.md` |
 
 ## Conventions
 

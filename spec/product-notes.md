@@ -44,7 +44,6 @@ Numbers are stable: a done or dropped idea keeps its number and is marked, never
 ### Technical
 
 - **I18** Tell "database unavailable" apart from "not logged in": the auth middleware treats every session lookup error as logged out. *(legacy/improvements.md)*
-- **I19** Error handling cleanups: a misleading repeated inactive/active message, a raw session token in the logs (a security issue: anyone with log access can replay it), a broken format verb, ambiguous log lines and typos. File and line list in [`legacy/improvements.md`](legacy/improvements.md#error-handling-cleanups).
 - **I22** The login cookie lacks the `Secure` flag and sets no explicit `SameSite` (`cmd/web/handlers_auth.go`). *(00/R12)*
 - **I23** Forms have no CSRF protection. *(00/R12)*
 - **I20** Deploy like Roundtrip. Roundtrip's milestone 18 (`../roundtrip/spec/milestones/18-pi-deploy.md`, files in `../roundtrip/deploy/`) solved most open items in [`../docs/deployment-guide.md`](../docs/deployment-guide.md#known-gaps--improvement-backlog), on the same Pi. Port it rather than redesign it:

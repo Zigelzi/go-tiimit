@@ -16,7 +16,11 @@ Code layout and the rules for where new code goes: `ARCHITECTURE.md` at the repo
 
 ## What Tiimit is
 
-Tiimit splits the players who turn up to a hobby football practice into two balanced teams. A coach imports the club's players from a MyClub Excel export, then for each practice imports the attendance report; the app distributes confirmed players by score, with a goalie on each side, and the coach hands out vests from a phone on the pitch. A web app (templ + HTMX) plus a small CLI for creating users. One club, fewer than 10 users, deployed to a Raspberry Pi and reachable from the public web behind login. See `README.md` and `spec/user-flows.md`.
+Tiimit is an app that football team organizer (or coach) use to distribute the players of a practice into two even teams.
+
+Tiimit is mostly a web app (templ + HTMX) plus a small CLI for creating users.
+
+Currently it's used by a single team of a single football club and has fewer than 10 users, deployed to a Raspberry Pi and reachable from the public web behind login. See `README.md` and `spec/user-flows.md`.
 
 ## Commands
 
