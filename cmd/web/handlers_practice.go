@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Zigelzi/go-tiimit/cmd/web/components"
 	"github.com/Zigelzi/go-tiimit/cmd/web/view"
@@ -54,10 +55,19 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 	}
 	defer formFile.Close()
 
-	attendanceRows, err := file.ImportAttendancePlayerRowsFromReader(formFile)
+	attendanceRows, skippedRows, err := file.ImportAttendancePlayerRowsFromReader(formFile)
+	// Logs carry row numbers and MyClub IDs only: player names are personal data.
+	for _, skipped := range skippedRows {
+		// An ID cell that isn't a number is free text and may hold a name.
+		myClubID := "not logged"
+		if isNumeric(skipped.MyClubID) {
+			myClubID = skipped.MyClubID
+		}
+		log.Printf("skipped attendance row %d with MyClub ID [%s]: %s", skipped.Row, myClubID, skipped.Reason)
+	}
 	if err != nil {
 		log.Printf("failed to parse the attendance rows in handler: %v", err)
-		renderError(w, r, "Couldn't process file to set up a new practice right now. Check that the file is formatted correctly and try again.")
+		renderError(w, r, importErrorMessage(err))
 		return
 	}
 	log.Printf("parsed %d rows from attendance excel\n", len(attendanceRows))
@@ -187,7 +197,12 @@ func (cfg *webConfig) handleCreatePractice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	// REPO END
-	w.Header().Add("HX-Redirect", fmt.Sprintf("/practices/%d", dbPracticeId))
+	practiceURL := fmt.Sprintf("/practices/%d", dbPracticeId)
+	if len(skippedRows) > 0 {
+		renderOK(w, r, components.ImportResult(importResultView(practiceURL, skippedRows)))
+		return
+	}
+	w.Header().Add("HX-Redirect", practiceURL)
 }
 
 func (cfg *webConfig) handleViewPracticePage(w http.ResponseWriter, r *http.Request) {
@@ -382,4 +397,55 @@ func (cfg *webConfig) handleViewTeam(w http.ResponseWriter, r *http.Request) {
 	teamView.GeneratePlayerURLs(int64(practiceId))
 
 	renderOK(w, r, components.TeamPanel(teamView))
+}
+
+// importErrorMessage returns what the organizer is told when an attendance
+// report can't be read. A missing column gets a message naming it and the
+// columns to export, since the organizer chooses the columns in MyClub.
+func importErrorMessage(err error) string {
+	var missingErr *file.MissingColumnsError
+	switch {
+	case errors.As(err, &missingErr):
+		columnWord := "column"
+		if len(missingErr.Columns) > 1 {
+			columnWord = "columns"
+		}
+		return fmt.Sprintf("The report is missing the %s %s. Export the attendance report from MyClub in Finnish with the columns %s.",
+			columnWord, joinWithAnd(missingErr.Columns), joinWithAnd(file.RequiredColumns()))
+	case errors.Is(err, file.ErrNoPlayers):
+		return "The report has no attending players Tiimit can read. Check that you exported the right practice and try again."
+	default:
+		return "Couldn't process file to set up a new practice right now. Check that the file is formatted correctly and try again."
+	}
+}
+
+// joinWithAnd joins items as "a, b and c".
+func joinWithAnd(items []string) string {
+	if len(items) <= 1 {
+		return strings.Join(items, "")
+	}
+	return strings.Join(items[:len(items)-1], ", ") + " and " + items[len(items)-1]
+}
+
+// importResultView lists the skipped rows for the organizer, with the reason
+// for each in words.
+func importResultView(practiceURL string, skippedRows []file.SkippedRow) view.ImportResult {
+	result := view.ImportResult{PracticeURL: practiceURL}
+	for _, skipped := range skippedRows {
+		label := skipped.Name
+		if label == "" {
+			label = fmt.Sprintf("Row %d", skipped.Row)
+		}
+		var reason string
+		switch skipped.Reason {
+		case file.SkipMissingMemberNumber:
+			reason = "No MyClub ID (" + file.ColumnMyClubID + ") in the report."
+		case file.SkipInvalidMemberNumber:
+			reason = fmt.Sprintf("The MyClub ID (%s) %q is not a number.", file.ColumnMyClubID, skipped.MyClubID)
+		default:
+			reason = "The attendance answer (" + file.ColumnAttendance + ") wasn't recognised."
+		}
+		result.Skipped = append(result.Skipped, view.SkippedPlayer{Label: label, Reason: reason})
+	}
+	return result
 }

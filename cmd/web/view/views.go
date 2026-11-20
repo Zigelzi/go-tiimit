@@ -175,3 +175,25 @@ func (epr EditPlayerRow) HasError(field string) bool {
 	_, ok := epr.FieldErrors[field]
 	return ok
 }
+
+// ImportResult is what the organizer sees after an import that set up a
+// practice but left some players out.
+type ImportResult struct {
+	PracticeURL string
+	Skipped     []SkippedPlayer
+}
+
+// Summary returns the sentence above the list of left-out players.
+func (ir ImportResult) Summary() string {
+	if len(ir.Skipped) == 1 {
+		return "The practice is set up, but 1 player was left out:"
+	}
+	return fmt.Sprintf("The practice is set up, but %d players were left out:", len(ir.Skipped))
+}
+
+// SkippedPlayer is one player row the import left out. Label is the player's
+// name, or the row number when the name is empty.
+type SkippedPlayer struct {
+	Label  string
+	Reason string
+}

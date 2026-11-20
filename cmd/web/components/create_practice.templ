@@ -4,16 +4,19 @@ templ CreatePracticePage() {
 	@ContentPageLayout("Set up practice", "") {
 		<div>
 			<h2 class="pb-4 text-lg font-bold">Set up practice</h2>
-			<form
-				hx-post="/practice"
-				hx-target="#results"
-				hx-encoding="multipart/form-data"
-			>
-				<label for="attendance-list" class="form-label">Select attendance file <span class="text-sm ">(.xlsx)</span></label>
-				<input class="btn btn-secondary block mb-4" type="file" name="attendance-list" id="attendance-list" accept=".xlsx"/>
-				<button type="submit" class="btn btn-primary">Send </button>
-			</form>
-			<div id="results"></div>
+			// The import result replaces the form, so the same report can't be
+			// sent twice and set up a second practice.
+			<div id="practice-setup">
+				<form
+					hx-post="/practice"
+					hx-target="#practice-setup"
+					hx-encoding="multipart/form-data"
+				>
+					<label for="attendance-list" class="form-label">Select attendance file <span class="text-sm ">(.xlsx)</span></label>
+					<input class="btn btn-secondary block mb-4" type="file" name="attendance-list" id="attendance-list" accept=".xlsx"/>
+					<button type="submit" class="btn btn-primary">Send </button>
+				</form>
+			</div>
 		</div>
 	}
 }

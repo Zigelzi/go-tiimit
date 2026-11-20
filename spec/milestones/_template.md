@@ -17,8 +17,9 @@ Which `../user-flows.md` flow or step this serves, by flow name and step number 
 - **Out:** explicit non-goals, what we are deliberately NOT doing yet
 
 ## Acceptance conditions (BDD)
-<!-- Group conditions into named scenarios. Name each from the user's
-     perspective: a capability they gain or something they see.
+<!-- Group conditions into named scenarios. Name each by what the user
+     does, in the situation that makes it distinct; the result belongs
+     in the Then lines.
      Exception: a scenario with no real user (e.g. an infrastructure or
      build check) is named by the behaviour being proven, not forced into
      a "coach" frame. Each scenario becomes a `go test` case, written

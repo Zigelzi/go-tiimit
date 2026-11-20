@@ -8,310 +8,225 @@ import (
 	"time"
 )
 
-func TestNewPlayerRow(t *testing.T) {
-	var tests = []struct {
-		name          string
-		myClubId      string
-		playerName    string
-		wantErr       bool
-		expectedError string
-		expectedRow   PlayerRow
-	}{
-		{
-			name:       "Valid player",
-			myClubId:   "123",
-			playerName: "Matti Meikäläinen",
-			wantErr:    false,
-			expectedRow: PlayerRow{
-				MyclubID: 123,
-				Name:     "Matti Meikäläinen",
-			},
-		},
-		{
-			name:          "Invalid missing name",
-			myClubId:      "123",
-			playerName:    "",
-			wantErr:       true,
-			expectedError: "player name can't be empty",
-			expectedRow:   PlayerRow{},
-		},
-		{
-			name:          "Invalid not integer MyClubId",
-			myClubId:      "asdasd",
-			playerName:    "Matti Meikäläinen",
-			wantErr:       true,
-			expectedError: "unable to convert MyClubId to integer",
-			expectedRow:   PlayerRow{},
-		},
-	}
+// finnishHeader is the header row of a Finnish MyClub attendance report in
+// the column order MyClub uses by default.
+var finnishHeader = []string{"Jäsennumero", "Suku- ja etunimi", "Sukupuoli", "Osallistuu"}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
-			playerRow, err := newPlayerRow(testCase.myClubId, testCase.playerName)
-
-			if testCase.wantErr {
-				if err == nil {
-					t.Errorf("error is missing: got [nil] want [%s]", testCase.expectedError)
-					return
-				}
-				if !strings.Contains(err.Error(), testCase.expectedError) {
-					t.Errorf("error contents don't match: got [%s] want [%s]", err.Error(), testCase.expectedError)
-				}
-				return
-			}
-			if err != nil {
-				t.Errorf("unexpected error: got [%s] want [nil]", err)
-			}
-			if !reflect.DeepEqual(playerRow, testCase.expectedRow) {
-				t.Errorf("player row doesn't match: got [%v] want [%v]", playerRow, testCase.expectedRow)
-			}
-
-		})
-
-	}
+// report returns the rows of an attendance report sheet: the title rows a
+// real export has above the header, then the header, then the players.
+func report(header []string, players ...[]string) [][]string {
+	rows := [][]string{{"Testiseura Kuntofutis  (16.11.2026)"}, {"Kuntofutis"}, {}, header}
+	return append(rows, players...)
 }
 
-func TestNewAttendancePlayerRow(t *testing.T) {
-	var tests = []struct {
-		name             string
-		myClubId         string
-		playerName       string
-		attendanceStatus string
-		wantErr          bool
-		expectedError    string
-		expectedRow      AttendancePlayerRow
-	}{
-		{
-			name:             "creates attendance row for attending player",
-			myClubId:         "123",
-			playerName:       "Matti Meikäläinen",
-			attendanceStatus: "Osallistuu",
-			wantErr:          false,
-			expectedRow: AttendancePlayerRow{
-				PlayerRow: PlayerRow{
-					MyclubID: 123,
-					Name:     "Matti Meikäläinen",
-				},
-				Attendance: AttendanceIn,
-			},
-		},
-		{
-			name:             "creates attendance row for unattending player",
-			myClubId:         "123",
-			playerName:       "Matti Meikäläinen",
-			attendanceStatus: "Ei osallistu",
-			wantErr:          false,
-			expectedRow: AttendancePlayerRow{
-				PlayerRow: PlayerRow{
-					MyclubID: 123,
-					Name:     "Matti Meikäläinen",
-				},
-				Attendance: AttendanceOut,
-			},
-		},
-		{
-			name:             "creates attendance row for player which attendance is not known",
-			myClubId:         "123",
-			playerName:       "Matti Meikäläinen",
-			attendanceStatus: "Ei vastausta",
-			wantErr:          false,
-			expectedRow: AttendancePlayerRow{
-				PlayerRow: PlayerRow{
-					MyclubID: 123,
-					Name:     "Matti Meikäläinen",
-				},
-				Attendance: AttendanceUnknown,
-			},
-		},
-		{
-			name:             "doesn't create attendance row when attendance status is invalid",
-			myClubId:         "123",
-			playerName:       "Matti Meikäläinen",
-			attendanceStatus: "Wutisdis",
-			wantErr:          true,
-			expectedError:    "invalid attendance status",
-			expectedRow:      AttendancePlayerRow{},
-		},
-	}
-
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
-			attendancePlayerRow, err := newAttendancePlayerRow(testCase.myClubId, testCase.playerName, testCase.attendanceStatus)
-
-			if testCase.wantErr {
-				if err == nil {
-					t.Errorf("error is missing: got [nil] want [%s]", testCase.expectedError)
-					return
-				}
-				if !strings.Contains(err.Error(), testCase.expectedError) {
-					t.Errorf("error contents don't match: got [%s] want [%s]", err.Error(), testCase.expectedError)
-				}
-				return
-			}
-			if err != nil {
-				t.Errorf("unexpected error: got [%s] want [nil]", err)
-			}
-			if !reflect.DeepEqual(attendancePlayerRow, testCase.expectedRow) {
-				t.Errorf("player row doesn't match: got [%v] want [%v]", attendancePlayerRow, testCase.expectedRow)
-			}
-
-		})
-
-	}
+func attending(id int, name string) AttendancePlayerRow {
+	return AttendancePlayerRow{PlayerRow: PlayerRow{MyclubID: id, Name: name}, Attendance: AttendanceIn}
 }
 
-func TestParsingEmptyRowsReturnsError(t *testing.T) {
-	rows := [][]string{}
-	_, actualErr := parseAttendanceRows(rows)
-	expectedErr := "no players found from the rows"
-	if actualErr == nil {
-		t.Fatalf("error is missing: got [nil] want [%s]", expectedErr)
-	}
-	if !strings.Contains(actualErr.Error(), expectedErr) {
-		t.Errorf("error contents don't match: got [%s] want [%s]", actualErr.Error(), expectedErr)
-	}
-}
+func TestParseAttendanceSheet(t *testing.T) {
+	allColumns := []string{"Jäsennumero", "Suku- ja etunimi", "Osallistuu"}
 
-func TestParsingValidRowsReturnsCorrectNumberOfAttendanceRows(t *testing.T) {
-	rows := [][]string{
-		{"1111", "Matti Meikäläinen", "Mies", "Osallistuu"},
-		{"1111", "Seppo Seikäläinen", "Mies", "Osallistuu"},
-		{"1111", "Kaija Kaarela", "Nainen", "Osallistuu"},
-	}
-
-	actualAttendanceRows, actualErr := parseAttendanceRows(rows)
-
-	if actualErr != nil {
-		t.Errorf("unexpected error: got [%v] want [nil]", actualErr.Error())
-	}
-
-	if len(actualAttendanceRows) != len(rows) {
-		t.Errorf("number of rows and AttendancePlayers don't match: got [%d] want [%d]", len(actualAttendanceRows), len(rows))
-	}
-}
-
-func TestParsingRowsWithMissingFieldsReturnsError(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name        string
 		rows        [][]string
-		expectedErr string
+		want        []AttendancePlayerRow
+		wantSkipped []SkippedRow
+		wantMissing []string // the columns the error names as missing
+		wantErr     error    // a specific error the result must wrap
 	}{
 		{
-			name: "returns error when MyClubId is missing",
-			rows: [][]string{
-				{"", "Matti Meikäläinen", "Mies", "Osallistuu"},
-				{"", "Seppo Seikäläinen", "Mies", "Osallistuu"},
-				{"", "Kaija Kaarela", "Nainen", "Osallistuu"},
+			name: "reads players below the header in MyClub's default layout",
+			rows: report(finnishHeader,
+				[]string{"9001", "Testi Pelaaja", "Mies", "Osallistuu"},
+				[]string{"9002", "Keksitty Nimi", "Nainen", "Ei osallistu"},
+				[]string{"9003", "Kuvitteellinen Henkilö", "Mies", "Ei vastausta"},
+			),
+			want: []AttendancePlayerRow{
+				attending(9001, "Testi Pelaaja"),
+				{PlayerRow: PlayerRow{MyclubID: 9002, Name: "Keksitty Nimi"}, Attendance: AttendanceOut},
+				{PlayerRow: PlayerRow{MyclubID: 9003, Name: "Kuvitteellinen Henkilö"}, Attendance: AttendanceUnknown},
 			},
-			expectedErr: "unable to create new player row",
 		},
 		{
-			name: "returns error when name is missing",
-			rows: [][]string{
-				{"1111", "", "Mies", "Osallistuu"},
-				{"2222", "", "Mies", "Osallistuu"},
-				{"3333", "", "Nainen", "Osallistuu"},
-			},
-			expectedErr: "unable to create new player row",
+			name: "finds the header below an extra title row",
+			rows: append([][]string{{"Lisärivi"}}, report(finnishHeader,
+				[]string{"9001", "Testi Pelaaja", "Mies", "Osallistuu"},
+			)...),
+			want: []AttendancePlayerRow{attending(9001, "Testi Pelaaja")},
 		},
 		{
-			name: "returns error when attendance is missing",
+			name: "finds the header as the first row",
 			rows: [][]string{
-				{"1111", "Matti Meikäläinen", "Mies", ""},
-				{"2222", "Seppo Seikäläinen", "Mies", ""},
-				{"3333", "Kaija Kaarela", "Nainen", ""},
+				finnishHeader,
+				{"9001", "Testi Pelaaja", "Mies", "Osallistuu"},
 			},
-			expectedErr: "unable to create new player row",
+			want: []AttendancePlayerRow{attending(9001, "Testi Pelaaja")},
+		},
+		{
+			name: "reads columns in any order and ignores extra columns",
+			rows: report([]string{"Osallistuu", "Jäsennumero", "Lempiväri", "Suku- ja etunimi"},
+				[]string{"Osallistuu", "9001", "Sininen", "Testi Pelaaja"},
+				[]string{"Osallistuu", "9002", "Punainen", "Keksitty Nimi"},
+			),
+			want: []AttendancePlayerRow{attending(9001, "Testi Pelaaja"), attending(9002, "Keksitty Nimi")},
+		},
+		{
+			name: "ignores spaces around header names and cell values",
+			rows: report([]string{" Jäsennumero ", "Suku- ja etunimi ", " Osallistuu"},
+				[]string{" 9001 ", " Testi Pelaaja ", " Osallistuu "},
+			),
+			want: []AttendancePlayerRow{attending(9001, "Testi Pelaaja")},
+		},
+		{
+			name:        "names the MyClub ID column when it is missing",
+			rows:        report([]string{"Suku- ja etunimi", "Osallistuu"}, []string{"Testi Pelaaja", "Osallistuu"}),
+			wantMissing: []string{"Jäsennumero"},
+		},
+		{
+			name:        "names the name column when it is missing",
+			rows:        report([]string{"Jäsennumero", "Osallistuu"}, []string{"9001", "Osallistuu"}),
+			wantMissing: []string{"Suku- ja etunimi"},
+		},
+		{
+			name:        "names the attendance column when it is missing",
+			rows:        report([]string{"Jäsennumero", "Suku- ja etunimi"}, []string{"9001", "Testi Pelaaja"}),
+			wantMissing: []string{"Osallistuu"},
+		},
+		{
+			name: "names all three columns for an English report",
+			rows: report([]string{"Member number", "Last and first name", "Gender", "Coming"},
+				[]string{"9001", "Testi Pelaaja", "Male", "Coming"},
+			),
+			wantMissing: allColumns,
+		},
+		{
+			name:        "names all three columns for an empty sheet",
+			rows:        [][]string{},
+			wantMissing: allColumns,
+		},
+		{
+			name:        "names all three columns for a sheet with fewer rows than the usual header position",
+			rows:        [][]string{{"Testiseura Kuntofutis  (16.11.2026)"}},
+			wantMissing: allColumns,
+		},
+		{
+			name:    "reports no players for a header without player rows",
+			rows:    report(finnishHeader),
+			wantErr: ErrNoPlayers,
+		},
+		{
+			name: "treats a row without an attendance cell as not attending, without reporting it",
+			rows: report(finnishHeader,
+				[]string{"9001", "Testi Pelaaja"},
+				[]string{"9002", "Keksitty Nimi", "Nainen", "Osallistuu"},
+			),
+			want: []AttendancePlayerRow{attending(9002, "Keksitty Nimi")},
+		},
+		{
+			name: "skips and reports a row with an unknown attendance answer",
+			rows: report(finnishHeader,
+				[]string{"9001", "Testi Pelaaja", "Mies", "Ehkä"},
+				[]string{"9002", "Keksitty Nimi", "Nainen", "Osallistuu"},
+			),
+			want:        []AttendancePlayerRow{attending(9002, "Keksitty Nimi")},
+			wantSkipped: []SkippedRow{{Row: 5, MyClubID: "9001", Name: "Testi Pelaaja", Reason: SkipUnknownAttendance}},
+		},
+		{
+			name: "skips and reports an attending player without a MyClub ID",
+			rows: report(finnishHeader,
+				[]string{"9001", "Testi Pelaaja", "Mies", "Osallistuu"},
+				[]string{"", "Keksitty Nimi", "Nainen", "Osallistuu"},
+			),
+			want:        []AttendancePlayerRow{attending(9001, "Testi Pelaaja")},
+			wantSkipped: []SkippedRow{{Row: 6, MyClubID: "", Name: "Keksitty Nimi", Reason: SkipMissingMemberNumber}},
+		},
+		{
+			name: "skips and reports an attending player whose MyClub ID is not a number",
+			rows: report(finnishHeader,
+				[]string{"9001", "Testi Pelaaja", "Mies", "Osallistuu"},
+				[]string{"90O2", "Keksitty Nimi", "Nainen", "Osallistuu"},
+			),
+			want:        []AttendancePlayerRow{attending(9001, "Testi Pelaaja")},
+			wantSkipped: []SkippedRow{{Row: 6, MyClubID: "90O2", Name: "Keksitty Nimi", Reason: SkipInvalidMemberNumber}},
+		},
+		{
+			name: "leaves out a player who isn't attending and has no MyClub ID, without reporting it",
+			rows: report(finnishHeader,
+				[]string{"", "Testi Pelaaja", "Mies", "Ei osallistu"},
+				[]string{"", "Keksitty Nimi", "Nainen", "Ei vastausta"},
+				[]string{"9003", "Kuvitteellinen Henkilö", "Mies", "Osallistuu"},
+			),
+			want: []AttendancePlayerRow{attending(9003, "Kuvitteellinen Henkilö")},
+		},
+		{
+			name: "keeps an attending player whose name is empty, since players are matched by MyClub ID",
+			rows: report(finnishHeader, []string{"9001", "", "Mies", "Osallistuu"}),
+			want: []AttendancePlayerRow{attending(9001, "")},
+		},
+		{
+			name: "reports no players when every row is skipped",
+			rows: report(finnishHeader,
+				[]string{"", "Testi Pelaaja", "Mies", "Osallistuu"},
+				[]string{"9002", "Keksitty Nimi", "Nainen", "Ehkä"},
+			),
+			wantErr:     ErrNoPlayers,
+			wantSkipped: []SkippedRow{
+				{Row: 5, MyClubID: "", Name: "Testi Pelaaja", Reason: SkipMissingMemberNumber},
+				{Row: 6, MyClubID: "9002", Name: "Keksitty Nimi", Reason: SkipUnknownAttendance},
+			},
+		},
+		{
+			name: "reports no players when the only readable rows aren't attending, and keeps the skipped rows",
+			rows: report(finnishHeader,
+				[]string{"", "Testi Pelaaja", "Mies", "Osallistuu"},
+				[]string{"9002", "Keksitty Nimi", "Nainen", "Ei osallistu"},
+				[]string{"9003", "Kuvitteellinen Henkilö", "Mies"},
+			),
+			wantErr:     ErrNoPlayers,
+			wantSkipped: []SkippedRow{{Row: 5, MyClubID: "", Name: "Testi Pelaaja", Reason: SkipMissingMemberNumber}},
+		},
+		{
+			name:    "reports no players when nobody is attending",
+			rows:    report(finnishHeader, []string{"9001", "Testi Pelaaja", "Mies", "Ei osallistu"}, []string{"9002", "Keksitty Nimi", "Nainen"}),
+			wantErr: ErrNoPlayers,
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			_, actualErr := parseAttendanceRows(testCase.rows)
-			if actualErr == nil {
-				t.Fatalf("error is missing: got [nil] want [%s]", testCase.expectedErr)
-			}
-			if !strings.Contains(actualErr.Error(), testCase.expectedErr) {
-				t.Errorf("error contents don't match: got [%s] want [%s]", actualErr.Error(), testCase.expectedErr)
-			}
-		})
-	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, skipped, err := parseAttendanceSheet(tc.rows)
 
-}
-func TestParsingValidRowsReturnsEqualAttendanceRows(t *testing.T) {
-
-	var testCases = []struct {
-		name                   string
-		rows                   [][]string
-		expectedAttendanceRows []AttendancePlayerRow
-	}{
-		{
-			name: "rows with attendance in",
-			rows: [][]string{
-				{"1111", "Matti Meikäläinen", "Mies", "Osallistuu"},
-				{"2222", "Seppo Seikäläinen", "Mies", "Osallistuu"},
-				{"3333", "Kaija Kaarela", "Nainen", "Osallistuu"},
-			},
-			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceIn},
-				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceIn},
-				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceIn},
-			},
-		},
-		{
-			name: "rows with attendance out",
-			rows: [][]string{
-				{"1111", "Matti Meikäläinen", "Mies", "Ei osallistu"},
-				{"2222", "Seppo Seikäläinen", "Mies", "Ei osallistu"},
-				{"3333", "Kaija Kaarela", "Nainen", "Ei osallistu"},
-			},
-			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceOut},
-				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceOut},
-				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceOut},
-			},
-		},
-		{
-			name: "rows with unknown attendance",
-			rows: [][]string{
-				{"1111", "Matti Meikäläinen", "Mies", "Ei vastausta"},
-				{"2222", "Seppo Seikäläinen", "Mies", "Ei vastausta"},
-				{"3333", "Kaija Kaarela", "Nainen", "Ei vastausta"},
-			},
-			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceUnknown},
-				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceUnknown},
-				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceUnknown},
-			},
-		},
-		{
-			name: "rows with all attendance statuses",
-			rows: [][]string{
-				{"1111", "Matti Meikäläinen", "Mies", "Osallistuu"},
-				{"2222", "Seppo Seikäläinen", "Mies", "Ei osallistu"},
-				{"3333", "Kaija Kaarela", "Nainen", "Ei vastausta"},
-			},
-			expectedAttendanceRows: []AttendancePlayerRow{
-				{PlayerRow: PlayerRow{MyclubID: 1111, Name: "Matti Meikäläinen"}, Attendance: AttendanceIn},
-				{PlayerRow: PlayerRow{MyclubID: 2222, Name: "Seppo Seikäläinen"}, Attendance: AttendanceOut},
-				{PlayerRow: PlayerRow{MyclubID: 3333, Name: "Kaija Kaarela"}, Attendance: AttendanceUnknown},
-			},
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			actualAttendanceRows, actualErr := parseAttendanceRows(testCase.rows)
-
-			if actualErr != nil {
-				t.Errorf("unexpected error: got [%v] want [nil]", actualErr.Error())
-			}
-
-			for i, actualAttendanceRow := range actualAttendanceRows {
-				if !reflect.DeepEqual(actualAttendanceRow, testCase.expectedAttendanceRows[i]) {
-					t.Errorf("row and attendance row don't match: got [%v] want [%v]", actualAttendanceRow, testCase.expectedAttendanceRows[i])
+			switch {
+			case tc.wantMissing != nil:
+				var missingErr *MissingColumnsError
+				if !errors.As(err, &missingErr) {
+					t.Fatalf("want an error naming the missing columns %v, got %v", tc.wantMissing, err)
+				}
+				if !reflect.DeepEqual(missingErr.Columns, tc.wantMissing) {
+					t.Errorf("missing columns: got %v want %v", missingErr.Columns, tc.wantMissing)
+				}
+			case tc.wantErr != nil:
+				if !errors.Is(err, tc.wantErr) {
+					t.Errorf("error: got %v want %v", err, tc.wantErr)
+				}
+				if len(skipped) != 0 || len(tc.wantSkipped) != 0 {
+					if !reflect.DeepEqual(skipped, tc.wantSkipped) {
+						t.Errorf("skipped rows:\ngot  %v\nwant %v", skipped, tc.wantSkipped)
+					}
+				}
+			default:
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if !reflect.DeepEqual(got, tc.want) {
+					t.Errorf("rows:\ngot  %v\nwant %v", got, tc.want)
+				}
+				if len(skipped) != 0 || len(tc.wantSkipped) != 0 {
+					if !reflect.DeepEqual(skipped, tc.wantSkipped) {
+						t.Errorf("skipped rows:\ngot  %v\nwant %v", skipped, tc.wantSkipped)
+					}
 				}
 			}
-
 		})
 	}
 }

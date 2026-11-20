@@ -1,0 +1,15 @@
+package components
+
+import "github.com/Zigelzi/go-tiimit/cmd/web/view"
+
+templ ImportResult(result view.ImportResult) {
+	<div>
+		<p class="font-bold">{ result.Summary() }</p>
+		<ul class="my-3 list-disc pl-6">
+			for _, skipped := range result.Skipped {
+				<li class="py-1"><span class="font-semibold">{ skipped.Label }</span>: { skipped.Reason }</li>
+			}
+		</ul>
+		<a href={ templ.SafeURL(result.PracticeURL) } class="btn btn-primary inline-block">Open practice</a>
+	</div>
+}

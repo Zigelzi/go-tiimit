@@ -22,7 +22,7 @@ Sizes: **XS** a few lines, one commit. **S** one small `fix/` or `chore/` branch
 | --- | ------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------- |
 | 1   | ~~Docs describe a player import that no longer exists~~ (done) | XS             | Every session reads these docs first; wrong facts there cost every milestone |
 | 2   | ~~Creating a practice ignores the commit error~~ (done)       | XS             | Can report success for a practice that was never saved                       |
-| 3   | Attendance import panics on a short row or a near-empty sheet | XS             | Crash in the core flow, triggered by a slightly different export             |
+| 3   | ~~Attendance import panics on a short row or a near-empty sheet~~ (done) | XS             | Crash in the core flow, triggered by a slightly different export             |
 | 4   | CLI lowercases and truncates usernames and passwords          | XS             | Weakens passwords silently and makes mixed-case logins fail                  |
 | 5   | PostHog may receive player names                              | S              | Privacy rule in the constitution; needs a check, then a config change        |
 | 6   | Production runs with `env = "development"`                    | XS             | Static files are never cached on phones on the pitch                         |
@@ -62,7 +62,9 @@ Also, I19 in `product-notes.md` points at `legacy/improvements.md#error-handling
 
 **Fix:** check the commit error and render the error banner; use `BeginTx(r.Context(), nil)`; log ids and `err`, not names. A test for the commit path is hard to force; the code fix is three lines and reads correctly on its own. Better still, fold it into #9.
 
-### 3. Attendance import panics on short rows or a near-empty sheet (verified)
+### 3. Attendance import panics on short rows or a near-empty sheet (verified), done
+
+**Status (2026-11-20):** fixed on `feature/flexible-attendance-import` (milestone 01). The import now finds the header row and columns by name, reads cells with a bounds check, skips and reports unreadable attending players, and gives every failure a message. The text that follows is the original finding, kept as history.
 
 `internal/file/import_attendance_rows.go:28` slices `rows[4:]` and `:46` indexes `row[3]` with no length checks. excelize's `GetRows` drops trailing empty cells, so:
 

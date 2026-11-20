@@ -24,6 +24,7 @@ Numbers are stable: a done or dropped idea keeps its number and is marked, never
 - **I8** Feedback when a player moves to the other, hidden tab: ship without it and see, highlight the other tab, or show who moved where. *(legacy/practices.md, open decision; recommendation there: ship without)*
 - **I9** Show the score difference between the teams.
 - **I10** Re-roll the distribution from the practice page.
+- **I25** A review step after importing the attendance report: before the practice is created, the organizer sees who was imported and which rows failed, and can act on them. Milestone 01 only lists skipped players after the import (01/R8). Overlaps I3.
 
 ### Running the practice
 
