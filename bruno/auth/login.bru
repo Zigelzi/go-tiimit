@@ -29,8 +29,9 @@ docs {
   Run this first. Bruno keeps the `user_session_id` cookie in its jar and
   sends it with every other request in the collection.
   
-  Set `username` / `password` in the environment to a user you created
-  with the CLI (`go run ./cmd/cli`).
+  Set `username` / `password` in the environment to a user that exists.
+  On an empty database, set FIRST_USER_USERNAME / FIRST_USER_PASSWORD in
+  .env and restart the app to create one.
   
   Success is `200` + `HX-Redirect: /` + a `Set-Cookie` header, with an
   empty body. Failure is also `200`, with a `FormError` fragment and no

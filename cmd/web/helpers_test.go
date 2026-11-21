@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Zigelzi/go-tiimit/internal/auth"
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/pressly/goose/v3"
 )
@@ -128,19 +127,17 @@ func loggedInCoach(t *testing.T, app *webConfig) *testClient {
 	return client
 }
 
-// createCoach creates the coach account the way cmd/cli does.
+// createCoach creates the coach account as the first user of the fresh
+// database, through the same code that creates it on startup (milestone 03).
+// Call it before any other user is created.
 func createCoach(t *testing.T, app *webConfig) {
 	t.Helper()
-	hashed, err := auth.HashPassword(coachPassword)
-	if err != nil {
-		t.Fatalf("creating the coach account failed: hashing the password: %v", err)
-	}
-	_, err = app.queries.CreateUser(context.Background(), db.CreateUserParams{
-		Username:       coachUsername,
-		HashedPassword: hashed,
-	})
+	outcome, err := app.ensureFirstUser(context.Background(), coachUsername, coachPassword)
 	if err != nil {
 		t.Fatalf("creating the coach account failed: %v", err)
+	}
+	if outcome != firstUserCreated {
+		t.Fatalf("creating the coach account failed: outcome %v, want firstUserCreated (was another user created first?)", outcome)
 	}
 }
 

@@ -16,7 +16,8 @@ near-identical saved requests.
    folder as a collection.
 2. Start the app: `make dev`.
 3. Select the **local** environment and fill in `username` / `password`
-   for a user you created with `go run ./cmd/cli`.
+   for a user that exists in your database (on an empty one, set
+   `FIRST_USER_USERNAME` / `FIRST_USER_PASSWORD` in `.env` and restart).
 4. Run **auth > Login**. Bruno keeps the `user_session_id` cookie and
    sends it with everything else.
 5. Set `playerId`, `practiceId` and `myClubId` to rows that exist in your

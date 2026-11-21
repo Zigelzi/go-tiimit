@@ -1,6 +1,6 @@
 # Tiimit - Distribute football teams
 
-Tiimit is a webapp to distribute the players into even teams in football practices. It helps the coach of the team to set up fun and even games for everyone with minimal effort. Tiimit comes currently with a complementary CLI that is primarily used to manage the users of the app internally.
+Tiimit is a webapp to distribute the players into even teams in football practices. It helps the coach of the team to set up fun and even games for everyone with minimal effort.
 
 ## How this was built
 
@@ -23,9 +23,10 @@ From November 2026, Tiimit is built with an agentic workflow, with Claude Code w
 3. Mark players who have vest to distribute the vests easily in the beginning of the practice.
 4. Move players in a practice to rebalance the teams.
 
-### User management (CLI)
+### User management
 
-1. Register new users to the app to prevent unauthorized access to the app.
+1. Invite new organizers with a one-time invitation; they choose their own username and password. Every page with player data requires login.
+2. On an empty database (a fresh install or a recovery), the first user is created on startup from the `FIRST_USER_USERNAME` and `FIRST_USER_PASSWORD` settings. See `.env.example`.
 
 ## Installation and deployment
 

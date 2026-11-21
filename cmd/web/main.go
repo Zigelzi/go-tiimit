@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"log"
 	"net/http"
@@ -47,6 +48,20 @@ func main() {
 		env:      "development",
 		phApiKey: postHogApiKey,
 		now:      time.Now,
+	}
+
+	// The first user of an empty database comes from these settings; on a
+	// database with users they are ignored (milestone 03).
+	outcome, err := cfg.ensureFirstUser(context.Background(),
+		os.Getenv(firstUserUsernameSetting), os.Getenv(firstUserPasswordSetting))
+	if err != nil {
+		log.Fatalf("creating the first user failed: %v", err)
+	}
+	switch outcome {
+	case firstUserCreated:
+		log.Printf("Created the first user from %s and %s", firstUserUsernameSetting, firstUserPasswordSetting)
+	case firstUserNotSet:
+		log.Printf("The database has no users: nobody can log in until %s and %s are set", firstUserUsernameSetting, firstUserPasswordSetting)
 	}
 
 	server := http.Server{

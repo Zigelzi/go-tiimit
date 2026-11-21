@@ -31,7 +31,7 @@ One session on one date, split into two teams. Table `practices`; who plays wher
 
 ## User and session
 
-Someone who can log in: the organizer or an assistant organizer. Tables `users` (username, hashed password) and `user_sessions` (cookie session id, expiry 14 days, soft-deleted on logout). A new user joins with an invite link that a logged-in user creates; there is no open sign-up. The CLI (`cmd/cli`) can still create users until milestone 03 removes it.
+Someone who can log in: the organizer or an assistant organizer. Tables `users` (username, hashed password) and `user_sessions` (cookie session id, expiry 14 days, soft-deleted on logout). A new user joins with an invite link that a logged-in user creates; there is no open sign-up. The first user of an empty database is created on startup from the `FIRST_USER_USERNAME` and `FIRST_USER_PASSWORD` settings (milestone 03).
 
 - **Username** is stored trimmed and lowercased, and login normalises the typed name the same way. A new username is 5 to 20 letters (a to z, å, ä, ö); older usernames are not checked against that.
 - **Password** is stored as a bcrypt hash of exactly what was typed. A new password is 10 to 64 characters and at most 72 bytes.

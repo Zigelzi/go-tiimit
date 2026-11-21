@@ -11,7 +11,6 @@ flowchart TD
     web["cmd/web: routes, handlers, middleware, request parsing"]
     components["cmd/web/components: templ pages and fragments"]
     view["cmd/web/view: display structs adapted from domain types"]
-    cli["cmd/cli: interactive REPL for creating users"]
     practice["internal/practice: practices and team distribution"]
     player["internal/player: players, scoring, sorting, goalie preference"]
     file["internal/file: parsing MyClub Excel exports"]
@@ -31,8 +30,6 @@ flowchart TD
     practice --> player
     practice --> db
     player --> db
-    cli --> auth
-    cli --> db
 ```
 
 Left out of the diagram: `cmd/web/analytics`, a web-only helper that carries the PostHog key on the request context for `cmd/web` and `components`. It holds no domain logic and no rule depends on it.
@@ -62,7 +59,7 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 | Anything about passwords, sessions or the username and password rules   | `internal/auth`                                                                                 |
 | A table or column                                                       | a Goose migration in `sql/schema` (timestamp-prefixed), then regenerate                         |
 | A query                                                                 | `sql/queries`, then regenerate                                                                  |
-| A user-management task an admin runs                                    | `cmd/cli`, until milestone 03 removes it; new user features go in the web app                   |
+| A user-management feature                                               | `cmd/web`; the first user of an empty database is created on startup in `cmd/web/first_user.go` |
 | Anything about running on the Pi                                        | `deploy.sh`, `.deploy.conf.example`, with the steps a person runs in `docs/deployment-guide.md` |
 
 ## Conventions
@@ -83,6 +80,6 @@ Known places where the code does not follow the rules above yet. Fix one when a 
 
 - **Two teams, everywhere.** The database check, the queries and the UI all assume exactly two. Changing it is a milestone of its own, not a parameter.
 - **Sessions in the database, not JWT.** One server, one SQLite file: a session row is simpler to reason about and can be revoked on logout.
-- **Users join by invite link, not open sign-up.** A logged-in user creates a one-time link that works for 2 days; the person who opens it picks their own username and password. With a handful of trusted users, any logged-in user may invite (roles are I21). The CLI is removed in milestone 03.
+- **Users join by invite link, not open sign-up.** A logged-in user creates a one-time link that works for 2 days; the person who opens it picks their own username and password. With a handful of trusted users, any logged-in user may invite (roles are I21). There is no terminal tool: the first user of an empty database comes from two settings read on startup, and only while the database has no users (milestone 03).
 - **Times compared in SQL are written from Go.** A query that compares a stored time gets "now" as a parameter instead of using `CURRENT_TIMESTAMP`, so tests can fix the clock (`webConfig.now`). Invite times are UTC whole seconds, because SQLite compares the stored times as text and a time without a fraction would sort after one with a fraction in the same second. Sessions still use `CURRENT_TIMESTAMP`.
 - **Packages are named for the concept** (`practice`, `player`), not the layer (`service`, `models`).

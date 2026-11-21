@@ -39,7 +39,7 @@ Numbers are stable: a done or dropped idea keeps its number and is marked, never
 
 - **I15** Reset password.
 - **I16** Sign-up that an admin initiates or verifies.
-- **I17** Deprecate the CLI; needs a safe way to create users first.
+- **I17** ~~Deprecate the CLI; needs a safe way to create users first.~~ Done in milestone 03: invitations (milestone 02) plus the first user from settings on an empty database.
 - **I21** Organizer-only rights: the organizer (an admin user) manages users and player details; assistant organizers (basic users) can view practices and tick vests, nothing else.
 - **I26** Change your own password while logged in. Users created with the old CLI have a password cut to its first word and lowercased (tech review #4, skipped in milestone 02), and this is how they would replace it. Nobody has asked for it yet.
 - **I27** Roles for a multi-club Tiimit, if it ever serves more than one team: a Tiimit admin (across all teams), a primary organizer per team, and assistant organizers per team. Builds on I21; not before a milestone asks for multi-club.

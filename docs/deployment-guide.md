@@ -19,7 +19,7 @@ deployment goes wrong.
 
 A deploy copies **one file**. Everything the app needs at runtime is compiled into it:
 
-- **Static assets** — `cmd/web/static/` via `//go:embed static` ([cmd/web/main.go:14](../cmd/web/main.go#L14)).
+- **Static assets** — `cmd/web/static/` via `//go:embed static` (`staticFiles` in [cmd/web/main.go](../cmd/web/main.go)).
   This includes `tailwind.css`, which `make prod/build-arm64` regenerates before compiling.
   There is no separate step to deploy CSS.
 - **Database migrations** — `sql/schema/*.sql` via `//go:embed schema/*.sql`
@@ -89,11 +89,13 @@ sudo systemctl daemon-reload
 sudo systemctl enable tiimit
 ```
 
+On a fresh install the database has no users, so nobody can log in yet: create the first user with [Recovering onto an empty database](#recovering-onto-an-empty-database).
+
 Notes on the environment variables:
 
 - `DB_PATH` is read and required.
 - `ENV=production` is currently **ignored** — the app hardcodes `env: "development"`
-  ([cmd/web/main.go:44](../cmd/web/main.go#L44)).
+  (the `webConfig` literal in [cmd/web/main.go](../cmd/web/main.go)).
 - `POSTHOG_API_KEY` is not set here, so analytics is disabled in production. The app logs a
   warning and runs normally.
 - The app calls `godotenv.Load()` at startup and logs `failed to load .env file` when there is
@@ -311,6 +313,55 @@ sudo rm -f /var/lib/tiimit/tiimit.db*
 sudo systemctl start tiimit    # migrations recreate the schema
 ```
 
+After a reset nobody can log in; create the first user as below.
+
+### Recovering onto an empty database
+
+On a database with no users, Tiimit creates the first user on startup from
+`FIRST_USER_USERNAME` and `FIRST_USER_PASSWORD`. Both must be set, and they
+must follow the sign-up rules (username 5 to 20 letters a to z, å, ä, ö;
+password 10 to 64 characters and not the username), or Tiimit stops and
+the log names the setting to fix. On a database that has users, the two
+settings are ignored.
+
+1. Add the settings in a drop-in file, so the unit file stays unchanged:
+
+   ```bash
+   sudo systemctl edit tiimit
+   ```
+
+   and in the editor, between the comment lines:
+
+   ```ini
+   [Service]
+   Environment="FIRST_USER_USERNAME=yourname"
+   Environment="FIRST_USER_PASSWORD=your-long-password"
+   ```
+
+   Inside the quotes, write a `%` in the password as `%%` (systemd treats
+   `%` as a placeholder), a `\` as `\\` and a `"` as `\"`. Otherwise
+   the password Tiimit stores differs from the one you typed, and since a
+   user now exists the settings are ignored from then on.
+2. Restart and check the log says `Created the first user`:
+
+   ```bash
+   sudo systemctl restart tiimit
+   sudo journalctl -u tiimit -n 20
+   ```
+
+3. Log in, then **remove the password from the Pi** straight away. The
+   drop-in file is normally readable by every user on the Pi (check with
+   `ls -l /etc/systemd/system/tiimit.service.d/`), and `systemctl show
+   tiimit` may show the value too:
+
+   ```bash
+   sudo systemctl revert tiimit    # deletes the drop-in
+   sudo systemctl restart tiimit
+   ```
+
+   `revert` removes every drop-in of the service; this guide sets up no
+   others.
+
 ## Monitoring
 
 ```bash
@@ -377,7 +428,7 @@ able to recover; 7+ are cleanups.
       instead of being discovered by breakage.
 
 - [ ] **8. Hardcoded config in `main.go`.** `address: "127.0.0.1:8080"` and `env: "development"`
-      are literals ([cmd/web/main.go:40-46](../cmd/web/main.go#L40-L46)), so `Environment=` in
+      are literals (the `webConfig` literal in [cmd/web/main.go](../cmd/web/main.go)), so `Environment=` in
       the unit file has no effect and the app runs in development mode in production
       (dev-mode cache headers on static assets). Read both from the environment with defaults.
 

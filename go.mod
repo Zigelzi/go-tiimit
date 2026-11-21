@@ -5,7 +5,6 @@ go 1.26.0
 require (
 	github.com/a-h/templ v0.3.1118
 	github.com/joho/godotenv v1.5.1
-	github.com/manifoldco/promptui v0.9.0
 	github.com/pressly/goose/v3 v3.26.0
 	github.com/xuri/excelize/v2 v2.9.0
 	golang.org/x/crypto v0.58.0
@@ -13,7 +12,6 @@ require (
 )
 
 require (
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect

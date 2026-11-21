@@ -120,7 +120,8 @@ func TestNotLoggedInCannotSeeUsersOrCreateInvite(t *testing.T) {
 	}
 }
 
-// createUser creates an account directly, the way createCoach does.
+// createUser inserts an account directly, skipping the sign-up rules and
+// ensureFirstUser, so a test can set up any database state.
 func createUser(t *testing.T, app *webConfig, username, password string) {
 	t.Helper()
 	hashed, err := auth.HashPassword(password)

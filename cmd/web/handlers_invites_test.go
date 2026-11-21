@@ -67,8 +67,8 @@ func TestNewOrganizerJoinsWithInviteLink(t *testing.T) {
 // 02/S6: New organizer chooses a username that is taken
 func TestNewOrganizerChoosesTakenUsername(t *testing.T) {
 	app := newTestApp(t)
+	path := createInvite(t, app) // creates the coach, who must be the first user
 	createUser(t, app, "ainvir", "made-up-password-2")
-	path := createInvite(t, app)
 	joiner := newTestClient(t, app)
 
 	rec := joiner.signUp(path, " AINVIR ", newUserPassword)

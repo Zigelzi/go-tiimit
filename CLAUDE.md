@@ -18,7 +18,7 @@ Code layout and the rules for where new code goes: `ARCHITECTURE.md` at the repo
 
 Tiimit is an app that football team organizer (or coach) use to distribute the players of a practice into two even teams.
 
-Tiimit is mostly a web app (templ + HTMX) plus a small CLI for creating users.
+Tiimit is a web app (templ + HTMX).
 
 Currently it's used by a single team of a single football club and has fewer than 10 users, deployed to a Raspberry Pi and reachable from the public web behind login. See `README.md` and `spec/user-flows.md`.
 
@@ -31,7 +31,7 @@ Currently it's used by a single team of a single football club and has fewer tha
 - `make prod/build-arm64`: arm64 binary for the Pi into `./build`
 - `./deploy.sh`: `make test`, build and install on the Pi (needs `.deploy.conf`, copied from `.deploy.conf.example`). **A deploy is also a migration of the live database.** Only when Human-PM asks. Setup and recovery: `docs/deployment-guide.md`
 - After editing SQL: `sqlc generate`. After editing a `.templ`: `templ generate` (or have `make dev` running) before `go build`/`go test`/`go vet`
-- Migrations run automatically against `DB_PATH` on every server/CLI startup. Env vars: see `.env.example` (`POSTHOG_API_KEY` is optional)
+- Migrations run automatically against `DB_PATH` on every server startup. Env vars: see `.env.example` (`POSTHOG_API_KEY` is optional)
 
 Generated code: a file is generated if, and only if, its first line is `// Code generated ... DO NOT EDIT.` (templ's `*_templ.go`, sqlc's `internal/db/*.sql.go`, `db.go`, `models.go`). Change its source (`.templ`, `sql/`) instead. sqlc's output is committed; `*_templ.go` and the built `cmd/web/static/tailwind.css` are gitignored, so regenerate them on a fresh checkout. Everything else, including `internal/db/config.go`, is edited directly.
 
