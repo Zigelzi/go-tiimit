@@ -1,0 +1,75 @@
+package components
+
+// SignUpPage is the form that creates an account from the invite at path. It
+// leaves PostHog out, because the address carries the invite's token. The
+// form swaps only its error area, so what was typed stays on the page.
+templ SignUpPage(path string) {
+	@BaseWithoutAnalytics("Create your account") {
+		<main class="flex-1">
+			<div class="mx-auto max-w-3xl px-gutter py-6">
+				<h2 class="text-2xl">Create your account <span class="text-sm">in Tiumo</span></h2>
+				<form class="flex flex-col gap-6 my-6" method="post" action={ templ.SafeURL(path) } hx-post={ path } hx-target="#signup-error">
+					<div>
+						<label class="form-label" for="username">Username</label>
+						<input
+							class="form-input py-3 text-lg"
+							type="text"
+							name="username"
+							id="username"
+							autocomplete="username"
+							autocapitalize="none"
+							spellcheck="false"
+						/>
+						<p class="text-sand-800 text-sm mt-1">5 to 20 letters. No numbers or spaces.</p>
+					</div>
+					<div>
+						<label class="form-label" for="password">Password</label>
+						<input
+							class="form-input py-3 text-lg"
+							type="password"
+							name="password"
+							id="password"
+							autocomplete="new-password"
+						/>
+						<p class="text-sand-800 text-sm mt-1">At least 10 characters. A few words separated with dashes (-) works well.</p>
+					</div>
+					<div id="signup-error"></div>
+					<button
+						class="btn btn-primary w-full py-4 text-lg disabled:opacity-50"
+						type="submit"
+						hx-disabled-elt="this"
+					>Create account</button>
+				</form>
+			</div>
+		</main>
+	}
+}
+
+// InviteLinkProblem is the page for an invite link that cannot be used: a
+// title naming what is wrong and a message saying what to do. It leaves
+// PostHog out, as SignUpPage does.
+templ InviteLinkProblem(title, message string) {
+	@BaseWithoutAnalytics(title) {
+		<main class="flex-1">
+			<div class="mx-auto max-w-3xl px-gutter py-6">
+				<h2 class="text-2xl">{ title }</h2>
+				<p class="text-sand-800 mt-2">{ message }</p>
+			</div>
+		</main>
+	}
+}
+
+// AlreadyLoggedIn is the page a logged-in visitor gets for a working invite
+// link: who they are logged in as and a button to log out, with no form. It
+// leaves PostHog out, as SignUpPage does.
+templ AlreadyLoggedIn(username string) {
+	@BaseWithoutAnalytics("Already logged in") {
+		<main class="flex-1">
+			<div class="mx-auto max-w-3xl px-gutter py-6">
+				<h2 class="text-2xl">Already logged in</h2>
+				<p class="text-sand-800 mt-2">You are logged in as { username }. Log out to create a new account with this invitation.</p>
+				<a hx-post="/logout" class="btn btn-secondary block w-full py-4 text-lg mt-6 text-center">Log out</a>
+			</div>
+		</main>
+	}
+}

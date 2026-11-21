@@ -23,7 +23,7 @@ Sizes: **XS** a few lines, one commit. **S** one small `fix/` or `chore/` branch
 | 1   | ~~Docs describe a player import that no longer exists~~ (done) | XS             | Every session reads these docs first; wrong facts there cost every milestone |
 | 2   | ~~Creating a practice ignores the commit error~~ (done)       | XS             | Can report success for a practice that was never saved                       |
 | 3   | ~~Attendance import panics on a short row or a near-empty sheet~~ (done) | XS             | Crash in the core flow, triggered by a slightly different export             |
-| 4   | CLI lowercases and truncates usernames and passwords          | XS             | Weakens passwords silently and makes mixed-case logins fail                  |
+| 4   | ~~CLI lowercases and truncates usernames and passwords~~ (skipped) | XS             | Weakens passwords silently and makes mixed-case logins fail                  |
 | 5   | PostHog may receive player names                              | S              | Privacy rule in the constitution; needs a check, then a config change        |
 | 6   | Production runs with `env = "development"`                    | XS             | Static files are never cached on phones on the pitch                         |
 | 7   | SQLite opened without `busy_timeout`, `foreign_keys` or WAL   | XS–S           | Two coaches ticking vests at once can get "database is locked"               |
@@ -76,6 +76,8 @@ Both reproduced with a throwaway test. `net/http` recovers the panic, so the ser
 **Fix:** check lengths and return an error (the handler already turns that into a banner); add both cases to the table test. Consider whether one malformed row should fail the whole import or be skipped and reported (that part is a product question, close to I3).
 
 ### 4. The CLI lowercases and truncates usernames and passwords
+
+**Status (2026-11-21):** skipped. Milestone 02 (`spec/milestones/02-user-registration.md`) moves account creation to the web app, and milestone 03 (`03-remove-cli.md`) removes the CLI instead of fixing it. Changing an existing password is I26. The text below is the original finding, kept as history.
 
 `cmd/cli/main.go:76` and `:80` pass input through `cleanInput`, which lowercases it and keeps only the first space-separated word. A password `Kesä Treeni 2026` is stored as the hash of `kesä`. The login form does not lowercase, so anyone who types their password as they chose it is rejected, and the stored password is weaker than intended. The password is also echoed to the terminal, and an empty username is accepted.
 

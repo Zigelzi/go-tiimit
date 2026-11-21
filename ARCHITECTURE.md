@@ -15,7 +15,7 @@ flowchart TD
     practice["internal/practice: practices and team distribution"]
     player["internal/player: players, scoring, sorting, goalie preference"]
     file["internal/file: parsing MyClub Excel exports"]
-    auth["internal/auth: passwords, sessions, the logged-in user on the request"]
+    auth["internal/auth: passwords, sessions, username and password rules, the logged-in user on the request"]
     db["internal/db: sqlc queries, opening and migrating the database"]
     web --> components
     web --> view
@@ -46,7 +46,8 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 3. Handlers convert domain types to `view` types; templates never render domain or `db` types directly.
 4. A rule takes the narrowest input it can use and returns plain data, so it can be table-tested without a database (as `practice.Distribute` is).
 5. A rule that must not race lives in SQL, not in Go. Toggling a vest is one `UPDATE` that flips the stored value, not a read followed by a write, so quick taps cannot undo each other (legacy/practices.md, slice 2).
-6. Pages that show player data require login (`requireAuth`); `authMiddleware` only puts the user on the request context.
+6. Pages that show player data require login (`requireAuth`); `authMiddleware` only puts the user on the request context. The only public pages are login and the invite pages (`/invites/{token}`).
+7. A page whose address carries a secret, such as an invite token, is built on `BaseWithoutAnalytics`: no PostHog, and no referrer sent to other sites.
 
 ## Where does new code go
 
@@ -58,10 +59,10 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 | A rule about players: scores, sorting, goalie preference                | `internal/player`                                                                               |
 | A rule about practices or how teams are distributed                     | `internal/practice`                                                                             |
 | Reading a MyClub export                                                 | `internal/file`                                                                                 |
-| Anything about passwords or sessions                                    | `internal/auth`                                                                                 |
+| Anything about passwords, sessions or the username and password rules   | `internal/auth`                                                                                 |
 | A table or column                                                       | a Goose migration in `sql/schema` (timestamp-prefixed), then regenerate                         |
 | A query                                                                 | `sql/queries`, then regenerate                                                                  |
-| A user-management task an admin runs                                    | `cmd/cli` (until I17, deprecating the CLI, is decided)                                          |
+| A user-management task an admin runs                                    | `cmd/cli`, until milestone 03 removes it; new user features go in the web app                   |
 | Anything about running on the Pi                                        | `deploy.sh`, `.deploy.conf.example`, with the steps a person runs in `docs/deployment-guide.md` |
 
 ## Conventions
@@ -82,5 +83,6 @@ Known places where the code does not follow the rules above yet. Fix one when a 
 
 - **Two teams, everywhere.** The database check, the queries and the UI all assume exactly two. Changing it is a milestone of its own, not a parameter.
 - **Sessions in the database, not JWT.** One server, one SQLite file: a session row is simpler to reason about and can be revoked on logout.
-- **Users only from the CLI.** No sign-up page means no public way to create an account. Revisit with I16/I17.
+- **Users join by invite link, not open sign-up.** A logged-in user creates a one-time link that works for 2 days; the person who opens it picks their own username and password. With a handful of trusted users, any logged-in user may invite (roles are I21). The CLI is removed in milestone 03.
+- **Times compared in SQL are written from Go.** A query that compares a stored time gets "now" as a parameter instead of using `CURRENT_TIMESTAMP`, so tests can fix the clock (`webConfig.now`). Invite times are UTC whole seconds, because SQLite compares the stored times as text and a time without a fraction would sort after one with a fraction in the same second. Sessions still use `CURRENT_TIMESTAMP`.
 - **Packages are named for the concept** (`practice`, `player`), not the layer (`service`, `models`).

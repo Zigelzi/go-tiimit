@@ -5,7 +5,7 @@ import "strconv"
 import "time"
 import "github.com/Zigelzi/go-tiimit/cmd/web/view"
 
-templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount int) {
+templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount, userCount int) {
 	@HomeLayout("Home") {
 		<div class="min-h-[70vh] flex justify-center flex-col">
 			{{ user := auth.GetUserInfo(ctx) }}
@@ -47,6 +47,19 @@ templ IndexPage(practiceSummaries []view.PracticeSummary, clubPlayerCount int) {
 							<span class="text-lg font-bold">Players</span> <span class="text-sand-700 text-xl">→</span>
 						</p>
 						<p class="text-sand-800 text-sm">{ clubPlayerCount } active in the club</p>
+					</a>
+					<a
+						href="/users"
+						class="mt-4 bg-white rounded-xl px-5.5 py-2 block transition border border-sand-300 hover:border-sand-800"
+					>
+						<p class="flex justify-between mb-1">
+							<span class="text-lg font-bold">Users</span> <span class="text-sand-700 text-xl">→</span>
+						</p>
+						if userCount == 1 {
+							<p class="text-sand-800 text-sm">1 user</p>
+						} else {
+							<p class="text-sand-800 text-sm">{ userCount } users</p>
+						}
 					</a>
 				</div>
 				<div class="mt-8">

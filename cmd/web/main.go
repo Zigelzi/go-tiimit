@@ -5,9 +5,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
 	"github.com/joho/godotenv"
+
+	// Embeds the time zone data so Europe/Helsinki loads without the OS copy.
+	_ "time/tzdata"
 )
 
 //go:embed static
@@ -42,6 +46,7 @@ func main() {
 		address:  "127.0.0.1:8080",
 		env:      "development",
 		phApiKey: postHogApiKey,
+		now:      time.Now,
 	}
 
 	server := http.Server{
@@ -78,6 +83,14 @@ func (cfg *webConfig) routes() http.Handler {
 	mux.Handle("GET /players/{id}/edit", requireAuth(http.HandlerFunc(cfg.handleEditPlayerRow)))
 	mux.Handle("GET /players/add", requireAuth(http.HandlerFunc(cfg.handleAddPlayerForm)))
 	mux.Handle("PUT /players/{id}/inactivate", requireAuth(http.HandlerFunc(cfg.handleSetPlayerInactive)))
+
+	// Users
+	mux.Handle("GET /users", requireAuth(http.HandlerFunc(cfg.handleViewUsersPage)))
+	mux.Handle("POST /users/invites", requireAuth(http.HandlerFunc(cfg.handleCreateInvite)))
+
+	// Invites are public: the link is how someone without an account signs up.
+	mux.HandleFunc("GET /invites/{token}", cfg.handleSignUpPage)
+	mux.HandleFunc("POST /invites/{token}", cfg.handleSignUp)
 
 	// Auth
 	mux.HandleFunc("GET /login", cfg.handleLoginPage)

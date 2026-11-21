@@ -31,7 +31,19 @@ One session on one date, split into two teams. Table `practices`; who plays wher
 
 ## User and session
 
-Someone who can log in: the organizer or an assistant organizer. Tables `users` (username, hashed password) and `user_sessions` (cookie session id, expiry 14 days, soft-deleted on logout). Users are created only with the CLI (`cmd/cli`); there is no sign-up.
+Someone who can log in: the organizer or an assistant organizer. Tables `users` (username, hashed password) and `user_sessions` (cookie session id, expiry 14 days, soft-deleted on logout). A new user joins with an invite link that a logged-in user creates; there is no open sign-up. The CLI (`cmd/cli`) can still create users until milestone 03 removes it.
+
+- **Username** is stored trimmed and lowercased, and login normalises the typed name the same way. A new username is 5 to 20 letters (a to z, å, ä, ö); older usernames are not checked against that.
+- **Password** is stored as a bcrypt hash of exactly what was typed. A new password is 10 to 64 characters and at most 72 bytes.
 
 - **All users have the same rights.** Any logged-in user can add and edit players, create practices, move players and tick vests. Organizer-only rights are not built (I21).
 - A user is not linked to a player, even when the person is one.
+
+## Invite
+
+A one-time link for creating an account. Table `user_invites`: a random token (the link's last part), who created it, when, when it expires (2 days later), and once used, when and which account it created. Nothing is shown about who invited whom.
+
+- **One account per invite.** Using it up and creating the account happen in one transaction; a second use gets "already used".
+- **Opening the link never uses it up**, because chat apps open links to build a preview.
+- Invites are never listed, revoked or deleted; an unused one simply expires.
+- Times are written from Go in UTC, cut to whole seconds, and compared in SQL against a "now" passed in (see `ARCHITECTURE.md`, Decisions).

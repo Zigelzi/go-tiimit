@@ -3,7 +3,23 @@ package components
 import "github.com/Zigelzi/go-tiimit/internal/auth"
 import "github.com/Zigelzi/go-tiimit/cmd/web/analytics"
 
+// Base is the HTML document every page is built on, with PostHog analytics.
 templ Base(title string) {
+	@document(title, true) {
+		{ children... }
+	}
+}
+
+// BaseWithoutAnalytics is Base without PostHog, for pages whose address must
+// not reach a third party, such as an invite link with its token.
+templ BaseWithoutAnalytics(title string) {
+	@document(title, false) {
+		{ children... }
+	}
+}
+
+// document is the HTML document; withAnalytics decides whether it loads PostHog.
+templ document(title string, withAnalytics bool) {
 	<!DOCTYPE html>
 	<html lang="en" class="font-sans bg-sand-100 text-ink-900">
 		<head>
@@ -12,12 +28,20 @@ templ Base(title string) {
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
 			<link rel="stylesheet" href="/static/tailwind.css"/>
 			<title>Tiumo - { title }</title>
-			<script src="/static/analytics.js"></script>
+			if withAnalytics {
+				<script src="/static/analytics.js"></script>
+			} else {
+				// The address may carry an invite token: keep it from other sites.
+				<meta name="referrer" content="same-origin"/>
+			}
 			<script defer src="/static/tabs.js"></script>
+			<script defer src="/static/invite.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
-			{{ apikey := analytics.GetPostHogApiKey(ctx) }}
-			{{ user := auth.GetUserInfo(ctx) }}
-			@templ.JSFuncCall("initPostHog", apikey, user)
+			if withAnalytics {
+				{{ apikey := analytics.GetPostHogApiKey(ctx) }}
+				{{ user := auth.GetUserInfo(ctx) }}
+				@templ.JSFuncCall("initPostHog", apikey, user)
+			}
 		</head>
 		<body class="min-h-dvh flex flex-col">
 			{ children... }

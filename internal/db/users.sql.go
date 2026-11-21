@@ -9,6 +9,20 @@ import (
 	"context"
 )
 
+const countUsers = `-- name: CountUsers :one
+SELECT
+    COUNT(*)
+FROM
+    users
+`
+
+func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUsers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO
     users (username, hashed_password, created_at, updated_at)
@@ -58,4 +72,36 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listUsernames = `-- name: ListUsernames :many
+SELECT
+    username
+FROM
+    users
+ORDER BY
+    username
+`
+
+func (q *Queries) ListUsernames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listUsernames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

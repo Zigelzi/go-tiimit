@@ -39,6 +39,16 @@ type User struct {
 	UpdatedAt      time.Time
 }
 
+type UserInvite struct {
+	ID              int64
+	Token           string
+	CreatedByUserID int64
+	CreatedAt       time.Time
+	ExpiresAt       time.Time
+	UsedAt          sql.NullTime
+	UsedByUserID    sql.NullInt64
+}
+
 type UserSession struct {
 	SessionID string
 	UserID    int64

@@ -30,6 +30,12 @@ func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	userCount, err := cfg.queries.CountUsers(r.Context())
+	if err != nil {
+		log.Printf("failed to count users: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	practiceSummaries := []view.PracticeSummary{}
 	for _, dbPracticeSummary := range dbPracticeSummaries {
 		practiceSummaries = append(practiceSummaries, view.PracticeSummary{
@@ -39,7 +45,7 @@ func (cfg *webConfig) handleIndexPage(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	components.IndexPage(practiceSummaries, len(dbPlayers)).Render(r.Context(), w)
+	components.IndexPage(practiceSummaries, len(dbPlayers), int(userCount)).Render(r.Context(), w)
 }
 
 func (cfg *webConfig) handleSetupPracticePage(w http.ResponseWriter, r *http.Request) {

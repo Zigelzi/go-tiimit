@@ -41,7 +41,7 @@ go.work.sum
 /bin/
 # Left over in clones from before the bun-based build was removed.
 /node_modules/
-./web
+/web
 
 # Build and deployment
 /build/

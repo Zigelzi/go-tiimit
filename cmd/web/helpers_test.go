@@ -51,6 +51,7 @@ func newTestApp(t *testing.T) *webConfig {
 		queries: db.New(database),
 		db:      database,
 		env:     "test",
+		now:     time.Now,
 	}
 }
 

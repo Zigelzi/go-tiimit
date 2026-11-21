@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -18,7 +19,7 @@ func (cfg *webConfig) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("username")
+	username := auth.NormalizeUsername(r.FormValue("username"))
 	dbUser, err := cfg.queries.GetUserByUsername(r.Context(), username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -41,38 +42,50 @@ func (cfg *webConfig) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionToken, err := auth.MakeToken()
-	if err != nil {
-		log.Printf("failed to generate session token: %v", err)
+	if err := cfg.startSession(w, r, dbUser.ID); err != nil {
+		log.Printf("failed to start a session for user %d: %v", dbUser.ID, err)
 		component := components.FormError("Logging in failed, try again later.")
 		component.Render(r.Context(), w)
 		return
+	}
+	w.Header().Add("HX-Redirect", "/")
+}
+
+// sessionLifetime is how long a login lasts.
+const sessionLifetime = 14 * 24 * time.Hour
+
+// startSession logs userID in: it stores a new session and sets its cookie on
+// w. Logging in and signing up both use it, so a session is made one way.
+func (cfg *webConfig) startSession(w http.ResponseWriter, r *http.Request, userID int64) error {
+	sessionToken, err := auth.MakeToken()
+	if err != nil {
+		return fmt.Errorf("generating the session token: %w", err)
 	}
 	session, err := cfg.queries.StartUserSession(r.Context(), db.StartUserSessionParams{
 		SessionID: sessionToken,
-		UserID:    dbUser.ID,
-		ExpiresAt: time.Now().UTC().AddDate(0, 0, 14),
+		UserID:    userID,
+		ExpiresAt: time.Now().UTC().Add(sessionLifetime),
 	})
 	if err != nil {
-		log.Printf("failed to start new session: %v", err)
-		component := components.FormError("Logging in failed, try again later.")
-		component.Render(r.Context(), w)
-		return
+		return fmt.Errorf("storing the session: %w", err)
 	}
-
 	http.SetCookie(w, &http.Cookie{
 		Name:     "user_session_id",
 		Value:    session.SessionID,
+		Path:     "/",
 		HttpOnly: true,
 		SameSite: http.SameSiteDefaultMode,
 		Expires:  session.ExpiresAt,
 	})
-	w.Header().Add("HX-Redirect", "/")
+	return nil
 }
 
 func (cfg *webConfig) handleLogout(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("user_session_id")
 	if err != nil {
+		// Nothing to end, but still leave the page, so the button never
+		// seems to do nothing.
+		w.Header().Add("HX-Redirect", "/")
 		return
 	}
 
@@ -85,6 +98,9 @@ func (cfg *webConfig) handleLogout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// A cookie read from the request has no path, so name it again; without
+	// it the browser would not match the cookie it is meant to remove.
+	sessionCookie.Path = "/"
 	sessionCookie.Expires = time.Now().Add(-time.Hour)
 	http.SetCookie(w, sessionCookie)
 	w.Header().Add("HX-Redirect", "/")

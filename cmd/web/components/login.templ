@@ -4,7 +4,7 @@ templ LoginPage() {
 	@ContentPageLayout("Login", "") {
 		<div>
 			<h2 class="text-2xl">Log in <span class="text-sm">to Tiimit</span></h2>
-			<form class="flex flex-col gap-4 my-4" hx-post="/login" hx-target="#login-error">
+			<form class="flex flex-col gap-4 my-4" method="post" action="/login" hx-post="/login" hx-target="#login-error">
 				<div>
 					<label class="form-label" for="username">Username</label>
 					<input class="form-input" type="text" name="username" id="username" placeholder="mattimeikalainen"/>

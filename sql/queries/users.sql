@@ -16,3 +16,17 @@ WHERE
     username = ?
 LIMIT
     1;
+
+-- name: ListUsernames :many
+SELECT
+    username
+FROM
+    users
+ORDER BY
+    username;
+
+-- name: CountUsers :one
+SELECT
+    COUNT(*)
+FROM
+    users;

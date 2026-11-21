@@ -1,0 +1,56 @@
+package components
+
+templ UsersPage(usernames []string) {
+	@ContentPageLayout("Users", "") {
+		<div class="mt-4 mb-4">
+			<h2 class="text-lg font-bold leading-5">Users</h2>
+		</div>
+		<div class="overflow-x-auto border border-sand-500 rounded-xl">
+			<table class="w-full">
+				<thead>
+					<tr class="text-left text-nowrap bg-sand-100 text-sand-700 font-mono uppercase text-xs tracking-[0.09em]">
+						<th>Username</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, username := range usernames {
+						<tr class="bg-white border-b border-sand-300 last:border-b-0 h-15">
+							<td>{ username }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="my-8">
+			<p class="font-bold text-sm border-b border-sand-300 pb-2 mb-2">Invite a new user</p>
+			<p class="text-sand-800 text-sm mb-4">
+				Create an invitation and share it with the person you want to invite, for example on WhatsApp. They can choose their own username and password to log in.
+			</p>
+			<p class="text-sand-800 text-sm mb-6">The invitation stops working once they have created their account, or after 48 hours.</p>
+			<button
+				class="btn btn-primary w-full py-4 text-lg disabled:opacity-50"
+				hx-post="/users/invites"
+				hx-target="#invite-result"
+				hx-swap="innerHTML"
+				hx-disabled-elt="this"
+			>Create invitation</button>
+			<div id="invite-result" class="mt-4"></div>
+		</div>
+	}
+}
+
+// InviteResult shows a new invite: a read-only field and a Share button. The
+// browser fills in the full link from path (see static/invite.js).
+templ InviteResult(path, expiresText string) {
+	<div data-invite-path={ path }>
+		<label for="invite-link" class="block text-sm text-sand-800 mb-1">Invitation link</label>
+		<input
+			id="invite-link"
+			type="text"
+			readonly
+			class="w-full bg-white rounded-sm border border-sand-400 px-3 py-3 text-base"
+		/>
+		<button type="button" data-invite-share class="btn btn-secondary w-full py-4 text-lg mt-2">Share</button>
+		<p class="text-sand-800 text-sm mt-2">Works once, until { expiresText }</p>
+	</div>
+}
