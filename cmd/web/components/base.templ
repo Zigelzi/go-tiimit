@@ -27,6 +27,10 @@ templ document(title string, withAnalytics bool) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
 			<link rel="stylesheet" href="/static/tailwind.css"/>
+			<link rel="icon" href="/static/favicon.ico" sizes="32x32"/>
+			<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+			<link rel="apple-touch-icon" href="/static/apple-touch-icon.png"/>
+			<link rel="manifest" href="/static/manifest.json"/>
 			<title>Tiumo - { title }</title>
 			if withAnalytics {
 				<script src="/static/analytics.js"></script>

@@ -3,7 +3,11 @@ package components
 templ SiteHeader() {
 	<header>
 		<div class="flex justify-between px-gutter py-2 border-b border-slate-300 bg-ink-900 text-sand-100">
-			<a class="text-2xl" href="/">Tiumo</a>
+			<a class="text-2xl" href="/">
+				// 1em tall and lowered by 0.2em, so the logo lines up with the letters, not the line box.
+				<img src="/static/favicon.svg" alt="" class="inline-block h-[1em] w-[1em] align-[-0.2em]"/>
+				Tiumo
+			</a>
 		</div>
 	</header>
 }
