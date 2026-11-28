@@ -1,0 +1,9 @@
+# Lets the deploy user run the Pi's deploy script as root without a password,
+# and nothing else. Setup step 6 in docs/deployment-guide.md installs it as
+# /etc/sudoers.d/tiimit-deploy (no dot in the file name, or sudo silently
+# ignores the file), with DEPLOY_USER replaced by the SSH user.
+#
+# sudo matches the whole command line, so this must stay in step with the
+# `sudo -n` line in deploy/deploy.sh.
+
+DEPLOY_USER ALL=(root) NOPASSWD: /usr/local/sbin/tiimit-pi install

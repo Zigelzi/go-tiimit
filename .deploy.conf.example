@@ -1,7 +1,0 @@
-# Example of environment variables required to deploy the app to Raspberry Pi in local network
-PI_USER="example-user"
-PI_IP="192.168.1.50"
-TMP_FILE="/tmp/example-app"
-TARGET_DIR="/opt/example-app"
-
-# These paths must match /etc/sudoers.d/tiimit-deploy on the Pi

@@ -29,7 +29,7 @@ Currently it's used by a single team of a single football club and has fewer tha
 - `make run`: the server with `.env`'s settings, on `localhost:8080`
 - `make dev`: live reload on `localhost:7331` (templ watch + proxy, Air, Tailwind watch)
 - `make prod/build-arm64`: arm64 binary for the Pi into `./build`
-- `./deploy.sh`: `make test`, build and install on the Pi (needs `.deploy.conf`, copied from `.deploy.conf.example`). **A deploy is also a migration of the live database.** Only when Human-PM asks. Setup and recovery: `docs/deployment-guide.md`
+- `make deploy`: `make test`, build, then back up the database, install and check on the Pi (needs `deploy/deploy.conf`, copied from `deploy/deploy.conf.example`). **A deploy is also a migration of the live database.** Only when Human-PM asks. Setup and recovery: `docs/deployment-guide.md`
 - After editing SQL: `sqlc generate`. After editing a `.templ`: `templ generate` (or have `make dev` running) before `go build`/`go test`/`go vet`
 - Migrations run automatically against `DB_PATH` on every server startup. Env vars: see `.env.example` (`POSTHOG_API_KEY` is optional)
 

@@ -23,7 +23,7 @@ TAILWIND_ARCH     := $(or $(if $(filter x86_64 amd64,$(shell uname -m)),x64),$(i
 TAILWIND_PLATFORM := $(TAILWIND_OS)-$(TAILWIND_ARCH)
 TAILWIND          := ./bin/tailwindcss-$(TAILWIND_VERSION)
 
-.PHONY: generate run test dev dev/templ dev/server dev/tailwind prod/build-arm64
+.PHONY: generate run test dev dev/templ dev/server dev/tailwind prod/build-arm64 deploy
 
 generate: $(TAILWIND)
 	sqlc generate
@@ -43,6 +43,12 @@ test:
 prod/build-arm64: generate
 	mkdir -p build
 	GOOS=linux GOARCH=arm64 go build -o ./build ./cmd/web
+
+# deploy tests, builds and installs Tiumo on the Pi, backing up the database
+# first. A deploy is also a migration of the live database. Needs
+# deploy/deploy.conf; docs/deployment-guide.md has the setup.
+deploy:
+	./deploy/deploy.sh
 
 # dev runs three watchers in parallel. Open http://localhost:7331.
 #   templ:    regenerates templates and proxies to the server with live reload

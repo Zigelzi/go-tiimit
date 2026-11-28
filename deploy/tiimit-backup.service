@@ -1,0 +1,25 @@
+# Takes one weekly backup of Tiumo's database and exits. Started by
+# tiimit-backup.timer; run it by hand with
+# `sudo systemctl start tiimit-backup.service`.
+# docs/deployment-guide.md has the setup (step 10).
+
+[Unit]
+Description=Tiumo weekly database backup
+
+[Service]
+Type=oneshot
+# Runs as root, so it can write the root-only backup folder. The script does
+# everything in the app's data folder as the app's account.
+ExecStart=/usr/local/sbin/tiimit-pi backup weekly
+# The script already writes each message to the log itself; the printed copy
+# would show every line twice. Errors on stderr still reach the log.
+StandardOutput=null
+
+# Root needs only two folders for this, so the job gets only those: the rest
+# of the disk is read-only, homes are hidden, and it has no network.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateNetwork=true
+ReadWritePaths=/var/lib/tiimit /var/backups/tiimit

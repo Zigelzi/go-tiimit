@@ -49,15 +49,20 @@ Numbers are stable: a done or dropped idea keeps its number and is marked, never
 ### Technical
 
 - **I18** Tell "database unavailable" apart from "not logged in": the auth middleware treats every session lookup error as logged out. *(legacy/improvements.md)*
-- **I22** The login cookie lacks the `Secure` flag and sets no explicit `SameSite` (`cmd/web/handlers_auth.go`). *(00/R12)*
+- **I22** The login cookie lacks the `Secure` flag and sets no explicit `SameSite` (`cmd/web/handlers_auth.go`). *(00/R12)* Do right after milestone 04, together with removing the username from the failed-login log line (04/R3, 04/R31).
 - **I23** Forms have no CSRF protection. *(00/R12)*
+- **I30** Store login sessions and invitation tokens hashed, so a copy of the database (a backup, a stolen SD card) is not a working login. *(04/R2)*
+- **I31** nginx in front of Tiumo: an HSTS header, so phones stop trying plain http, and a rate limit on the login page. *(04 review)*
+- **I32** Copies of the database backups off the Pi, so a failed SD card does not lose the club's data. The next most valuable step after milestone 04. *(04/R8)*
+- **I33** More systemd hardening for the app: an empty `CapabilityBoundingSet=`, `PrivateDevices`, `ProtectKernelTunables`, `ProtectKernelModules`, `ProtectControlGroups`, `RestrictSUIDSGID`, `LockPersonality` and `RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX`. Would take `systemd-analyze security` from 8.3 to roughly 5 or 6; each needs a test on the Pi, since a wrong one shows only as a failed start. Skipped in milestone 04 by Human-PM. *(04 slice 2)*
+- **I34** Rehearse the restore on the Pi (milestone 04's S6): tick a vest, create an invitation, follow "Restoring a backup" in the deployment guide with a deploy backup taken a minute earlier, and check that the tick is gone, the phone is on the login page and the invitation no longer works. The steps passed on the laptop only; a backup never restored on the Pi is not known to work. Moved out of milestone 04 by Human-PM. *(04/S6)*
 - **I20** Deploy like Roundtrip. Roundtrip's milestone 18 (`../roundtrip/spec/milestones/18-pi-deploy.md`, files in `../roundtrip/deploy/`) solved most open items in [`../docs/deployment-guide.md`](../docs/deployment-guide.md#known-gaps--improvement-backlog), on the same Pi. Port it rather than redesign it:
-  - A database snapshot with SQLite's `.backup` before every deploy, plus a weekly systemd timer; each keeps its newest 3. This is the most valuable part, because every deploy migrates the club's only copy of the data. (gaps 6, 12)
-  - One root script kept in the repo (`roundtrip-pi`: snapshot, install, restart) as the only command the deploy user may run with sudo. That removes the wildcard sudo rule and puts the sudoers file in the repo. (gaps 4, 7)
+  - A database backup with SQLite's `.backup` before every deploy, plus a weekly systemd timer; each keeps its newest 3. This is the most valuable part, because every deploy migrates the club's only copy of the data. (gaps 6, 12)
+  - One root script kept in the repo (`roundtrip-pi`: backup, install, restart) as the only command the deploy user may run with sudo. That removes the wildcard sudo rule and puts the sudoers file in the repo. (gaps 4, 7)
   - Install with `install -o root`, keep one `.previous` binary instead of timestamped backups that pile up. (gaps 3, 4)
   - After the restart, check that the app answers. If it doesn't, say so and print the rollback steps. (gap 5, without the automatic rollback, which Roundtrip left out on purpose)
   - Stamp the build with its commit and log it at startup. Deploy only from a clean `main`. (gap 11)
   - The systemd unit and an env file in the repo, with the address and environment read from it instead of hardcoded in `main.go`. (gap 8)
   - `make deploy` instead of `./deploy.sh`, with the steps a person runs in one doc.
 
-  Different from Roundtrip: Tiimit is public through nginx with login, so the firewall and nginx parts stay as they are. Rehearse a restore once before relying on the snapshots. Use `/code-review high`: this runs as root on a public server.
+  Different from Roundtrip: Tiimit is public through nginx with login, so the firewall and nginx parts stay as they are. Rehearse a restore once before relying on the backups. Use `/code-review high`: this runs as root on a public server.

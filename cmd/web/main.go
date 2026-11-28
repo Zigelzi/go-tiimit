@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/Zigelzi/go-tiimit/internal/db"
@@ -23,6 +24,13 @@ func main() {
 	if err != nil {
 		log.Printf("failed to load .env file: %v", err)
 	}
+	settings, err := readServerSettings(os.Getenv)
+	if err != nil {
+		log.Fatalf("reading the server settings failed: %v", err)
+	}
+	version := buildVersion(debug.ReadBuildInfo())
+	log.Printf("Tiumo version %s, environment %s", version, settings.env)
+
 	newDb, err := db.InitDB(os.Getenv("DB_PATH"))
 	if err != nil {
 		log.Fatalf("initializing database from DB_PATH failed: %v", err)
@@ -44,8 +52,8 @@ func main() {
 	cfg := webConfig{
 		queries:  db.New(newDb),
 		db:       newDb,
-		address:  "127.0.0.1:8080",
-		env:      "development",
+		address:  settings.address,
+		env:      settings.env,
 		phApiKey: postHogApiKey,
 		now:      time.Now,
 	}

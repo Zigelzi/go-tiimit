@@ -57,10 +57,11 @@ Check it by hand with `go list -f '{{join .Imports "\n"}}' ./internal/practice |
 | A rule about practices or how teams are distributed                     | `internal/practice`                                                                             |
 | Reading a MyClub export                                                 | `internal/file`                                                                                 |
 | Anything about passwords, sessions or the username and password rules   | `internal/auth`                                                                                 |
-| A table or column                                                       | a Goose migration in `sql/schema` (timestamp-prefixed), then regenerate                         |
+| A table or column                                                       | a Goose migration in `sql/schema` (timestamp-prefixed, dated after the newest one on `main`: Goose refuses to start on an older-dated migration it has not run), then regenerate |
 | A query                                                                 | `sql/queries`, then regenerate                                                                  |
 | A user-management feature                                               | `cmd/web`; the first user of an empty database is created on startup in `cmd/web/first_user.go` |
-| Anything about running on the Pi                                        | `deploy.sh`, `.deploy.conf.example`, with the steps a person runs in `docs/deployment-guide.md` |
+| A server setting (listen address, environment)                         | `cmd/web/settings.go`, the example files `.env.example` and `deploy/tiimit.env.example`        |
+| Anything about running on the Pi                                        | `deploy/`: `deploy.sh` (the laptop side of `make deploy`), `tiimit-pi` (the one root script on the Pi), the systemd units and the sudo rule; the steps a person runs are in `docs/deployment-guide.md` |
 
 ## Conventions
 
@@ -82,4 +83,5 @@ Known places where the code does not follow the rules above yet. Fix one when a 
 - **Sessions in the database, not JWT.** One server, one SQLite file: a session row is simpler to reason about and can be revoked on logout.
 - **Users join by invite link, not open sign-up.** A logged-in user creates a one-time link that works for 2 days; the person who opens it picks their own username and password. With a handful of trusted users, any logged-in user may invite (roles are I21). There is no terminal tool: the first user of an empty database comes from two settings read on startup, and only while the database has no users (milestone 03).
 - **Times compared in SQL are written from Go.** A query that compares a stored time gets "now" as a parameter instead of using `CURRENT_TIMESTAMP`, so tests can fix the clock (`webConfig.now`). Invite times are UTC whole seconds, because SQLite compares the stored times as text and a time without a fraction would sort after one with a fraction in the same second. Sessions still use `CURRENT_TIMESTAMP`.
+- **The Pi is changed only through one root script.** `deploy/tiimit-pi` takes no input from the caller, and the deploy user may run only `tiimit-pi install` without a password. Backups are root-only, and rolling back stays manual, since restoring a backup loses data (milestone 04).
 - **Packages are named for the concept** (`practice`, `player`), not the layer (`service`, `models`).

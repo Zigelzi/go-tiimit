@@ -1,0 +1,251 @@
+#!/usr/bin/env bash
+# tiimit-pi does the deploy steps that need root on the Pi. It is installed
+# once by hand to /usr/local/sbin/tiimit-pi, owned by root, and the rule in
+# deploy/sudoers lets the deploy user run `tiimit-pi install` without a
+# password, and nothing else. docs/deployment-guide.md has the setup.
+#
+#   tiimit-pi install        back up the database, install the uploaded
+#                            program, restart the app and check that it answers
+#   tiimit-pi backup weekly  back up the database into the weekly folder; run
+#                            by tiimit-backup.timer, not allowed by the sudo rule
+#
+# It takes no other input from the caller: every path is fixed below or read
+# from the settings file, which only root can change.
+set -Eeuo pipefail
+
+# The deploy keeps going when the laptop's connection drops: a hang-up does
+# not stop it, and messages that can no longer reach the laptop still reach
+# the Pi's log (journalctl -t tiimit-pi).
+trap '' HUP PIPE
+# Errors inside functions reach the trap too (-E); a failure inside $(...)
+# is reported once, by the main shell.
+trap '[ "$BASH_SUBSHELL" -gt 0 ] || say "FAILED in tiimit-pi while running: $BASH_COMMAND"' ERR
+# Files root creates here, such as the backups, are readable by root only.
+umask 077
+# Commands run as other accounts below cannot enter root's home.
+cd /
+
+app=tiimit
+bin=/opt/tiimit/web
+settings=/etc/tiimit/tiimit.env
+backups=/var/backups/tiimit
+keep=3
+# How long, in seconds, a run waits for another one to finish.
+wait=60
+# Ends every refusal, so it says what did not happen. backup_weekly changes it.
+stopped="so nothing was installed"
+
+say() {
+	logger -t tiimit-pi -- "$*" 2>/dev/null || true
+	printf '%s\n' "$*" 2>/dev/null || true
+}
+
+fail() {
+	say "FAILED: $*"
+	exit 1
+}
+
+# as_app runs a command as the app's account. Everything that touches the
+# app's data folder goes through it: the app could have put links there, and
+# root following them could read or change files anywhere.
+as_app() {
+	runuser -u "$app" -- "$@"
+}
+
+# setting prints a value from the settings file. As with systemd, the last
+# line for a name wins.
+setting() {
+	sed -n "s/^$1=//p" "$settings" | tail -n 1
+}
+
+# Root writes the new program into /opt/tiimit, so no other account may be
+# able to put a file or a link there first.
+check_program_folder() {
+	local dir=${bin%/*} owner mode
+	if [ ! -d "$dir" ] || [ -L "$dir" ]; then
+		fail "$dir is not a folder"
+	fi
+	read -r owner mode < <(stat -c '%u %a' "$dir")
+	if [ "$owner" != 0 ] || ((8#$mode & 8#022)); then
+		fail "$dir must be owned by root and writable by nobody else, but its owner is uid $owner and its mode $mode. See setup step 3 in docs/deployment-guide.md."
+	fi
+}
+
+# lock waits until no other run of this script is going, so the weekly
+# backup and a deploy never share the temporary backup file. The lock goes
+# when this script exits, however it exits.
+lock() {
+	install -d -o root -g root -m 700 "$backups"
+	exec 9>"$backups/lock"
+	if ! flock -w "$wait" 9; then
+		fail "Another tiimit-pi is running, so nothing was done. Try again in a minute."
+	fi
+}
+
+# check_database stops the deploy when the database the settings name is
+# missing: the app would start on a new, empty database and the check would
+# pass. The file is looked at as the app's account.
+check_database() {
+	db=$(setting DB_PATH)
+	if [ -z "$db" ]; then
+		fail "DB_PATH is not set in $settings, $stopped"
+	fi
+	if ! as_app test -f "$db"; then
+		fail "There is no database at $db (DB_PATH in $settings), $stopped"
+	fi
+}
+
+# backup copies the database into $backups/<kind> with SQLite's own backup,
+# which is safe while the app runs, unlike copying the file. The app's
+# account makes the copy in its own folder and checks it; root then reads it
+# through that account into the root-only folder, where the app cannot reach
+# it. The newest $keep of the kind stay, or all of them with keep-all.
+backup() {
+	local kind=$1 prune=${2:-prune}
+	local tmp=${db%/*}/backup-in-progress.db
+	local file check
+	file=$backups/$kind/tiimit-$(date +%Y%m%d-%H%M%S).db
+
+	install -d -o root -g root -m 700 "$backups" "$backups/$kind"
+	# An older backup may be the one a rollback needs, so it is never
+	# overwritten, not even by a deploy started in the same second.
+	if [ -e "$file" ]; then
+		fail "A backup named $file already exists, $stopped. Run it again."
+	fi
+	as_app rm -f -- "$tmp"
+	# -readonly: sqlite3 never creates an empty database in place of a
+	# missing one. -init /dev/null: no settings file from any home folder.
+	if ! as_app sqlite3 -init /dev/null -readonly -bail -cmd ".timeout 5000" "$db" ".backup '$tmp'"; then
+		as_app rm -f -- "$tmp"
+		fail "SQLite could not back up $db, $stopped"
+	fi
+	check=$(as_app sqlite3 -init /dev/null -readonly "$tmp" "PRAGMA integrity_check" 2>&1) || true
+	if [ "$check" != ok ]; then
+		as_app rm -f -- "$tmp"
+		fail "The backup failed SQLite's integrity check, $stopped: $check"
+	fi
+	# The copy gets its backup name only once it is whole, so a copy that
+	# stops halfway, on a full disk say, is never counted among the newest.
+	if ! as_app cat -- "$tmp" >"$file.partial"; then
+		rm -f -- "$file.partial"
+		as_app rm -f -- "$tmp"
+		fail "The backup could not be copied into $backups/$kind, $stopped"
+	fi
+	mv -- "$file.partial" "$file"
+	as_app rm -f -- "$tmp"
+	say "Backup: $file"
+
+	if [ "$prune" = keep-all ]; then
+		say "Older $kind backups are kept"
+		return
+	fi
+	# Names sort by time, so everything after the newest $keep goes. Only
+	# root can write in this folder, so root may delete here.
+	find "$backups/$kind" -maxdepth 1 -type f -name 'tiimit-*.db' | sort -r |
+		tail -n +$((keep + 1)) | xargs -r -d '\n' rm -f --
+}
+
+# check_app asks the app on the Pi itself for the home page, which reads the
+# database even for a visitor who is not logged in, so a normal page proves
+# that the app and the database both work. Exit status 3 tells the laptop
+# that the new version is installed but does not answer.
+check_app() {
+	local started=$1 address url code version
+	address=$(setting LISTEN_ADDRESS)
+	address=${address:-127.0.0.1:8080}
+	# An address without a host, such as :8080, also answers on this computer.
+	if [ "${address#:}" != "$address" ]; then
+		address=127.0.0.1$address
+	fi
+	url=http://$address/
+
+	# systemd restarts a crashing app, so one look could catch it in between.
+	# Wait a moment, then give it a few tries.
+	sleep 2
+	for _ in 1 2 3 4 5 6 7 8 9 10; do
+		code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "$url") || true
+		if [ "$code" = 200 ]; then
+			touch "$bin.checked"
+			say "The app answers with a normal page at $url"
+			version=$(journalctl -u "$app" --since "@$started" -o cat --no-pager 2>/dev/null |
+				grep -m 1 'Tiumo version') || true
+			if [ -n "$version" ]; then
+				say "$version"
+			fi
+			return
+		fi
+		sleep 1
+	done
+	say "FAILED: the app did not answer with a normal page at $url (the last answer was ${code:-none})"
+	exit 3
+}
+
+install_program() {
+	local deployer=${SUDO_USER:?run this with sudo}
+	local home new started
+	home=$(getent passwd "$deployer" | cut -d: -f6)
+	# The upload is in the deploy user's home, not /tmp, so no other account
+	# on the Pi can replace it. It is looked at and read as the deploy user,
+	# so a link in its place cannot make root read a file that user may not.
+	new=$home/tiimit-new
+
+	lock
+	check_program_folder
+	check_database
+	if ! runuser -u "$deployer" -- test -f "$new" || runuser -u "$deployer" -- test -L "$new"; then
+		fail "There is no uploaded program at $new"
+	fi
+
+	# Only a version that passed its check becomes the previous one, so a
+	# deploy after a failed or interrupted one keeps the last good program to
+	# go back to. Its database may already be migrated, so the deploy
+	# backups from before it are kept too. The first deploy keeps whatever
+	# runs, since there is nothing better.
+	if [ -f "$bin.checked" ] || [ ! -f "$bin.previous" ]; then
+		backup deploy
+		if [ -f "$bin" ]; then
+			cp -p -- "$bin" "$bin.previous"
+			say "Previous version kept at $bin.previous"
+		fi
+	else
+		backup deploy keep-all
+		say "The running version never passed its check, so $bin.previous stays as it was"
+	fi
+
+	# The staging copy is root's. The rename then swaps the file in one step,
+	# which works while the old version is still running. The running version
+	# keeps its check mark until that moment.
+	runuser -u "$deployer" -- cat -- "$new" >"$bin.staging"
+	chmod 755 "$bin.staging"
+	rm -f -- "$bin.checked"
+	mv -- "$bin.staging" "$bin"
+
+	# From here the new version is installed, so a failure exits with 3 and
+	# the laptop prints the rollback steps.
+	runuser -u "$deployer" -- rm -f -- "$new" || say "Could not remove $new; the next upload replaces it"
+	started=$(date +%s)
+	if ! systemctl restart "$app"; then
+		say "FAILED: systemd could not restart the app"
+		exit 3
+	fi
+	say "Installed and restarted"
+	check_app "$started"
+}
+
+backup_weekly() {
+	stopped="so no weekly backup was taken"
+	lock
+	check_database
+	backup weekly
+}
+
+usage() {
+	echo "usage: tiimit-pi install | tiimit-pi backup weekly" >&2
+	exit 2
+}
+
+case "$*" in
+install) install_program ;;
+"backup weekly") backup_weekly ;;
+*) usage ;;
+esac

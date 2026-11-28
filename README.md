@@ -30,6 +30,6 @@ From November 2026, Tiimit is built with an agentic workflow, with Claude Code w
 
 ## Installation and deployment
 
-The webapp can be currently deployed to Raspberry Pi 3+ by using the `deploy.sh` command. It will build and deploy the webapp to Raspberry Pi connected to the same network as the development computer.
+The webapp is deployed to a Raspberry Pi on the same network as the development computer with `make deploy`. It runs the tests, builds the app, backs up the database on the Pi, installs the new version and checks that it answers.
 
-See `deploy.sh` and `.deploy.conf.example` for details.
+See `docs/deployment-guide.md` for the one-time setup and `deploy/deploy.conf.example` for the settings.

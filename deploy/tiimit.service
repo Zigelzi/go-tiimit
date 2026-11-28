@@ -1,0 +1,33 @@
+# Tiumo on the Pi. Install to /etc/systemd/system/tiimit.service, then
+# `sudo systemctl daemon-reload && sudo systemctl enable tiimit`.
+# docs/deployment-guide.md has the full setup.
+
+[Unit]
+Description=Tiumo team distribution app
+After=network.target
+
+[Service]
+Type=simple
+User=tiimit
+Group=tiimit
+# Owned by root, so nobody but root can put a .env file here for the app to read.
+WorkingDirectory=/opt/tiimit
+ExecStart=/opt/tiimit/web
+# Readable by root only. systemd reads it before it starts the app as tiimit.
+EnvironmentFile=/etc/tiimit/tiimit.env
+Restart=on-failure
+RestartSec=2
+
+# The app is public through nginx, so it gets only what it needs: it can
+# write its own data folder and nothing else on disk, and cannot gain more
+# rights than the tiimit user has.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/tiimit
+# Files the app creates, such as SQLite's journal, are readable by tiimit only.
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

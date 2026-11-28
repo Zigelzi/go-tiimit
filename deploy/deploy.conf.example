@@ -1,0 +1,10 @@
+# Copy to deploy/deploy.conf (gitignored) and fill in. Read by deploy/deploy.sh.
+
+# The SSH login on the Pi.
+PI_USER=your-ssh-user
+
+# The Pi's address on the home network.
+PI_HOST=your-pi-address
+
+# Checked from the laptop after the deploy, as a warning only.
+PUBLIC_URL=https://tiumo.fi

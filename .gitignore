@@ -45,6 +45,8 @@ go.work.sum
 
 # Build and deployment
 /build/
+/deploy/deploy.conf
+# The old deploy's settings, until setup step 9 deletes them.
 .deploy.conf
 
 # Internal docs (for now)
